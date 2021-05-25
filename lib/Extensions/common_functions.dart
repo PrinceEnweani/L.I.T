@@ -17,6 +17,33 @@ showSnackBar(BuildContext context , SnackBar bar){
   Scaffold.of(context).showSnackBar(bar);
 }
 
+String parseThemes(AsyncSnapshot l){
+  List<String> themes = l.data['themes'].split(',');
+  List<String> themes2 = [];
+  String themesStr = "";
+  for(String t in themes){
+    if(!themes2.contains('@'+t)) {
+      t = '@' + t;
+      themes2.add(t);
+    }
+  }
+  themesStr = themes2.toString().replaceAll('[', '').replaceAll(']', '');
+  return themesStr;
+}
+String parseTime(Timestamp sd){
+  int c = 1000;
+  DateTime sdate = DateTime.fromMicrosecondsSinceEpoch(sd.millisecondsSinceEpoch * c);
+  return DateFormat.j().format(sdate);
+}
+String parseDay(bool cut , Timestamp date){
+  int c = 1000;
+  DateTime d = DateTime.fromMicrosecondsSinceEpoch(date.microsecondsSinceEpoch * c);
+  String parsedDate = DateFormat('EEEE').format(d);
+  if(cut){
+    return parsedDate.substring(0 , 3);
+  }
+  return parsedDate;
+}
 String parseDate(Timestamp d){
   int c = 1000;
   DateTime date = DateTime.fromMicrosecondsSinceEpoch(d.millisecondsSinceEpoch * c);

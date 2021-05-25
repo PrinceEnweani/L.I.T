@@ -352,6 +352,27 @@ Widget placeResultTile(BuildContext context, PlacesSearchResult suggestion){
     ),
   );
 }
+Widget nullLituationUrl(){
+  return Container(
+    padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+    width: 175.0,
+    height: 150.0,
+    decoration: BoxDecoration(
+      shape: BoxShape.rectangle,
+    ),
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        Opacity(
+          opacity: 0.8,
+          child: Image.asset('assets/images/litlogo.png'),
+        )
+      ],
+    ),
+  );
+}
+
+
 Widget lituationCategoryResultTile(String suggestion , BuildContext context){
   return ListTile(
     contentPadding: EdgeInsets.all(15),
@@ -360,10 +381,29 @@ Widget lituationCategoryResultTile(String suggestion , BuildContext context){
   );
 }
 Widget userResultTile(String username , String profile , BuildContext context){
-  return ListTile(
-    contentPadding: EdgeInsets.all(15),
-    leading: userProfileThumbnail(profile, 'online'),
-    title: Text(username , style: TextStyle(color: Theme.of(context).textSelectionColor , decoration: TextDecoration.none),),
+  return Container(
+    margin: EdgeInsets.only(left: 5, right: 5),
+    child: Card(
+      elevation: 3,
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: ListTile(
+        contentPadding: EdgeInsets.all(10),
+        leading: userProfileThumbnail(profile, 'online'),
+        title: Text(username , style: TextStyle(color: Theme.of(context).textSelectionColor , decoration: TextDecoration.none),),
+      ),
+    ),
+  );
+}
+Widget userSearchResultTile(String username , String profile , Widget vibing, BuildContext context){
+  return Card(
+    elevation: 3,
+    color: Theme.of(context).scaffoldBackgroundColor,
+    child: ListTile(
+      contentPadding: EdgeInsets.all(10),
+      leading: userProfileThumbnail(profile, 'online'),
+      title: Text(username , style: TextStyle(color: Theme.of(context).textSelectionColor , decoration: TextDecoration.none),),
+      subtitle: vibing
+    ),
   );
 }
 Widget lituationDetailCard(BuildContext ctx , String lID , String thumbnail , String title , String date , String entry){

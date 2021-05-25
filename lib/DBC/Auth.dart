@@ -247,6 +247,9 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
   Stream<dynamic> getAllLituations(){
     return dbRef.collection('lituations').snapshots();
   }
+  Future<QuerySnapshot> getAllLituationsSnapShot() async {
+    return dbRef.collection("lituations").get();
+  }
   Stream<DocumentSnapshot> getLituationByID(String lituationID){
     return dbRef.collection('lituations').doc(lituationID).snapshots();
   }

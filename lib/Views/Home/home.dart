@@ -41,6 +41,7 @@ class _FeedState extends State<FeedPage> {
       ],
     );
   }
+
   Widget feedIndexedStackProvider(){
     return Column(
       children: [
@@ -63,30 +64,31 @@ class _FeedState extends State<FeedPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(child: tappableTab('Last Night Lit', 0),),
-          Expanded(child: tappableTab('Trending Lituations', 1),),
+          Expanded(child: tappableTab('Recommended', 0),),
+          Expanded(child: tappableTab('Trending', 1),),
         ],
       ),
     );
   }
 
   Widget tappableTab(String title, int idx){
-    Color c = Theme.of(context).textSelectionColor;
+    Color c = Theme.of(context).buttonColor;
     Widget indicator = Container();
     var scale = 0.8;
     if(idx == _tabIndex){
       scale = 1.1;
-      indicator = selectedIndicator(Theme.of(context).buttonColor);
-      c = Theme.of(context).buttonColor;
+      title = title +'\n' + 'Lituations';
+      indicator = selectedIndicator(Theme.of(context).textSelectionColor);
+      c = Theme.of(context).textSelectionColor;
     }
     return Container(
-      height: 35,
+      height: 50,
       child: GestureDetector(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Expanded(flex: 9,child: Text(title , style: TextStyle(color: c), textAlign: TextAlign.center, textScaleFactor: scale,),),
-            Expanded(child: indicator, flex: 1)
+            indicator
           ],
         ),
         onTap: (){

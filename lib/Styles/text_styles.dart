@@ -7,3 +7,7 @@ TextStyle infoLabel(Color c){
 TextStyle infoValue(Color c){
   return TextStyle(color: c, fontSize: 14);
 }
+
+TextStyle infoValueSmall(Color c){
+  return TextStyle(color: c, fontSize: 10);
+}

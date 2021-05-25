@@ -71,10 +71,14 @@ String activity_no_rsvps = 'There are no pending RSVPs for \n\n';
 String dateHint = "What date is it?";
 String startTimeHint = "When do we show up?";
 String endTimeHint = "When is it over?";
-
+String vibes_search_hint = "Discover people to vibe with...";
+String lituations_search_hint = "Search for what's going on...";
 const String select_photo_hint = 'Choose a photo, or take one?';
 const String gallery_hint = 'Open Gallery';
 const String camera_hint = 'Take Photo';
 
 String update_hint = '( update in settings )';
 String invite_hint = 'Search here...';
+
+String lituation_result_attendees_label = 'vibes going: ';
+String lituation_result_entry_label = 'entry: ';

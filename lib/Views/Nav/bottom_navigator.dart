@@ -36,7 +36,7 @@ class _BottomNavigationControllerState extends State<BottomNavigationController>
   Widget initBottomNavControllerTabs(int idx){
     List<Widget> tabs = [
       FeedPage(key: PageStorageKey('home'), userID: widget.userID),
-      SearchPage(key: PageStorageKey('search'),),
+      SearchPage(key: PageStorageKey('search'),userID: widget.userID,),
       MapPage(key: PageStorageKey('map'),),
       ChatPage(key: PageStorageKey('chat'),),
       ProfilePage(key: PageStorageKey('profile'), userID: widget.userID)
