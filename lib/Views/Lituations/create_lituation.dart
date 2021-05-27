@@ -57,7 +57,7 @@ class _CreateLituationPageState extends State<CreateLituationPage>{
   List<PlacesSearchResult> places = [];
   List<String> addressResults = [];
   GlobalKey<FormState> _formKey =  new GlobalKey<FormState>();
-  GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: 'AIzaSyCjYd92XrLthFK7mvaJ_LPV1iNeurnx9MQ');
+  GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: MAPS_KEY);
   @override
   void dispose(){
     inputController.dispose();
@@ -700,6 +700,7 @@ Widget titleTextField(String u){
           var locationIcon = await getBytesFromAssetFile('assets/images/litlocationicon.png' ,225);
           return searchAddress(pattern).then((value){
             List<Marker> resultMarkers = [];
+
             if(value.length > 0) {
               moveCamera(CameraPosition(
                 bearing: 0,
@@ -771,13 +772,7 @@ Widget titleTextField(String u){
       ),
     );
   }
-  Marker googleMapMarker(String title , BitmapDescriptor icon , LatLng pos){
-    return Marker(
-      markerId: MarkerId(title),
-      position: pos,
-      icon: icon,
-    );
-  }
+
   Future<void> drawMarker(Marker n) async {
     var locationIcon = await getBytesFromAssetFile('assets/images/litlocationicon.png' ,250);
     Marker k = Marker(markerId: n.markerId , position: n.position , icon: BitmapDescriptor.fromBytes(locationIcon));

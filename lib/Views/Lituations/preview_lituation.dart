@@ -36,7 +36,7 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
   Completer<GoogleMapController> _controller = Completer();
   List<String> addressResults = [];
   GlobalKey<FormState> _formKey =  new GlobalKey<FormState>();
-  GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: 'AIzaSyCjYd92XrLthFK7mvaJ_LPV1iNeurnx9MQ');
+  GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: MAPS_KEY);
   @override
   void dispose(){
     super.dispose();

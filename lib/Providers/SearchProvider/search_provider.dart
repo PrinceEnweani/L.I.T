@@ -69,7 +69,7 @@ class SearchProvider {
           }
         }
         if(filter == BY_ADDRESS){
-          if(l.data()['address'].toString().toLowerCase().contains(query.toLowerCase()) && !resultIDs.contains(l.data()['eventID'])){
+          if((l.data()['address'].toString().toLowerCase().contains(query.toLowerCase()) || l.data()['title'].toString().toLowerCase().contains(query.toLowerCase()))&& !resultIDs.contains(l.data()['eventID'])){
             lituationResults.add(l);
             resultIDs.add(l.data()['eventID']);
           }

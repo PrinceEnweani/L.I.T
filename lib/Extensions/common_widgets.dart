@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:lit_beta/Strings/constants.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
@@ -339,6 +340,7 @@ Widget viewList(BuildContext context, List data, List<Widget> removeButtons , St
 }
 Widget placeResultTile(BuildContext context, PlacesSearchResult suggestion){
   return  ListTile(
+    tileColor: Theme.of(context).scaffoldBackgroundColor,
     contentPadding: EdgeInsets.all(5),
     leading: Image.asset('assets/images/litlocationicon.png'),
     title: Column(
@@ -350,6 +352,13 @@ Widget placeResultTile(BuildContext context, PlacesSearchResult suggestion){
 
       ],
     ),
+  );
+}
+Marker googleMapMarker(String title , BitmapDescriptor icon , LatLng pos){
+  return Marker(
+    markerId: MarkerId(title),
+    position: pos,
+    icon: icon,
   );
 }
 Widget nullLituationUrl(){
@@ -454,7 +463,54 @@ Widget lituationDetailCard(BuildContext ctx , String lID , String thumbnail , St
       ),
   );
 }
-
+Widget lituationResultCard(BuildContext ctx , String lID , String thumbnail , String title , String date , String entry){
+  return Card(
+    elevation: 3,
+    child:  Stack(
+      children: [
+        Opacity(
+          opacity: 1,
+          child:  CachedNetworkImage(
+            imageUrl: thumbnail,
+            imageBuilder: (context, imageProvider) => Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                image: DecorationImage(
+                  image: imageProvider,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).buttonColor),),
+            errorWidget: (context, url, error) => nullUrl(),
+          ),
+        ),
+        Positioned(
+            left: 0,
+            right: 0,
+            bottom: 5,
+            child: Container(
+              color: Colors.black26,
+              height: 75,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Text(title , style: TextStyle(color: Colors.white , fontSize: 14 ,fontWeight: FontWeight.w900),textAlign: TextAlign.center,),
+                  ),
+                  Expanded(
+                    child: Text(entry , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
+                  ),
+                  Expanded(
+                    child: Text(date , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
+                  ),
+                ],
+              ),
+            )
+        )
+      ],
+    ),
+  );
+}
 Widget nullList(String username , String listname , Color c){
   return Column(
       children: [

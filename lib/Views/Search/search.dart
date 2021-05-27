@@ -180,7 +180,7 @@ class _SearchState extends State<SearchPage> {
             topRight: Radius.circular(15),
             bottomRight: Radius.circular(15),
             bottomLeft: Radius.circular(15)),
-        color: Theme.of(context).buttonColor,
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       margin: EdgeInsets.only(top: 85 , left: 15 , right: 15),
       child: TextField(
@@ -268,19 +268,20 @@ class _SearchState extends State<SearchPage> {
         }
     );
   }
-  Widget lituationInfoRow2(AsyncSnapshot l){
+  Widget lituationInfoRow(AsyncSnapshot l){
     return Container(
       margin: EdgeInsets.only(top: 10),
       child: Row(
         children: [
           Expanded(flex: 2,child: lituationDateWidget(l),),
           Expanded(flex: 6,child: lituationInfoCardWidget(l),),
+        //TODO Make row below address
           Expanded(flex: 3,child: lituationResultStatusCard(l),),
         ],
       ),
     );
   }
-  Widget lituationInfoRow(AsyncSnapshot l){
+  Widget lituationInfoRow2(AsyncSnapshot l){
     return Container(
       child: Column(
         children: [
@@ -393,7 +394,7 @@ class _SearchState extends State<SearchPage> {
             topRight: Radius.circular(15),
             bottomRight: Radius.circular(15),
             bottomLeft: Radius.circular(15)),
-        color: Theme.of(context).buttonColor,
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       margin: EdgeInsets.only(top: 85 , left: 15 , right: 15),
       child: TextField(

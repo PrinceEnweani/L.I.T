@@ -791,10 +791,6 @@ class _SettingsState extends State<SettingsPage>{
       ,);
   }
 
-  LatLng latLngFromGeoPoint(GeoPoint gp){
-    LatLng l = new LatLng(gp.latitude, gp.longitude);
-    return l;
-  }
   Widget settingSwitchVibe(bool val){
     return Switch(
       onChanged: toggleVibeNotifications,

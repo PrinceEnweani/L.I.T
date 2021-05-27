@@ -12,7 +12,7 @@ const String auth_user_diabled_error_code = "ERROR : Your account is disabled. C
 const String auth_too_many_request_error_code = "ERROR : too many attempts... try again later...";
 const String auth_operation_not_allowed_error_code = "ERROR : Nice try, but that's not allowed :/";
 const String auth_email_exists_error_code = "ERROR : An account with this email already exists.\nLogin or use a different email.";
-
+const String MAPS_KEY = 'AIzaSyCjYd92XrLthFK7mvaJ_LPV1iNeurnx9MQ';
 //TAGS FOR EVENTS AND NAV ARGS
 const String CREATE_LITUATION_TAG = 'create';
 //DB Constants
