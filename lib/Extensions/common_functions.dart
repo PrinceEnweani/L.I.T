@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialog_context/dialog_context.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
 
@@ -16,7 +17,10 @@ String parseVibes(String vibes){
 showSnackBar(BuildContext context , SnackBar bar){
   Scaffold.of(context).showSnackBar(bar);
 }
-
+LatLng latLngFromGeoPoint(GeoPoint gp){
+  LatLng l = new LatLng(gp.latitude, gp.longitude);
+  return l;
+}
 String parseThemes(AsyncSnapshot l){
   List<String> themes = l.data['themes'].split(',');
   List<String> themes2 = [];

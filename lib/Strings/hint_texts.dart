@@ -72,6 +72,7 @@ String dateHint = "What date is it?";
 String startTimeHint = "When do we show up?";
 String endTimeHint = "When is it over?";
 String vibes_search_hint = "Discover people to vibe with...";
+String maps_search_hint = "I'm feeling litty...XD";
 String lituations_search_hint = "Search for what's going on...";
 const String select_photo_hint = 'Choose a photo, or take one?';
 const String gallery_hint = 'Open Gallery';
