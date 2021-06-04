@@ -63,6 +63,8 @@ class _LoginState extends State<LoginPage> {
             passwordTextField(),
             errorText(),
             loginButton(),
+            googleLoginButton(),
+            facebookLoginButton(),
             noAccountText(),
             forgotPasswordText(),
             SizedBox(
@@ -203,7 +205,7 @@ class _LoginState extends State<LoginPage> {
   Widget loginButton(){
     return Container(
         height: 50,
-        margin: EdgeInsets.fromLTRB(45, 25, 45, 0),
+        margin: EdgeInsets.fromLTRB(45, 15, 45, 0),
         padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
         child: RaisedButton(
             child: Text(login_label ,style: infoValue(Theme.of(context).textSelectionColor),),
@@ -212,6 +214,34 @@ class _LoginState extends State<LoginPage> {
             },
             shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
         )
+    );
+  }
+  Widget googleLoginButton(){
+    return Container(
+      height: 50,
+      margin: EdgeInsets.fromLTRB(45, 15, 45, 5),
+      padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+      child: RaisedButton(
+        child: Text(googleSignin, style: infoValue(Theme.of(context).textSelectionColor)),
+        onPressed: (){
+          loginWithGoogle();
+        },
+        shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
+      )
+    );
+  }
+  Widget facebookLoginButton(){
+    return Container(
+      height: 50,
+      margin: EdgeInsets.fromLTRB(45, 15, 45, 5),
+      padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+      child: RaisedButton(
+        child: Text(fbSignin, style: infoValue(Theme.of(context).textSelectionColor)),
+        onPressed: (){
+          loginWithGoogle();
+        },
+        shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
+      )
     );
   }
   void _toggle(){
@@ -245,6 +275,22 @@ class _LoginState extends State<LoginPage> {
         return;
       });
     }
+  }
+  void loginWithGoogle() async {
+    await db.signInWithGoogle().then((value) {
+        if(value.contains('ERROR')){
+          setState(() {
+            error = value.split(':')[1];
+          });
+          return;
+        }
+      HelperExtension.saveSharedPreferenceUserID(value);
+      lp.currentUser().then((u){
+          HelperExtension.saveUserEmailSharedPrefs(u.email);
+          HelperExtension.saveUserNameSharedPrefs(u.displayName);
+      });
+      _toHome(value);
+    });
   }
   void _toHome(String uID){
     Navigator.pushReplacementNamed(context, HomePageRoute , arguments: uID);

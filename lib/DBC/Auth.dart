@@ -10,6 +10,7 @@ import 'package:lit_beta/Models/Vibes.dart';
 import 'package:lit_beta/Strings/constants.dart';
 import 'package:lit_beta/Models/User.dart' as UserModel;
 import 'package:lit_beta/Strings/settings.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'DBA.dart';
 
@@ -47,6 +48,48 @@ class Auth implements DBA {
         userID = value.user.uid;
       });
     } on FirebaseAuthException catch (e){
+      userID = handleAuthException(e);
+    }
+    return userID;
+  }
+
+  Future<UserCredential> googleAuth() async {
+    try {
+      // Trigger the authentication flow
+      GoogleSignIn _googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Once signed in, return the UserCredential
+      UserCredential u = await FirebaseAuth.instance.signInWithCredential(credential);
+      return u;
+    } on FirebaseAuthException catch (e) {
+      throw e;
+    }
+  }
+
+  Future<String> signInWithGoogle() async {
+    String userID = '';
+    try {
+      await this.googleAuth().then((value) async {
+          DocumentSnapshot userSnap = await this.getUserSnapShot(value.user.uid); // check user registered or not
+          if (userSnap.exists == false)
+            userID = auth_no_user_error_code;
+          else{
+            updateStatus('online');
+            userID = value.user.uid;
+          }
+      });      
+    } on FirebaseAuthException catch (e) {
+      print("Google Signin Error " + e.code);
       userID = handleAuthException(e);
     }
     return userID;
