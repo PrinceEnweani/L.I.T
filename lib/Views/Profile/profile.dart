@@ -1,14 +1,10 @@
 
 import 'dart:io';
-import 'dart:math';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dialog_context/dialog_context.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:image_pickers/image_pickers.dart';
 import 'package:lit_beta/Extensions/common_functions.dart';
 import 'package:lit_beta/Extensions/common_widgets.dart';
@@ -18,9 +14,6 @@ import 'package:lit_beta/Providers/ProfileProvider/profile_provider.dart';
 import 'package:lit_beta/Strings/constants.dart';
 import 'package:lit_beta/Strings/hint_texts.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
-import 'package:path/path.dart' as Path;
-
-import 'package:lit_beta/Styles/theme_resolver.dart';
 
 class ProfilePage extends StatefulWidget {
   final String userID;
@@ -100,7 +93,7 @@ class _ProfileState extends State<ProfilePage>{
              children: [
                profileBackground(profileUrl , username),
               statsRow(getUserStats(clout)),
-               profileIndexedStackProvider(c, u)
+               profileIndexedStackProvider(u)
              ],
            ),
          ),
@@ -110,7 +103,7 @@ class _ProfileState extends State<ProfilePage>{
   }
 
   Widget profileBackground(String url , String username){
-    int flexy = 0;
+    int flexy = 1; //give user the option to add background image
     if(flexy == 0) {
       return Container(
         height: 275,
@@ -140,7 +133,7 @@ class _ProfileState extends State<ProfilePage>{
       );
     }
     return Container(
-      color: Colors.red,
+      color: Theme.of(context).backgroundColor,
       height: 230,
       width: MediaQuery
           .of(context)
@@ -178,22 +171,22 @@ class _ProfileState extends State<ProfilePage>{
     return s;
   }
 
-  profileIndexedStackProvider(BuildContext c , AsyncSnapshot u){
+  profileIndexedStackProvider( AsyncSnapshot u){
     return Column(
       children: [
         indexedStackTabBar(),
-        indexedStack(c , u)
+        indexedStack(u)
       ],
     );
   }
 
-  Widget indexedStack(BuildContext c ,AsyncSnapshot u){
+  Widget indexedStack(AsyncSnapshot u){
     return IndexedStack(
       index: _tabIdx,
       children: [
         userVibeTab(u),
-        userLituationTab(u , c),
-        userActivityTab(c , u),
+        userLituationTab(u , context),
+        userActivityTab(context , u),
 
         //aboutList(u),
         //viewUserLituation(u , context),
@@ -202,6 +195,58 @@ class _ProfileState extends State<ProfilePage>{
     );
   }
 
+  Widget indexedStackTabBar(){
+    return Container(
+      height: 75,
+      margin: EdgeInsets.only(top: 25 , left: 50 , right: 50),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+              child: GestureDetector(
+                onTap:(){
+                  if(_tabIdx != 0) {
+                    setState(() {
+                      _tabIdx = 0;
+                    });
+                  }
+                },
+                //TODO Replace with vibe icon
+                child: indexedStackTab(vibe_label, Icons.person , 0),
+              )
+          ),
+          Expanded(
+              child: GestureDetector(
+                onTap:(){
+                  if(_tabIdx != 1) {
+                    setState(() {
+                      _tabIdx = 1;
+                    });
+                  }
+                },
+                //TODO Replace with lituation icon
+                child: indexedStackTab(lituation_label, Icons.location_on_rounded , 1),
+              )
+          )
+          ,
+          Expanded(
+              child: GestureDetector(
+                onTap:(){
+                  if(_tabIdx != 2) {
+                    setState(() {
+                      _tabIdx = 2;
+                    });
+                  }
+                },
+                //TODO Replace with activity icon
+                child: indexedStackTab(activity_label, Ionicons.ios_notifications , 2),
+              )
+          ),
+        ],
+      ),
+    );
+  }
   //takes in context and user stream
   Widget userActivityTab(BuildContext c , AsyncSnapshot u){
     return Column(
@@ -427,58 +472,7 @@ class _ProfileState extends State<ProfilePage>{
     return false;
   }
 
-  Widget indexedStackTabBar(){
-    return Container(
-      height: 75,
-      margin: EdgeInsets.only(top: 25 , left: 50 , right: 50),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-              child: GestureDetector(
-                onTap:(){
-                  if(_tabIdx != 0) {
-                    setState(() {
-                      _tabIdx = 0;
-                    });
-                  }
-                },
-                //TODO Replace with vibe icon
-              child: indexedStackTab(vibe_label, Icons.person , 0),
-              )
-          ),
-          Expanded(
-              child: GestureDetector(
-                onTap:(){
-                  if(_tabIdx != 1) {
-                    setState(() {
-                      _tabIdx = 1;
-                    });
-                  }
-                },
-                //TODO Replace with lituation icon
-                child: indexedStackTab(lituation_label, Icons.location_on_rounded , 1),
-              )
-          )
-          ,
-          Expanded(
-              child: GestureDetector(
-                onTap:(){
-                  if(_tabIdx != 2) {
-                    setState(() {
-                      _tabIdx = 2;
-                    });
-                  }
-                },
-                //TODO Replace with activity icon
-                child: indexedStackTab(activity_label, Ionicons.ios_notifications , 2),
-              )
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget indexedStackTab(String title ,IconData icon , int idx){
     Color c = Theme.of(context).textSelectionColor;

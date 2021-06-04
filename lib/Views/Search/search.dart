@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:lit_beta/Extensions/common_functions.dart';
 import 'package:lit_beta/Extensions/common_widgets.dart';
 import 'package:lit_beta/Extensions/search_filters.dart';
+import 'package:lit_beta/Models/User.dart';
+import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Providers/SearchProvider/search_provider.dart';
 import 'package:lit_beta/Strings/hint_texts.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
@@ -221,7 +223,9 @@ class _SearchState extends State<SearchPage> {
                if(!res.contains(u.data()['userID'])){
                  //String status = await sp.getVibingStatus(u.data()['userID']);
                  res.add(u.data()['userID']);
-                 vibeResults.add(userResultTile(u.data()['username'],u.data()['profileURL'], context));
+                 vibeResults.add(
+                     userResultCard(userResultTile(u.data()['username'],u.data()['profileURL'], context), u.data()['userID'],u.data()['username'])
+                 );
                }
              }else{
                vibeResults.clear();
@@ -234,6 +238,22 @@ class _SearchState extends State<SearchPage> {
     );
   }
 
+  Widget userResultCard(Widget w , String id , String username){
+    return GestureDetector(
+      child: w,
+      onTap: (){
+        _viewProfile(id, username);
+      },
+    );
+  }
+  void _viewProfile(String id , String username){
+    UserVisit v = UserVisit();
+    v.visitorID = widget.userID;
+    v.visitedID = id;
+    v.visitNote = username;
+    print(v.visitNote);
+    Navigator.pushNamed(context, VisitProfilePageRoute , arguments: v);
+  }
   Widget lituationResult(String lID){
     String url;
     return StreamBuilder(
@@ -273,7 +293,7 @@ class _SearchState extends State<SearchPage> {
       margin: EdgeInsets.only(top: 10),
       child: Row(
         children: [
-          Expanded(flex: 2,child: lituationDateWidget(l),),
+          Expanded(flex: 2,child: lituationDateWidget(context , l),),
           Expanded(flex: 6,child: lituationInfoCardWidget(l),),
         //TODO Make row below address
           Expanded(flex: 3,child: lituationResultStatusCard(l),),
@@ -287,7 +307,7 @@ class _SearchState extends State<SearchPage> {
         children: [
          Expanded(child:          Row(
    children: [
-     lituationDateWidget(l),
+     lituationDateWidget(context , l),
      lituationInfoCardWidget(l),
      lituationResultStatusCard(l),
    ],
@@ -353,38 +373,7 @@ class _SearchState extends State<SearchPage> {
         ],),
     );
   }
-  Widget lituationDateWidget(AsyncSnapshot l){
-    List months = ['Jan', 'Feb', 'Mar', 'Apr', 'May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    DateTime date = DateTime.fromMicrosecondsSinceEpoch(l.data['date'].millisecondsSinceEpoch * 1000);
-    String month = months[date.month - 1];
-    String day = date.day.toString();
-    return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(child: Text(day, style: TextStyle(fontWeight: FontWeight.w600,color: Theme.of(context).textSelectionColor), textScaleFactor: 1.6,)),
-          Container(child: Text(month, style: TextStyle(fontWeight: FontWeight.w200,color: Theme.of(context).textSelectionColor), textScaleFactor: 1,)),
-          Container(margin: EdgeInsets.only(top: 10),child: userProfileThumbnail(l.data['hostID'] , 'online'),),
-        ],
-      ),
-    );
-  }
-  Widget lituationThumbnailWidget(AsyncSnapshot l){
-    return CachedNetworkImage(
-      imageUrl: l.data['thumbnail'][0].toString(),
-      imageBuilder: (context, imageProvider) => Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.rectangle,
-          image: DecorationImage(
-            image: imageProvider,
-            fit: BoxFit.cover,
-          ),
-        ),
-      ),
-      placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).buttonColor),),
-      errorWidget: (context, url, error) => nullLituationUrl(),
-    );
-  }
+
 
   Widget lituationSearchBar(){
     return Container(
