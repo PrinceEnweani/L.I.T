@@ -49,9 +49,10 @@ class _MapState extends State<MapPage> {
 
   getUserLocation() async {
    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best).then((value){
-     setState(() {
-       userPosition = value;
-     });
+     if (this.mounted == true)
+      setState(() {
+        userPosition = value;
+      });
    });
   }
   @override
