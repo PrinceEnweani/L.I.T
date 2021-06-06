@@ -39,15 +39,12 @@ class LituationProvider {
 
   Future<List<String>> friendList() async {
     List<String> friends = [];
-    List users = await db.getVibed(userID).toList();
-    users.add(await db.getVibing(userID).toList());
-    for(var u in users){
-      if (!friends.contains(u.data()['userID'])){
-        friends.add(u.data()['userID']);
-      }
-    }
+    DocumentSnapshot snapshot = await db.getVibed(userID).first;
+    Map data = snapshot.data();
+    data["vibed"].forEach((element) {
+      friends.add(element);
+    });
     return friends;
-
   }
   Lituation initNewLituation(){
     Lituation l = new Lituation();

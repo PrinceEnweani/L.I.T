@@ -159,12 +159,15 @@ class _CreateLituationPageState extends State<CreateLituationPage>{
     if(widget.lv.lituationID == CREATE_LITUATION_TAG){
       _formKey.currentState.validate();
       if(lp.validateLituation(newLituation) == 'valid'){
+        setState(() {
+          date_error = "";
+        });
         launchPreview(newLituation ,  CREATE_LITUATION_TAG);
         return;
       } else {
-      setState(() {
-        date_error = lp.validateLituation(newLituation);
-      });
+        setState(() {
+          date_error = lp.validateLituation(newLituation);
+        });
       return;
       }
     } else {
@@ -532,6 +535,7 @@ Widget titleTextField(String u){
       onSuggestionSelected: (suggestion) {
         //print(suggestion);
         themesController.text = suggestion;
+        newLituation.themes = suggestion;
       },
     );
   }
@@ -561,6 +565,7 @@ Widget titleTextField(String u){
           )
       ),
       suggestionsCallback: (pattern) async {
+        print("test");
         return lp.searchUser(pattern).then((value){
         var results = [];
         for(var u in value){
@@ -906,7 +911,7 @@ Widget titleTextField(String u){
               onTap:(){selectMedia(context , pos);},
               child:     Opacity(
                 opacity: 0.5,
-                child: mediaSet(url , new File(url)),
+                child: mediaSet(url ?? "" , new File(url ?? "")),
               ),
             ),
 
@@ -975,6 +980,8 @@ Widget titleTextField(String u){
   void _toGallery(BuildContext context , int pos) async {
     ImagePicker picker = ImagePicker();
     PickedFile pickedImg = await picker.getImage(source: ImageSource.gallery);
+    if (pickedImg == null)
+      return Navigator.of(context).pop();
     File newImg = File(pickedImg.path);
     String imgName = newImg.path;
     setState(() {
@@ -1298,7 +1305,7 @@ Widget titleTextField(String u){
     l.invited = [];
     l.observers = [];
     l.vibes = [];
-    l.thumbnailURLs = [];
+    l.thumbnailURLs = [null, null, null, null, null];
 
     return l;
   }

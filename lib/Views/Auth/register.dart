@@ -72,6 +72,8 @@ class _RegisterState extends State<RegisterPage> {
             confirmPasswordInput(),
             errorText(),
             registerButton(),
+            googleRegisterButton(),
+            fbRegisterButton(),
             haveAnAccountText(),
             SizedBox(
               height: MediaQuery.of(context).viewInsets.bottom,
@@ -293,21 +295,65 @@ class _RegisterState extends State<RegisterPage> {
         )
     );
   }
-void registerUser() async {
-    //TODO Add user to db as clean object
-    final registrationForm = _formKey.currentState;
-    if(registrationForm.validate()){
-     await rp.registerNewUser(_email, _password, _username).then((value){
-       if(value.contains("ERROR")){
-         setState(() {
-           error = value.split(':')[1];
-         });
-         return;
-       }
-      beginSurvey(value);
+  Widget googleRegisterButton(){
+    return Container(
+        height: 50,
+        margin: EdgeInsets.fromLTRB(50, 10, 50, 0),
+        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+        child: RaisedButton(
+            child: Text(googleSignup ,style: infoValue(Theme.of(context).textSelectionColor),),
+            onPressed: (){
+              //TODO Implement register
+              registerGoogleUser();
+            },
+            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
+        )
+    );
+  }
+  Widget fbRegisterButton(){
+    return Container(
+        height: 50,
+        margin: EdgeInsets.fromLTRB(50, 10, 50, 0),
+        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+        child: RaisedButton(
+            child: Text(fbSignup ,style: infoValue(Theme.of(context).textSelectionColor),),
+            onPressed: (){
+              //TODO Implement register
+              registerFBUser();
+            },
+            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
+        )
+    );
+  }
+  void registerUser() async {
+      //TODO Add user to db as clean object
+      final registrationForm = _formKey.currentState;
+      if(registrationForm.validate()){
+      await rp.registerNewUser(_email, _password, _username).then((value){
+        if(value.contains("ERROR")){
+          setState(() {
+            error = value.split(':')[1];
+          });
+          return;
+        }
+        beginSurvey(value);
+        });
+      }
+  }
+  void registerGoogleUser() async {
+    await rp.registerGoogleNewUser().then((value){
+        if(value.contains("ERROR")){
+          setState(() {
+            error = value.split(':')[1];
+          });
+          return;
+        }
+        beginSurvey(value);
       });
-    }
-}
+  }
+  void registerFBUser() async {
+
+  }
   Widget haveAnAccountText(){
     return Container(
         height: 40,

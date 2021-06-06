@@ -10,6 +10,10 @@ String welcome_label = 'Welcome to';
 String no_account_prompt = 'Don\'t have an account?';
 String existing_account_prompt = 'Already have an account?';
 String forgot_password_prompt = 'forgot your password?';
+String googleSignin = "Sign in with Google";
+String googleSignup = "Sign up with Google";
+String fbSignin = "Sign in with Facebook";
+String fbSignup = "Sign up with Facebook";
 
 //Survey Strings
 String birthday_hint = 'How young are you?';

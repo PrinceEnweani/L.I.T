@@ -36,6 +36,9 @@ dependencies:
   cloud_firestore: ^0.16.0+1
   firebase_storage: ^7.0.0
 
+  #Auth Dependencies
+  google_sign_in: "^4.5.1" 
+
   #Theme Dependencies
   provider: ^4.3.3
   flutter_icons: ^1.1.0
