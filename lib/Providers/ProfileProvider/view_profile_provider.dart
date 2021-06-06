@@ -46,6 +46,9 @@ class ViewProfileProvider{
   getVisitorVibingStream(String id) {
     return db.getVibing(id);
   }
+  getVisitorVibedStream(String id) {
+    return db.getVibed(id);
+  }
   getUserStreamByID(String id){
     return db.getUser(id);
   }

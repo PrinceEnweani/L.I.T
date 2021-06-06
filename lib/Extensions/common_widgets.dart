@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -415,55 +416,106 @@ Widget userSearchResultTile(String username , String profile , Widget vibing, Bu
     ),
   );
 }
-Widget lituationDetailCard(BuildContext ctx , String lID , String thumbnail , String title , String date , String entry){
+
+Widget lituationResultCard(BuildContext ctx, DocumentSnapshot l){
   return Card(
+    color: Theme.of(ctx).scaffoldBackgroundColor,
     elevation: 3,
-      child:  Stack(
-        children: [
-         Opacity(
-                opacity: 1,
-                child:  CachedNetworkImage(
-                  imageUrl: thumbnail,
-                  imageBuilder: (context, imageProvider) => Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      image: DecorationImage(
-                        image: imageProvider,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).buttonColor),),
-                  errorWidget: (context, url, error) => nullUrl(),
-                ),
-              ),
-      Positioned(
-        left: 0,
-        right: 0,
-        bottom: 5,
-        child: Container(
-          color: Colors.black26,
-          height: 75,
-          child: Column(
-            children: [
-              Expanded(
-                child: Text(title , style: TextStyle(color: Colors.white , fontSize: 14 ,fontWeight: FontWeight.w900),textAlign: TextAlign.center,),
-              ),
-              Expanded(
-                child: Text(entry , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
-              ),
-              Expanded(
-                child: Text(date , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
-              ),
-            ],
-          ),
-        )
+      child:  Container(
+        width: 225,
+        height: 250,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+           Expanded(
+             flex: 6,
+             child:  CachedNetworkImage(
+             imageUrl: l.data()['thumbnail'][0],
+             imageBuilder: (context, imageProvider) => Container(
+               decoration: BoxDecoration(
+                 borderRadius: BorderRadius.circular(5),
+                 image: DecorationImage(
+                   image: imageProvider,
+                   fit: BoxFit.cover,
+                 ),
+               ),
+             ),
+             placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).buttonColor),),
+             errorWidget: (context, url, error) => nullUrl(),
+           ),),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: lituationDateDocumentSnapshotWidget(ctx , l)),
+                Expanded(
+                  child: Text(l.data()['title'] , style: TextStyle(color: Colors.white , fontSize: 14 ,fontWeight: FontWeight.w900),textAlign: TextAlign.center,),
+                )
+              ],
+            ),
+            Expanded(
+              flex: 1,
+              child: Text(l.data()['entry'] , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(parseDate(l.data()['date']) , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
+            ),
+          ],
+        ),
       )
-        ],
-      ),
   );
 }
-Widget lituationResultCard(BuildContext ctx , String lID , String thumbnail , String title , String date , String entry){
+
+Widget lituationDateWidget(BuildContext context , AsyncSnapshot l){
+  List months = ['Jan', 'Feb', 'Mar', 'Apr', 'May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  DateTime date = DateTime.fromMicrosecondsSinceEpoch(l.data['date'].millisecondsSinceEpoch * 1000);
+  String month = months[date.month - 1];
+  String day = date.day.toString();
+  return Container(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(child: Text(day, style: TextStyle(fontWeight: FontWeight.w600,color: Theme.of(context).textSelectionColor), textScaleFactor: 1.6,)),
+        Expanded(child: Container(margin: EdgeInsets.only(top: 10) ,child:Text(month, style: TextStyle(fontWeight: FontWeight.w200,color: Theme.of(context).textSelectionColor), textScaleFactor: 1,),)),
+        Expanded(child: Container(margin: EdgeInsets.only(top: 10) ,child: userProfileThumbnail(l.data['hostID'] , 'online'),)),
+      ],
+    ),
+  );
+}
+Widget lituationDateDocumentSnapshotWidget(BuildContext context , DocumentSnapshot l){
+  List months = ['Jan', 'Feb', 'Mar', 'Apr', 'May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  DateTime date = DateTime.fromMicrosecondsSinceEpoch(l.data()['date'].millisecondsSinceEpoch * 1000);
+  String month = months[date.month - 1];
+  String day = date.day.toString();
+  return Container(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(child: Text(day, style: TextStyle(fontWeight: FontWeight.w600,color: Theme.of(context).textSelectionColor), textScaleFactor: 1.6,)),
+        Container(child: Text(month, style: TextStyle(fontWeight: FontWeight.w200,color: Theme.of(context).textSelectionColor), textScaleFactor: 1,)),
+        Container(margin: EdgeInsets.only(top: 10),child: userProfileThumbnail(l.data()['hostID'] , 'online'),),
+      ],
+    ),
+  );
+}
+Widget lituationThumbnailWidget(AsyncSnapshot l){
+  return CachedNetworkImage(
+    imageUrl: l.data['thumbnail'][0].toString(),
+    imageBuilder: (context, imageProvider) => Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.rectangle,
+        image: DecorationImage(
+          image: imageProvider,
+          fit: BoxFit.cover,
+        ),
+      ),
+    ),
+    placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).buttonColor),),
+    errorWidget: (context, url, error) => nullLituationUrl(),
+  );
+}
+Widget lituationDetailCard(BuildContext ctx , String lID , String thumbnail , String title , String date , String entry){
   return Card(
     elevation: 3,
     child:  Stack(

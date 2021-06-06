@@ -52,7 +52,7 @@ class MapProvider {
             }
           }
           if(filter == BY_ADDRESS){
-            if(l.data()['address'].toString().toLowerCase().contains(query.toLowerCase()) && !resultIDs.contains(l.data()['eventID'])){
+            if(l.data()['location'].toString().toLowerCase().contains(query.toLowerCase()) && !resultIDs.contains(l.data()['eventID'])){
               lituationResults.add(l);
               resultIDs.add(l.data()['eventID']);
             }
@@ -69,7 +69,11 @@ class MapProvider {
     });
     return lituationResults;
   }
-  MapStream(){}
+  MapStream(){
 
+  }
+  getLituation(String id){
+    return db.getLituationByID(id);
+  }
 
 }

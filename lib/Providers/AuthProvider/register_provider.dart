@@ -23,8 +23,9 @@ class RegisterProvider{
       if(value.contains('ERROR')){
         return value;
       }
-      db.completeRegistration(u);
-      return value;
+      db.completeRegistration(u).then((value){
+        return value;
+      });
     }); //register user
     return u.userID;
   }

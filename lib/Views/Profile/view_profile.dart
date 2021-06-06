@@ -1,15 +1,8 @@
 
-import 'dart:io';
-import 'dart:math';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dialog_context/dialog_context.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:image_pickers/image_pickers.dart';
 import 'package:lit_beta/Extensions/common_functions.dart';
 import 'package:lit_beta/Extensions/common_widgets.dart';
 import 'package:lit_beta/Models/User.dart';
@@ -17,11 +10,8 @@ import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Providers/ProfileProvider/profile_provider.dart';
 import 'package:lit_beta/Providers/ProfileProvider/view_profile_provider.dart';
 import 'package:lit_beta/Strings/hint_texts.dart';
+import 'package:lit_beta/Strings/settings.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
-import 'package:path/path.dart' as Path;
-
-
-import 'package:lit_beta/Styles/theme_resolver.dart';
 
 class VisitProfilePage extends StatefulWidget {
   VisitProfilePage({Key key , this.visit}) : super(key: key);
@@ -79,7 +69,7 @@ class _VisitProfileState extends State<VisitProfilePage>{
                 appBar: topNav(backButton(), userThumbnailAppbar(profileUrl), [Container()], Theme.of(context).scaffoldBackgroundColor),
                 backgroundColor: Theme.of(context).backgroundColor,
                 body: SingleChildScrollView(
-                  padding: EdgeInsets.all(5),
+                  padding: EdgeInsets.all(0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -87,7 +77,7 @@ class _VisitProfileState extends State<VisitProfilePage>{
                       userThumbnail(profileUrl , username),
                       vibeAndChatRow(),
                       statsRow(getUserStats(clout)),
-                      //profileIndexedStackProvider(c, u)
+                      profileIndexedStackProvider(u)
                     ],
                   ),
                 ),
@@ -98,12 +88,218 @@ class _VisitProfileState extends State<VisitProfilePage>{
 
     );
   }
+  profileIndexedStackProvider( AsyncSnapshot u){
+    return Column(
+      children: [
+        indexedStackTabBar(),
+        indexedStack(u)
+      ],
+    );
+  }
 
+  Widget indexedStack(AsyncSnapshot u){
+    return IndexedStack(
+      index: _tabIdx,
+      children: [
+        userVibeTabWithPrivacy(u),
+        //userLituationTab(u , context),
+        //userActivityTab(context , u),
+
+        //aboutList(u),
+        //viewUserLituation(u , context),
+        //activityList(u)
+      ],
+    );
+  }
+  Widget userVibeTabWithPrivacy(AsyncSnapshot u){
+
+    return StreamBuilder(
+        stream: provider.userSettingsStream(),
+        builder: (context , settings){
+          if(!settings.hasData || settings.connectionState == ConnectionState.waiting){
+            return CircularProgressIndicator();
+          }
+          return userVibeTabProvider(u, settings.data['vibe_visibility'] , settings.data['location_visibility']);
+    },
+    );
+  }
+  Widget userVibeTabProvider(AsyncSnapshot u , String setting , String location_visibility){
+    Color  bg = Theme.of(context).scaffoldBackgroundColor;
+    Color btnC = Theme.of(context).primaryColor;
+    Color textCol = Theme.of(context).textSelectionColor;
+    String email = u.data['email'];
+    String username = u.data['username'].toString();
+    String gender = u.data["userVibe"]["gender"];
+    String birthday = u.data["userVibe"]["birthday"];
+    String prefs = u.data["userVibe"]["preference"];
+    String lituations = u.data["userVibe"]["lituationPrefs"];
+    String location = u.data["userLocation"];
+    switch(setting){
+      case PrivacySettings.PUBLIC:
+        return userVibeTab(u , location_visibility);
+      case PrivacySettings.HIDDEN:
+        return userVibeTabPrivate(1);
+      case PrivacySettings.PRIVATE:
+        return checkPrivacy(userVibeTab(u ,location_visibility), userVibeTabPrivate(1));
+      default:
+        return userVibeTabPrivate(0);
+    }
+  }
+  Widget userVibeTab(AsyncSnapshot u , String location_visibility){
+    Color  bg = Theme.of(context).scaffoldBackgroundColor;
+    Color btnC = Theme.of(context).primaryColor;
+    Color textCol = Theme.of(context).textSelectionColor;
+    String email = u.data['email'];
+    String username = u.data['username'].toString();
+    String gender = u.data["userVibe"]["gender"];
+    String birthday = u.data["userVibe"]["birthday"];
+    String prefs = u.data["userVibe"]["preference"];
+    String lituations = u.data["userVibe"]["lituationPrefs"];
+    String location = u.data["userLocation"];
+    return Column(
+      children: [
+        infoSectionHeader(info_about_hint + u.data['username'], Theme.of(context).textSelectionColor),
+        bioCard(bioLabelWidget(u.data['username'] , Container()), Text(u.data['userVibe']['bio'] , style: infoValue(Theme.of(context).textSelectionColor),), Theme.of(context).scaffoldBackgroundColor),
+        //infoCard(info_username_hint, username, Icons.title, bg , btnC , textCol),
+        //infoCard(info_gender_hint, gender, Icons.all_inclusive, bg , btnC , textCol),
+        //infoCard(info_birthday_hint, birthday, Icons.cake, bg , btnC , textCol),
+        infoSectionHeader(username + '\'s vibe', Theme.of(context).textSelectionColor),
+        infoCard(info_attendance_hint, prefs, Icons.email, bg , btnC , textCol),
+        infoCard(info_preference_hint, lituations==''?update_hint:lituations, Ionicons.ios_heart, bg , btnC , textCol),
+        userPrivateLocationTile(location_visibility, infoCard(info_location_hint, location==''?update_hint:location, Icons.my_location, bg , btnC , textCol),)
+      ],
+    );
+  }
+  Widget userPrivateLocationTile(String setting , Widget locationTile){
+    switch(setting){
+      case PrivacySettings.PUBLIC:
+        return locationTile;
+      case PrivacySettings.HIDDEN:
+        return Container();
+      case PrivacySettings.PRIVATE:
+          return checkPrivacy(locationTile , Container());
+      default:
+          return Container();
+    }
+  }
+  Widget checkPrivacy(Widget w , Widget privateWidget){
+    return StreamBuilder(
+      stream: provider.vibingStream(),
+      builder: (context , v){
+        if(!v.hasData || v.connectionState == ConnectionState.waiting){
+          return CircularProgressIndicator();
+        }
+        if(List.from(v.data['vibing']).contains(widget.visit.visitorID)){
+         return w;
+        }
+        return privateWidget;
+      },
+    );
+  }
+  Widget userVibeTabPrivate(int hidden){
+    if(hidden == 1){
+        return Container(
+        height: 500,
+        width: 500,
+        color: Colors.blue,
+      );
+    }
+    return Container(
+      height: 500,
+      width: 500,
+      color: Colors.red,
+    );
+  }
+  List<Widget> bioLabelWidget(String username , Widget button){
+    List<Widget> w = [];
+    w.add(Text(username +'\'s bio' ,style: infoLabel(Theme.of(context).primaryColor),));
+    w.add(button);
+    return w;
+  }
+  Widget indexedStackTabBar(){
+    return Container(
+      height: 75,
+      margin: EdgeInsets.only(top: 25 , left: 50 , right: 50),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+              child: GestureDetector(
+                onTap:(){
+                  if(_tabIdx != 0) {
+                    setState(() {
+                      _tabIdx = 0;
+                    });
+                  }
+                },
+                //TODO Replace with vibe icon
+                child: indexedStackTab(vibe_label, Icons.person , 0),
+              )
+          ),
+          Expanded(
+              child: GestureDetector(
+                onTap:(){
+                  if(_tabIdx != 1) {
+                    setState(() {
+                      _tabIdx = 1;
+                    });
+                  }
+                },
+                //TODO Replace with lituation icon
+                child: indexedStackTab(lituation_label, Icons.location_on_rounded , 1),
+              )
+          )
+          ,
+          Expanded(
+              child: GestureDetector(
+                onTap:(){
+                  if(_tabIdx != 2) {
+                    setState(() {
+                      _tabIdx = 2;
+                    });
+                  }
+                },
+                //TODO Replace with activity icon
+                child: indexedStackTab(activity_label, Ionicons.ios_notifications , 2),
+              )
+          ),
+        ],
+      ),
+    );
+  }
+  Widget indexedStackTab(String title ,IconData icon , int idx){
+    Color c = Theme.of(context).textSelectionColor;
+    Color tc = Theme.of(context).buttonColor;
+    Widget indicator = Container();
+    if(idx == _tabIdx){
+      c = Theme.of(context).primaryColor;
+      tc = Theme.of(context).textSelectionColor;
+      indicator = selectedIndicator(tc);
+    }
+    return Container(
+      height: 75,
+      child: Column(
+        children: [
+          Expanded(child: Icon(icon , color: c, size: 35,),),
+          Expanded(
+              child: Container(
+                margin: EdgeInsets.only(top: 10),
+                child: Text(
+                    title ,
+                    style: TextStyle(color: tc),
+                    textAlign: TextAlign.center),)
+          ),
+          indicator
+        ],
+      ),
+    );
+  }
   Widget vibeAndChatRow(){
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        vibeButton(),
+         vibeButton(),
         chatButton(),
       ],
     );
@@ -150,15 +346,15 @@ class _VisitProfileState extends State<VisitProfilePage>{
 
   Widget chatButton(){
     return StreamBuilder(
-      stream: provider.getVisitorVibingStream(widget.visit.visitorID),
-      builder: (context , vibing){
-        if(!vibing.hasData){
+      stream: provider.getVisitorVibedStream(widget.visit.visitorID),
+      builder: (context , vibed){
+        if(!vibed.hasData){
           return Container();
         }
         String val = 'chat';
         Color btnColor = Theme.of(context).primaryColor;
         int status = 0; //0 vibe , 1 vibed , 2 pending
-        if(List.from(vibing.data['vibing']).contains(widget.visit.visitedID)){
+        if(List.from(vibed.data['vibed']).contains(widget.visit.visitedID)){
           return Container( //lo
               height: 35,// in button
               margin: EdgeInsets.fromLTRB(15, 25, 0, 0),

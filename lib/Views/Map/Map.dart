@@ -1,6 +1,7 @@
 
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -172,28 +173,36 @@ Widget resultsWidget(){
             )
         ),
         suggestionsCallback: (pattern) async {
+          lituationResults.clear();
           var locationIcon = await getBytesFromAssetFile('assets/images/litlocationicon.png' ,225);
-          List<Marker> resultMarkers = [];
-          List<PlacesSearchResult> res = [];
-          return mp.searchLituation(pattern, BY_ADDRESS).then((results){
-            if(results.length > 0) {
-              moveCamera(
-                  CameraPosition(
-                bearing: 0,
-                zoom: 10,
-                target: latLngFromGeoPoint(results[0].data()['locationLatLng']),
-              )
-              );
-              for(var l in results){
-                resultMarkers.add(googleMapMarker(l.data()['title'], BitmapDescriptor.fromBytes(locationIcon), latLngFromGeoPoint(l.data()['locationLatLng'])));
-                lituationResults.add(lituationResultCard(context, l.data()['eventID'], l.data()['thumbnail'], l.data()['title'], l.data()['date'], l.data()['entry']));
-              }
+          return searchAddress(pattern).then((value) async {
+            List<Marker> resultMarkers = [];
+            List<String> ids = [];
+            if(value.length > 0) {
+              await mp.searchLituation(pattern, BY_ADDRESS).then((lituations){
+                moveCamera(CameraPosition(
+                  bearing: 0,
+                  zoom: 11,
+                  target:latLngFromGeoPoint(lituations[0].data()['locationLatLng']),
+                ));
+                for(var event in lituations){
+                    setState(() {
+                      if(!ids.contains(event.id)) {
+                        ids.add(event.id);
+                        lituationResults.add(
+                            lituationResult(event.id));
+                        resultMarkers.add(googleMapMarker(
+                            event.data()['location'],
+                            BitmapDescriptor.fromBytes(locationIcon),
+                            latLngFromGeoPoint(
+                                event.data()['locationLatLng'])));
+                      }
+                      });
+                }
+              });
               drawMarkers(resultMarkers);
-              _places.searchByText(pattern).then((value){
-               res =  value.results;
-             });
             }
-            return res;
+            return value;
           });
         }
         ,
@@ -201,7 +210,7 @@ Widget resultsWidget(){
           return placeResultTile(context , suggestion);
         },
         onSuggestionSelected: (PlacesSearchResult suggestion) {
-          mapSearchController.text = suggestion.name;
+          mapSearchController.text = suggestion.formattedAddress;
           drawMarker(googleMapMarker(suggestion.name, BitmapDescriptor.defaultMarkerWithHue(50), LatLng(suggestion.geometry.location.lat , suggestion.geometry.location.lng)));
           moveCamera(CameraPosition(
             bearing: 0,
@@ -209,6 +218,25 @@ Widget resultsWidget(){
             target: LatLng(suggestion.geometry.location.lat , suggestion.geometry.location.lng),
           ));
         },
+      ),
+    );
+  }
+
+  Widget lituationResultCard2(DocumentSnapshot l){
+    return Card(
+      color: Colors.blue,
+      elevation: 3,
+      child: Container(
+        height: 250,
+        width: 175,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(child: Text(l.data()['title'])),
+            Expanded(child: Text(l.data()['entry'])),
+            Expanded(child: Text(l.data()['location'])),
+          ],
+        ),
       ),
     );
   }
@@ -257,5 +285,72 @@ Widget resultsWidget(){
       _mapMarkers.addAll(newMarkers);
     });
     return;
+  }
+  Widget lituationResult(String lID){
+    String url;
+    return StreamBuilder(
+        stream: mp.getLituation(lID),
+        builder: (ctx , l){
+          if(!l.hasData || l.connectionState == ConnectionState.waiting){
+            return Container();
+          }
+
+          return GestureDetector(
+                onTap: (){
+                  //_viewLituation(lID , l.data['title']);
+                },
+                child: Card(
+                  color: Theme.of(context).backgroundColor,
+                  elevation: 5,
+                  child: Container(
+                    padding: EdgeInsets.only(bottom: 10),
+                    height: 250,
+                    width: 275,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 5,child: lituationThumbnailWidget(l),),
+                        Expanded(flex: 3,child: lituationInfoRow(l),)
+                      ],
+                    ),
+                  ),
+                ),
+              );
+        }
+    );
+  }
+  Widget lituationInfoRow(AsyncSnapshot l){
+    return Container(
+      margin: EdgeInsets.only(top: 10),
+      child: Row(
+        children: [
+          Expanded(flex: 2,child: lituationDateWidget(context , l),),
+          Expanded(flex: 6,child: lituationInfoCardWidget(l),),
+        ],
+      ),
+    );
+  }
+  Widget lituationInfoCardWidget(AsyncSnapshot l){
+    return Container(
+      margin: EdgeInsets.only(top: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: Text(l.data['title'] , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 1.2,),),
+          //Expanded(child: Text(parseThemes(l) , textScaleFactor: 0.7 , style: TextStyle(color: Colors.blueAccent),),),
+          //Expanded(child: lituationTimeWidget(l),),
+          Expanded(child: Text(l.data['location'] , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 0.7,),),
+        ],
+      ),
+    );
+  }
+  Widget lituationTimeWidget(AsyncSnapshot l){
+    String st = parseTime(l.data['date']);
+    String et = parseTime(l.data['end_date']);
+    String day = parseDay(true, l.data['date']);
+    return Text(
+      '$day,$st - $et' , style: infoValue(Theme.of(context).textSelectionColor),
+    );
   }
 }
