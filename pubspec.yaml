@@ -61,6 +61,7 @@ dependencies:
   intl: ^0.16.1
   shared_preferences: ^0.5.12+4
   dash_chat: ^1.1.15
+  carousel_pro: ^1.0.0
 
 dev_dependencies:
   flutter_test:

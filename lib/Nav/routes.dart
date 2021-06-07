@@ -9,3 +9,6 @@ const String LituationPageRoute = '/lituation';
 const String SettingsPageRoute = '/settings';
 const String CreateLituationPageRoute = '/create';
 const String ChatRoomPageRoute = '/chat';
+const String  ViewLituationRoute = '/viewLituation';
+const String  PreviewLituationPageRoute = '/previewLituation';
+const String  GuestListPageRoute = '/showGuestList';
