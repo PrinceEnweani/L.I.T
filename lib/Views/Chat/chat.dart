@@ -10,8 +10,8 @@ import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Styles/theme_resolver.dart';
 
 class ChatPage extends StatefulWidget{
-  final String userId;
-  ChatPage({Key key , this.userId}) : super(key: key);
+  final String userID;
+  ChatPage({Key key , this.userID}) : super(key: key);
   @override
   _ChatState createState() => new _ChatState();
 
@@ -40,7 +40,7 @@ class _ChatState extends State<ChatPage>{
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: db.getUser(widget.userId),
+      stream: db.getUser(widget.userID),
       builder: (ctx , user){
         if(!user.hasData){
           return CircularProgressIndicator();
@@ -86,7 +86,7 @@ class _ChatState extends State<ChatPage>{
   }
 String parseRoomIDToUser(String roomID){
     var ids = roomID.split('_');
-    if(ids[0] == widget.userId){
+    if(ids[0] == widget.userID){
       return ids[1];
     }
     return ids[0];
@@ -116,7 +116,7 @@ String parseRoomIDToUser(String roomID){
               onTap: (){
                 UserVisit v = UserVisit();
                 v.visitedID = parseRoomIDToUser(roomID);
-                v.visitorID = widget.userId;
+                v.visitorID = widget.userID;
                 chat(username, v, roomID);
               },
               child:  Card(elevation: 5,
@@ -239,7 +239,7 @@ String parseRoomIDToUser(String roomID){
     );
   }
   void getRooms() async {
-     db.getUserChatRooms(widget.userId).then((value){
+     db.getUserChatRooms(widget.userID).then((value){
         for(DocumentSnapshot r in List.from(value.docs)) {
             if (!rooms.contains(r)) {
               setState(() {
@@ -252,7 +252,7 @@ String parseRoomIDToUser(String roomID){
   }
   void queryChat(String query) async {
     rooms.clear();
-    db.getUserChatRooms(widget.userId).then((value){
+    db.getUserChatRooms(widget.userID).then((value){
       List<DocumentSnapshot> rL = List.from(value.docs);
       if(query == ''){
         for(DocumentSnapshot r in rL){
@@ -266,7 +266,7 @@ String parseRoomIDToUser(String roomID){
       }else{
           rooms.clear();
         for(DocumentSnapshot r in rL) {
-          if (r.data()['room_name'].toString().toLowerCase().contains(query.toLowerCase()) && List.from(r.data()['party']).contains(widget.userId)){
+          if (r.data()['room_name'].toString().toLowerCase().contains(query.toLowerCase()) && List.from(r.data()['party']).contains(widget.userID)){
             if (!rooms.contains(r)) {
               setState(() {
                 rooms.add(r);

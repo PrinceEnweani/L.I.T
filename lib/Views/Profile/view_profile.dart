@@ -335,8 +335,8 @@ class _VisitProfileState extends State<VisitProfilePage>{
             child: RaisedButton(
                 color: btnColor,
                 textColor: Theme.of(context).textSelectionColor,
-                child: Text(val , style: infoValue(Theme.of(context).textSelectionColor),),
-                onPressed: (){
+                child: Text(val , style: infoValue(Theme.of(context).textSelectionColor),),                
+                onPressed: val == 'vibed' ? null : (){
                  setState(() {
                    provider.sendVibeRequest(widget.visit.visitorID);
                  });
@@ -411,7 +411,8 @@ class _VisitProfileState extends State<VisitProfilePage>{
         Navigator.pushNamed(context, ChatRoomPageRoute , arguments: args);
 
       }else{
-        chat(username, v.visitorID,v.visitorID + '_' + v.visitedID);
+        String roomID = roomIDs.contains(chkX) ? chkX : chkY;
+        chat(username, v.visitorID, roomID);
       }
     });
 

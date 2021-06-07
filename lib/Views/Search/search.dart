@@ -214,24 +214,24 @@ class _SearchState extends State<SearchPage> {
                 borderSide: BorderSide(color: Theme.of(context).buttonColor , width: 1))
         ),
         onChanged: (value) async {
-          vibeResults.clear();
           var res = [];
           await sp.searchUser(vibesSearchController.text).then((users) async {
-         setState(() {
-           for(var u in users){
-             if(u.data()['username'].toString().toLowerCase().contains(value.toLowerCase())){
-               if(!res.contains(u.data()['userID'])){
-                 //String status = await sp.getVibingStatus(u.data()['userID']);
-                 res.add(u.data()['userID']);
-                 vibeResults.add(
-                     userResultCard(userResultTile(u.data()['username'],u.data()['profileURL'], context), u.data()['userID'],u.data()['username'])
-                 );
-               }
-             }else{
-               vibeResults.clear();
-             }
-           }
-         });
+          setState(() {
+            vibeResults.clear();
+            for(var u in users){
+              if(u.data()['username'].toString().toLowerCase().contains(value.toLowerCase())){
+                if(!res.contains(u.data()['userID']) && u.data()['userID'] != widget.userID){
+                  //String status = await sp.getVibingStatus(u.data()['userID']);
+                  res.add(u.data()['userID']);
+                  vibeResults.add(
+                      userResultCard(userResultTile(u.data()['username'],u.data()['profileURL'], context), u.data()['userID'],u.data()['username'])
+                  );
+                }
+              }else{
+                vibeResults.clear();
+              }
+            }
+          });
           });
         },
       ),
