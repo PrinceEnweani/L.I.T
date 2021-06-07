@@ -2,10 +2,12 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dash_chat/dash_chat.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:lit_beta/Models/Chat.dart';
 import 'package:lit_beta/Models/Vibes.dart';
 import 'package:lit_beta/Strings/constants.dart';
 import 'package:lit_beta/Models/User.dart' as UserModel;
@@ -527,6 +529,26 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     s.adult_lituations = false;
     s.theme = "auto";
     return s;
+  }
+
+  createChatRoom(ChatRoomModel chatroom) async {
+    await dbRef.collection('chat').doc(chatroom.room_id).set(chatroom.toJson());
+  }
+
+  sendMessageToRoom(String roomID , ChatMessage m) async {
+    return await dbRef.collection('chat').doc(roomID).collection('messages').add(m.toJson());
+  }
+
+  getUserChatRooms(String userID) async {
+    return await dbRef.collection('chat').where("party", arrayContains: userID).get();
+  }
+
+  Stream<DocumentSnapshot> getChatRoomParty(String roomID){
+    return dbRef.collection('chat').doc(roomID).snapshots().where((event) => event.data().containsKey('party'));
+  }
+
+  Stream<QuerySnapshot> getMessages(String roomID){
+    return dbRef.collection('chat').doc(roomID).collection('messages').orderBy('createdAt' , descending: false).snapshots();
   }
   }
 

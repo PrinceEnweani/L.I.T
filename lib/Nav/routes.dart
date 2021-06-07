@@ -8,3 +8,4 @@ const String VisitProfilePageRoute = '/view_profile';
 const String LituationPageRoute = '/lituation';
 const String SettingsPageRoute = '/settings';
 const String CreateLituationPageRoute = '/create';
+const String ChatRoomPageRoute = '/chat';
