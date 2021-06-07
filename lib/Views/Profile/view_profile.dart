@@ -424,6 +424,7 @@ class _VisitProfileState extends State<VisitProfilePage>{
     args.username = username;
     args.roomID = roomID;
     args.visitedID = widget.visit.visitedID;
+    args.userID = userID;
     Navigator.pushNamed(context, ChatRoomPageRoute , arguments: args);
   }
 

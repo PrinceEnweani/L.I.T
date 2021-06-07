@@ -305,7 +305,8 @@ String parseRoomIDToUser(String roomID){
         Navigator.pushNamed(context, ChatRoomPageRoute , arguments: args);
 
       }else{
-        chat(username, v,v.visitorID + '_' + v.visitedID);
+        String roomID = roomIDs.contains(chkX) ? chkX : chkY;
+        chat(username, v, roomID);
       }
     });
 
