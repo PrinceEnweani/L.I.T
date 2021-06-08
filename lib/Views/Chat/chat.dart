@@ -100,7 +100,7 @@ String parseRoomIDToUser(String roomID){
         }
         return Text(user.data['username'], style: TextStyle(color: Theme
             .of(context)
-            .buttonColor),);
+            .textSelectionColor),);
       },
     );
   }
@@ -121,7 +121,7 @@ String parseRoomIDToUser(String roomID){
               },
               child:  Card(elevation: 5,
               child: Container(
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   padding: EdgeInsets.only(top:5.0 , left: 15 , right:0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -154,7 +154,7 @@ String parseRoomIDToUser(String roomID){
                         children: [
                           Container(
                               margin: EdgeInsets.fromLTRB(0, 0, 50, 0),
-                              child: new Icon(Icons.chat_bubble_outline , color: Theme.of(context).buttonColor, size: 25,)
+                              child: new Icon(Icons.chat_bubble_outline , color: Theme.of(context).primaryColor, size: 25,)
                           ),],
                       ),
                     ],
@@ -202,7 +202,7 @@ String parseRoomIDToUser(String roomID){
             topRight: Radius.circular(15),
             bottomRight: Radius.circular(15),
             bottomLeft: Radius.circular(15)),
-        color: Theme.of(context).primaryColor,
+        color: Theme.of(context).secondaryHeaderColor,
       ),
       margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
       child: TextField(
@@ -213,14 +213,14 @@ String parseRoomIDToUser(String roomID){
             labelText: searchUsersHint,
             prefixIcon: searchController.text!=''?GestureDetector(
               child: new Icon(Icons.clear ,
-                color: Theme.of(context).buttonColor,
+                color: Theme.of(context).textSelectionColor,
               ),
               onTap: (){searchController.clear();},
             ):Container(width: 10),
             suffixIcon: new Icon(Icons.search ,
-              color: Theme.of(context).buttonColor,
+              color: Theme.of(context).textSelectionColor,
             ),
-            labelStyle: TextStyle(color: Theme.of(context).buttonColor),
+            labelStyle: TextStyle(color: Theme.of(context).textSelectionColor),
             enabledBorder: UnderlineInputBorder(
               borderRadius: BorderRadius.only(
                   bottomRight: Radius.circular(10),
@@ -251,32 +251,28 @@ String parseRoomIDToUser(String roomID){
     });
   }
   void queryChat(String query) async {
-    rooms.clear();
+    List<DocumentSnapshot> newRooms = List();
     db.getUserChatRooms(widget.userID).then((value){
       List<DocumentSnapshot> rL = List.from(value.docs);
       if(query == ''){
         for(DocumentSnapshot r in rL){
-          if(!rooms.contains(r) && r != null){
-            setState(() {
-              rooms.add(r);
-            });
+          if(!newRooms.contains(r) && r != null){
+            newRooms.add(r);
           }
         }
-        return;
       }else{
-          rooms.clear();
         for(DocumentSnapshot r in rL) {
           if (r.data()['room_name'].toString().toLowerCase().contains(query.toLowerCase()) && List.from(r.data()['party']).contains(widget.userID)){
-            if (!rooms.contains(r)) {
-              setState(() {
-                rooms.add(r);
-              });
+            if (!newRooms.contains(r)) {
+              newRooms.add(r);
             }
           }
         }
       }
-    });
-
+      setState((){
+        rooms = newRooms;
+      });
+    });    
   }
 
   void createChatRoom(UserVisit v, String username) async {

@@ -63,6 +63,11 @@ dependencies:
   shared_preferences: ^0.5.12+4
   dash_chat: ^1.1.15
   carousel_pro: ^1.0.0
+  rflutter_alert: ^2.0.2
+  video_thumbnail: ^0.3.3
+  loading_overlay: ^0.3.0
+  modal_bottom_sheet: ^2.0.0
+  better_player: ^0.0.28
 
 dev_dependencies:
   flutter_test:
