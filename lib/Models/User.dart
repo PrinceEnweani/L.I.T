@@ -65,11 +65,11 @@ class User {
   User.fromJson(Map<String, dynamic> json) {
     _email = json['email'];
     _profileURL = json['profileURL'];
-    _userImagesUrls = json['userImagesUrls'];
+    _userImagesUrls = List<String>.from(json['userImagesUrls']);
     _userID = json['userID'];
     _deviceToken = json['deviceToken'];
     _userLocation = json['userLocation'];
-    _userLocLatLng = json['userLocLatLng'];
+    _userLocLatLng = LatLng(json['userLocLatLng'].latitude, json['userLocLatLng'].longitude);
     _userVibe = json['userVibe'] != null
         ? new UserVibe.fromJson(json['userVibe'])
         : null;

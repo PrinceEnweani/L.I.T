@@ -180,6 +180,8 @@ Widget resultsWidget(){
             List<String> ids = [];
             if(value.length > 0) {
               await mp.searchLituation(pattern, BY_ADDRESS).then((lituations){
+                if (lituations.length <= 0)
+                  return;
                 moveCamera(CameraPosition(
                   bearing: 0,
                   zoom: 11,

@@ -486,7 +486,8 @@ class _ViewLituationState extends State<ViewLituation>{
         textColor: Theme.of(context).primaryColor,
         child: Text('close' , style: Theme.of(context).textTheme.button,),
         onPressed: (){
-          print('aye');
+          print('aye');          
+          Navigator.pushReplacementNamed(context, HomePageRoute);
         }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
     );
   }

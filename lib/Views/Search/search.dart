@@ -218,13 +218,13 @@ class _SearchState extends State<SearchPage> {
           await sp.searchUser(vibesSearchController.text).then((users) async {
           setState(() {
             vibeResults.clear();
-            for(var u in users){
-              if(u.data()['username'].toString().toLowerCase().contains(value.toLowerCase())){
-                if(!res.contains(u.data()['userID']) && u.data()['userID'] != widget.userID){
+            for(User u in users){
+              if(u.username.toLowerCase().contains(value.toLowerCase())){
+                if(!res.contains(u.userID) && u.userID != widget.userID){
                   //String status = await sp.getVibingStatus(u.data()['userID']);
-                  res.add(u.data()['userID']);
+                  res.add(u.userID);
                   vibeResults.add(
-                      userResultCard(userResultTile(u.data()['username'],u.data()['profileURL'], context), u.data()['userID'],u.data()['username'])
+                      userResultCard(userResultTile(u.username, u.profileURL, context), u.userID, u.username)
                   );
                 }
               }else{

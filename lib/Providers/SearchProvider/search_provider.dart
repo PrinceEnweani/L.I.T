@@ -3,6 +3,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lit_beta/DBC/Auth.dart';
 import 'package:lit_beta/Extensions/search_filters.dart';
 import 'package:lit_beta/Models/Lituation.dart';
+import 'package:lit_beta/Models/User.dart';
+import 'package:lit_beta/Utils/Common.dart';
 
 class SearchProvider {
   Auth db = Auth();
@@ -20,16 +22,26 @@ class SearchProvider {
   }
   Future<dynamic> searchUser(String username) async {
     List<String> results = [];
-   var users = [];
+    var users = [];
+    DocumentSnapshot meSnap = await db.getUserSnapShot(userID);
+    User me = User.fromJson(meSnap.data());
     await db.getUsers().then((value){
       for(var d in value.docs){
-        if(d.data()['username'].toString().toLowerCase().contains(username.toLowerCase())){
-          if(!results.contains(d.data()[userID])){
-            results.add(d.data()['userID']);
-            users.add(d);
+        User u = User.fromJson(d.data());
+        if(u.username.toLowerCase().contains(username.toLowerCase())){
+          if(!results.contains(u.userID)){
+            results.add(u.userID);
+            users.add(u);
           }
         }
       }
+    });
+    users.sort((a, b) {
+      double d1 = distance(a.userLocLatLng.latitude, a.userLocLatLng.longitude, me.userLocLatLng.latitude, me.userLocLatLng.longitude);
+      double d2 = distance(b.userLocLatLng.latitude, b.userLocLatLng.longitude, me.userLocLatLng.latitude, me.userLocLatLng.longitude);
+      if (d1 > d2)
+        return 1;
+      return -1;
     });
     return users;
   }
