@@ -38,7 +38,7 @@ class _BottomNavigationControllerState extends State<BottomNavigationController>
       FeedPage(key: PageStorageKey('home'), userID: widget.userID),
       SearchPage(key: PageStorageKey('search'),userID: widget.userID,),
       MapPage(key: PageStorageKey('map'),),
-      ChatPage(key: PageStorageKey('chat'),),
+      ChatPage(key: PageStorageKey('chat'), userID: widget.userID,),
       ProfilePage(key: PageStorageKey('profile'), userID: widget.userID)
     ];
     return tabs[idx];

@@ -4,8 +4,11 @@ import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Views/Auth/login.dart';
 import 'package:lit_beta/Views/Auth/register.dart';
 import 'package:lit_beta/Views/Auth/survey.dart';
+import 'package:lit_beta/Views/Chat/chatV2.dart';
 import 'package:lit_beta/Views/Home/home.dart';
 import 'package:lit_beta/Views/Lituations/create_lituation.dart';
+import 'package:lit_beta/Views/Lituations/preview_lituation.dart';
+import 'package:lit_beta/Views/Lituations/viewlituation.dart';
 import 'package:lit_beta/Views/Nav/bottom_navigator.dart';
 import 'package:lit_beta/Views/Profile/settings.dart';
 import 'package:lit_beta/Views/Profile/vibes.dart';
@@ -40,5 +43,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case CreateLituationPageRoute:
       var lituationVisit = settings.arguments;
       return PageTransition(child: CreateLituationPage(lv: lituationVisit,) , type: PageTransitionType.fade);
+    case ChatRoomPageRoute:
+      var chatRoomArg = settings.arguments;
+      return PageTransition(child: ChatPageV2(args: chatRoomArg), type: PageTransitionType.fade);
+    case  PreviewLituationPageRoute:
+      var lituation = settings.arguments;
+      return PageTransition(child:  PreviewLituationPage(newLituation: lituation), type: PageTransitionType.fade);    
+    case ViewLituationRoute:
+      var lv = settings.arguments;
+      return PageTransition(child:  ViewLituation(lituationVisit: lv), type: PageTransitionType.fade);
   }
 }

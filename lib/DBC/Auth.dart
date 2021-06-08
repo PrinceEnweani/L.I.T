@@ -1,11 +1,13 @@
-
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dash_chat/dash_chat.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:lit_beta/Models/Chat.dart';
+import 'package:lit_beta/Models/Lituation.dart';
 import 'package:lit_beta/Models/Vibes.dart';
 import 'package:lit_beta/Strings/constants.dart';
 import 'package:lit_beta/Models/User.dart' as UserModel;
@@ -124,6 +126,9 @@ class Auth implements DBA {
     }
   }
 
+  Stream<QuerySnapshot> getAllUsers() {
+    return dbRef.collection('users').snapshots();
+  }
   Stream<DocumentSnapshot> getUser(String userID) {
     return dbRef.collection('users').doc(userID).snapshots();
   }
@@ -300,7 +305,115 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     return dbRef.collection('lituations').doc(lituationID).snapshots();
   }
 
+  //TODO add tumbnail update function
+  Future<void> updateLituationTitle(String lID, String newTitle) async{
+    dbRef.collection("lituations").doc(lID).update({'title' : newTitle});
+  }
+  Future<void> updateLituationDescription(String lID, String newDesc) async{
+    dbRef.collection("lituations").doc(lID).update({'description' : newDesc});
+  }
+  Future<void> updateLituationDate(String lID, DateTime newDate) async{
+    dbRef.collection("lituations").doc(lID).update({'date' :  Timestamp.fromDate(newDate)});
+  }
+  Future<void> updateLituationEndDate(String lID, DateTime newEndDate) async{
+    dbRef.collection("lituations").doc(lID).update({'end_date' :  Timestamp.fromDate(newEndDate)});
+  }
+  Future<void> updateLituationCapacity(String lID, String newCapacity) async{
+    dbRef.collection("lituations").doc(lID).update({'capacity' : newCapacity});
+  }
+  Future<void> updateLituationLocation(String lID, String newLocation) async{
+    dbRef.collection("lituations").doc(lID).update({'location' : newLocation});
+  }
+  Future<void> updateLituationLocationLatLng(String lID, LatLng newLocationLatLng) async{
+    dbRef.collection("lituations").doc(lID).update({'locationLatLng' : GeoPoint(newLocationLatLng.latitude , newLocationLatLng.longitude)});
+  }
 
+   Future<void> watchLituation(String userID , String lID){
+    var u = [userID];
+    var l = [lID];
+    //we add them to the list of pending vibes
+    dbRef.collection('lituations').doc(lID).get().then((value){
+      if(!List.from(value.data()['observers']).contains(userID)){
+        dbRef.collection('lituations').doc(lID).update({'observers': FieldValue.arrayUnion(u)}).then((value){
+          dbRef.collection('users_lituations').doc(userID).update({"observedLituations": FieldValue.arrayUnion(l)});
+        });
+      }else{
+        dbRef.collection('lituations').doc(lID).update({'observers': FieldValue.arrayRemove(u)}).then((value){
+          dbRef.collection('users_lituations').doc(userID).update({"observedLituations": FieldValue.arrayRemove(l)});
+        });
+      }
+    });
+  }
+
+  //adds user to lituation
+  Future<void> approveUser(String userID , String lID){
+    var u = [userID];
+    var l = [lID];
+    dbRef.collection('lituations').doc(lID).get().then((value){
+      if(List.from(value.data()['pending']).contains(userID)){
+        dbRef.collection('lituations').doc(lID).update({'pending': FieldValue.arrayRemove(u)}).then((value){
+        dbRef.collection('lituations').doc(lID).update({'vibes': FieldValue.arrayUnion(u)}).then((value) {
+          dbRef.collection('users_lituations').doc(userID).update({'pendingLituations': FieldValue.arrayRemove(l)}).then((value){
+            dbRef.collection('users_lituations').doc(userID).update({'upcomingLituations': FieldValue.arrayUnion(l)}).then((value){
+              //TODO send approval message
+            });
+          });
+        });
+        });
+      }
+    });
+  }
+
+  //Removes a user from a Lituation (view usages in : viewLituation.dart)
+  Future<void> removeUserFromLituation(String userID , String lID){
+    var u = [userID];
+    var l = [lID];
+    dbRef.collection('lituations').doc(lID).get().then((value){
+      if(List.from(value.data()['vibes']).contains(userID)){
+        dbRef.collection('lituations').doc(lID).update({'vibes': FieldValue.arrayRemove(u)}).then((value){
+            dbRef.collection('users_lituations').doc(userID).update({'pendingLituations': FieldValue.arrayRemove(l)}).then((value){
+              dbRef.collection('users_lituations').doc(userID).update({'upcomingLituations': FieldValue.arrayRemove(l)}).then((value){
+                //TODO send approval message
+              });
+            });
+        });
+      }
+    });
+  }
+
+  //RSVP's user to a Lituation (view usages in : viewLituation.dart)
+  Future<void> rsvpToLituation(String userID , String lID){
+    var u = [userID];
+    var l = [lID];
+    //we add them to the list of pending vibes
+  dbRef.collection('lituations').doc(lID).get().then((value){
+    if(!List.from(value.data()['pending']).contains(userID)){
+      dbRef.collection('lituations').doc(lID).update({'pending': FieldValue.arrayUnion(u)}).then((value){
+        dbRef.collection('users_lituations').doc(userID).update({"pendingLituations": FieldValue.arrayUnion(l)});
+      });
+    }else{
+      dbRef.collection('lituations').doc(lID).update({'pending': FieldValue.arrayRemove(u)}).then((value){
+        dbRef.collection('users_lituations').doc(userID).update({"pendingLituations": FieldValue.arrayRemove(l)});
+      });
+    }
+  });
+  }
+
+  Future<void> attendLituation(String userID , String lID) async{
+    var n = [userID];
+    var l = [lID];
+    dbRef.collection('lituations').doc(lID).get().then((value){
+      if(!List.from(value.data()['vibes']).contains(userID)){
+        dbRef.collection('lituations').doc(lID).update({"vibes": FieldValue.arrayUnion(n)}).then((value){
+          dbRef.collection('users_lituations').doc(userID).update({"upcomingLituations": FieldValue.arrayUnion(l)});
+        });
+      }else{
+        dbRef.collection('lituations').doc(lID).update({"vibes": FieldValue.arrayRemove(n)}).then((value){
+          dbRef.collection('users_lituations').doc(userID).update({"upcomingLituations": FieldValue.arrayRemove(l)});
+        });
+      }
+    });
+  }
 
   //USER LITUATIONS FUNCTIONS
   Future<void> removeDraft(String userId , String lID) async {
@@ -327,6 +440,78 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
   Future<void> removePendingLituation(String userId , String lID) async {
     var data = [lID];
     dbRef.collection('users_lituations').doc(userId).update({"pendingLituations": FieldValue.arrayRemove((data))});
+  }
+
+  //DB lITUATION FUNCTIONS ----------------------------------------------
+  //TODO move to Preview lituation
+  Future<String> createLituation(Lituation l) async {
+    List imgs = [];
+    for(String path in l.thumbnailURLs){
+     imgs.add(File(path));
+    }
+    l.thumbnailURLs.clear();
+    String eventID = await postLituation(l);
+    await uploadLituationMedia(l, imgs);
+    await addToUserLituations(l.hostID, l.eventID);
+    await addToUpcomingLituations(l.hostID, l.eventID);
+    return eventID;
+  }
+  Future <String> addToDrafts(Lituation l) async {
+    List imgs = [];
+    for(String path in l.thumbnailURLs){
+      imgs.add(File(path));
+    }
+    l.thumbnailURLs.clear();
+    String eventID = await postLituation(l);
+    await uploadLituationMedia(l, imgs);
+    await addToUserDrafts(l.hostID, l.eventID);
+    return eventID;
+  } 
+
+  Future<String> postLituation(Lituation l) async {
+    //dbRef.collection('lituations').doc().set(l.toJson());
+    DocumentReference lRef = dbRef.collection("lituations").doc();
+    l.eventID = lRef.id;
+    await lRef.set(l.toJson());
+    return l.eventID;
+  }
+
+  Future<List> uploadLituationMedia(Lituation l , List imgs) async{
+    List urls = [];
+    for(var img in imgs){
+      await upload(img, l).then((url){
+       urls.add(url.ref.getDownloadURL().toString());
+      }).catchError((err){
+        return err;
+      });
+    }
+    return urls;
+  }
+  Future<TaskSnapshot>  upload(File imageFile , Lituation l) async {
+    String filename = DateTime.now().millisecondsSinceEpoch.toString();
+    var imageData = await imageFile.readAsBytes();
+    TaskSnapshot uploadTask = await dbMediaRef.ref().child('lituationThumbnails').child(l.hostID).child('lituations').child(l.eventID).child(filename).putData(imageData).then((value) async{
+      await value.ref.getDownloadURL().then((url){
+        dbRef.collection('lituations').doc(l.eventID).update({"thumbnail": FieldValue.arrayUnion([url.toString()])});
+      });
+      return value;
+    });
+    return uploadTask;
+  }
+  Future<void> createUserLituations(UserModel.UserLituations ul) async {
+    dbRef.collection('users_lituations').doc(ul.userID).set(ul.toJson());
+  }
+  Future<void> addToUserDrafts(String userId , String lID) async {
+    var data = [lID];
+    dbRef.collection('users_lituations').doc(userId).update({"drafts": FieldValue.arrayUnion(data)});
+  }
+  Future<void> addToUserLituations(String userId , String lID) async {
+    var data = [lID];
+    dbRef.collection('users_lituations').doc(userId).update({"lituations": FieldValue.arrayUnion(data)});
+  }
+  Future<void> addToUpcomingLituations(String userId , String lID) async {
+    var data = [lID];
+    dbRef.collection('users_lituations').doc(userId).update({"upcomingLituations": FieldValue.arrayUnion(data)});
   }
 
 //VIBE Queries
@@ -527,6 +712,26 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     s.adult_lituations = false;
     s.theme = "auto";
     return s;
+  }
+
+  createChatRoom(ChatRoomModel chatroom) async {
+    await dbRef.collection('chat').doc(chatroom.room_id).set(chatroom.toJson());
+  }
+
+  sendMessageToRoom(String roomID , ChatMessage m) async {
+    return await dbRef.collection('chat').doc(roomID).collection('messages').add(m.toJson());
+  }
+
+  getUserChatRooms(String userID) async {
+    return await dbRef.collection('chat').where("party", arrayContains: userID).get();
+  }
+
+  Stream<DocumentSnapshot> getChatRoomParty(String roomID){
+    return dbRef.collection('chat').doc(roomID).snapshots().where((event) => event.data().containsKey('party'));
+  }
+
+  Stream<QuerySnapshot> getMessages(String roomID){
+    return dbRef.collection('chat').doc(roomID).collection('messages').orderBy('createdAt' , descending: false).snapshots();
   }
   }
 

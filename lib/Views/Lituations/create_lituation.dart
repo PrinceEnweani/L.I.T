@@ -151,18 +151,18 @@ class _CreateLituationPageState extends State<CreateLituationPage>{
             textColor: Theme.of(context).primaryColor,
             child: Text('preview' , style: infoValue(Theme.of(context).textSelectionColor),),
             onPressed: (){
-              nextPage();
+              nextPage(ctx);
             }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
         ));
   }
-  void nextPage(){
+  void nextPage(BuildContext ctx){
     if(widget.lv.lituationID == CREATE_LITUATION_TAG){
       _formKey.currentState.validate();
       if(lp.validateLituation(newLituation) == 'valid'){
         setState(() {
           date_error = "";
         });
-        launchPreview(newLituation ,  CREATE_LITUATION_TAG);
+        launchPreview(ctx, newLituation ,  CREATE_LITUATION_TAG);
         return;
       } else {
         setState(() {
@@ -171,12 +171,12 @@ class _CreateLituationPageState extends State<CreateLituationPage>{
       return;
       }
     } else {
-      launchPreview(null, widget.lv.lituationID);
+      launchPreview(ctx, null, widget.lv.lituationID);
     }
   }
 
-  void launchPreview(Lituation l , String LID){
-
+  void launchPreview(BuildContext ctx, Lituation l , String LID){ 
+    Navigator.pushNamed(ctx,  PreviewLituationPageRoute, arguments: l);
   }
 
 
@@ -985,7 +985,8 @@ Widget titleTextField(String u){
     File newImg = File(pickedImg.path);
     String imgName = newImg.path;
     setState(() {
-      newLituation.thumbnailURLs[pos] = imgName;
+      newLituation.thumbnailURLs.insert(pos, imgName);
+      //newLituation.thumbnailURLs[pos] = imgName;
     });
     Navigator.of(context).pop();
   }
@@ -995,7 +996,8 @@ Widget titleTextField(String u){
     File newImg = File(pickedImg.path);
     String imgName = newImg.path;
     setState(() {
-      newLituation.thumbnailURLs[pos] = imgName;
+      newLituation.thumbnailURLs.insert(pos, imgName);
+      //newLituation.thumbnailURLs[pos] = imgName;
     });
     Navigator.of(context).pop();
   }

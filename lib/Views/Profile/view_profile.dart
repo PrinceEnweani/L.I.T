@@ -1,10 +1,13 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:lit_beta/DBC/Auth.dart';
 import 'package:lit_beta/Extensions/common_functions.dart';
 import 'package:lit_beta/Extensions/common_widgets.dart';
+import 'package:lit_beta/Models/Chat.dart';
 import 'package:lit_beta/Models/User.dart';
 import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Providers/ProfileProvider/profile_provider.dart';
@@ -22,8 +25,9 @@ class VisitProfilePage extends StatefulWidget {
   _VisitProfileState createState() => _VisitProfileState();
 }
 
-class _VisitProfileState extends State<VisitProfilePage>{
+class _VisitProfileState extends State<VisitProfilePage>{ 
 
+  final Auth db = Auth();
   ViewProfileProvider provider;
   int _tabIdx = 0;
 
@@ -75,7 +79,7 @@ class _VisitProfileState extends State<VisitProfilePage>{
                     children: [
                       Padding(padding: EdgeInsets.all(5)),
                       userThumbnail(profileUrl , username),
-                      vibeAndChatRow(),
+                      vibeAndChatRow(username),
                       statsRow(getUserStats(clout)),
                       profileIndexedStackProvider(u)
                     ],
@@ -295,12 +299,12 @@ class _VisitProfileState extends State<VisitProfilePage>{
       ),
     );
   }
-  Widget vibeAndChatRow(){
+  Widget vibeAndChatRow(String username){
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
          vibeButton(),
-        chatButton(),
+        chatButton(username),
       ],
     );
   }
@@ -331,8 +335,8 @@ class _VisitProfileState extends State<VisitProfilePage>{
             child: RaisedButton(
                 color: btnColor,
                 textColor: Theme.of(context).textSelectionColor,
-                child: Text(val , style: infoValue(Theme.of(context).textSelectionColor),),
-                onPressed: (){
+                child: Text(val , style: infoValue(Theme.of(context).textSelectionColor),),                
+                onPressed: val == 'vibed' ? null : (){
                  setState(() {
                    provider.sendVibeRequest(widget.visit.visitorID);
                  });
@@ -344,7 +348,7 @@ class _VisitProfileState extends State<VisitProfilePage>{
     );
   }
 
-  Widget chatButton(){
+  Widget chatButton(String username){
     return StreamBuilder(
       stream: provider.getVisitorVibedStream(widget.visit.visitorID),
       builder: (context , vibed){
@@ -362,10 +366,14 @@ class _VisitProfileState extends State<VisitProfilePage>{
                   color: btnColor,
                   child: Text(val , style: infoValue(Theme.of(context).textSelectionColor),),
                   onPressed: (){
+                    UserVisit v = UserVisit();
+                    v.visitedID = widget.visit.visitedID;
+                    v.visitorID = widget.visit.visitorID;
+                    createChatRoom(v, username);/*
                     setState(() {
                       //TODO open chat with user
                       //chatWithUser(status);
-                    });
+                    });*/
                   }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
               )
           );
@@ -376,6 +384,50 @@ class _VisitProfileState extends State<VisitProfilePage>{
       },
     );
   }
+  
+
+  void createChatRoom(UserVisit v, String username) async {
+    String chkX = v.visitorID + '_' + v.visitedID;
+    String chkY = v.visitedID + '_' + v.visitorID;
+    List roomIDs = [];
+    db.getUserChatRooms(v.visitorID).then((value){
+      for(DocumentSnapshot d in List.from(value.docs)){
+        if(!roomIDs.contains(d.data()['roomID'])){
+          roomIDs.add(d.data()['roomID'].toString());
+        }
+      }
+      if(!roomIDs.contains(chkX) && !roomIDs.contains(chkY)) {
+        ChatRoomModel c = new ChatRoomModel();
+        c.room_id = v.visitorID + '_' + v.visitedID;
+        c.room_name = username;
+        c.date_created = DateTime.now();
+        c.messages = [];
+        c.party = [v.visitorID, v.visitedID];
+        db.createChatRoom(c);
+        ChatArgs args = ChatArgs();
+        args.username = username;
+        args.roomID = c.room_id;
+        args.visitedID = widget.visit.visitedID;
+        Navigator.pushNamed(context, ChatRoomPageRoute , arguments: args);
+
+      }else{
+        String roomID = roomIDs.contains(chkX) ? chkX : chkY;
+        chat(username, v.visitorID, roomID);
+      }
+    });
+
+  }
+
+
+  void chat(String username, String userID , String roomID){
+    ChatArgs args = ChatArgs();
+    args.username = username;
+    args.roomID = roomID;
+    args.visitedID = widget.visit.visitedID;
+    args.userID = userID;
+    Navigator.pushNamed(context, ChatRoomPageRoute , arguments: args);
+  }
+
 
   void showVibeSnackBar(BuildContext context, String username, String userID , int msgID){
     String msg = '';
