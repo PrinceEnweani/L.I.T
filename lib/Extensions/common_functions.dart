@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:lit_beta/Models/Lituation.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
 
 String parseVibes(String vibes){
@@ -21,8 +22,8 @@ LatLng latLngFromGeoPoint(GeoPoint gp){
   LatLng l = new LatLng(gp.latitude, gp.longitude);
   return l;
 }
-String parseThemes(AsyncSnapshot l){
-  List<String> themes = l.data['themes'].split(',');
+String parseThemes(Lituation l){
+  List<String> themes = l.themes.split(',');
   List<String> themes2 = [];
   String themesStr = "";
   for(String t in themes){

@@ -4,7 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:lit_beta/Models/Lituation.dart';
 import 'package:lit_beta/Strings/constants.dart';
+import 'package:lit_beta/Strings/hint_texts.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
 
 import 'common_functions.dart';
@@ -467,9 +469,9 @@ Widget lituationResultCard(BuildContext ctx, DocumentSnapshot l){
   );
 }
 
-Widget lituationDateWidget(BuildContext context , AsyncSnapshot l){
+Widget lituationDateWidget(BuildContext context , Lituation l){
   List months = ['Jan', 'Feb', 'Mar', 'Apr', 'May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  DateTime date = DateTime.fromMicrosecondsSinceEpoch(l.data['date'].millisecondsSinceEpoch * 1000);
+  DateTime date = l.date;
   String month = months[date.month - 1];
   String day = date.day.toString();
   return Container(
@@ -478,7 +480,7 @@ Widget lituationDateWidget(BuildContext context , AsyncSnapshot l){
       children: [
         Expanded(child: Text(day, style: TextStyle(fontWeight: FontWeight.w600,color: Theme.of(context).textSelectionColor), textScaleFactor: 1.6,)),
         Expanded(child: Container(margin: EdgeInsets.only(top: 10) ,child:Text(month, style: TextStyle(fontWeight: FontWeight.w200,color: Theme.of(context).textSelectionColor), textScaleFactor: 1,),)),
-        Expanded(child: Container(margin: EdgeInsets.only(top: 10) ,child: userProfileThumbnail(l.data['hostID'] , 'online'),)),
+        Expanded(child: Container(margin: EdgeInsets.only(top: 10) ,child: userProfileThumbnail(l.host?.profileURL ?? "https://via.placeholder.com/150/FF0000/FFFFFF?text=Loading" , 'online'),)),
       ],
     ),
   );
@@ -499,9 +501,9 @@ Widget lituationDateDocumentSnapshotWidget(BuildContext context , DocumentSnapsh
     ),
   );
 }
-Widget lituationThumbnailWidget(AsyncSnapshot l){
+Widget lituationThumbnailWidget(Lituation l){
   return CachedNetworkImage(
-    imageUrl: l.data['thumbnail'][0].toString(),
+    imageUrl: l.thumbnailURLs != null && l.thumbnailURLs.length > 0 ? l.thumbnailURLs[0] : "https://via.placeholder.com/150/FF0000/FFFFFF?text=Loading",
     imageBuilder: (context, imageProvider) => Container(
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
@@ -561,6 +563,100 @@ Widget lituationDetailCard(BuildContext ctx , String lID , String thumbnail , St
         )
       ],
     ),
+  );
+}
+Widget lituationCard(Lituation l, BuildContext context) {    
+  return Container(
+      child: GestureDetector(
+        onTap: (){
+          //_viewLituation(lID , l.data['title']);
+          },
+        child: Card(
+          color: Theme.of(context).backgroundColor,
+          elevation: 5,
+          child: Container(
+            padding: EdgeInsets.only(bottom: 10),
+            height: 325,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 5,child: lituationThumbnailWidget(l),),
+                Expanded(flex: 3,child: lituationInfoRow(l, context),)
+              ],
+            ),
+          ),
+        ),
+      )
+  );
+}
+Widget lituationInfoRow(Lituation l, BuildContext context){
+  return Container(
+    margin: EdgeInsets.only(top: 10),
+    child: Row(
+      children: [
+        Expanded(flex: 2,child: lituationDateWidget(context , l),),
+        Expanded(flex: 6,child: lituationInfoCardWidget(l, context),),
+      //TODO Make row below address
+        Expanded(flex: 3,child: lituationResultStatusCard(l, context),),
+      ],
+    ),
+  );
+}
+Widget lituationInfoCardWidget(Lituation l, BuildContext context){
+  return Container(
+    margin: EdgeInsets.only(top: 2),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: Text(l.title , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 1.2,),),
+        Expanded(child: Text(parseThemes(l) , textScaleFactor: 0.7 , style: TextStyle(color: Colors.blueAccent),),),
+        Expanded(child: lituationTimeWidget(l, context),),
+        Expanded(child: Text(l.title , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 0.7,),),
+      ],
+    ),
+  );
+}
+//shows time from 2 time stamps
+Widget lituationTimeWidget(Lituation l, BuildContext context){
+  String st = parseTime(Timestamp.fromDate(l.date));
+  String et = parseTime(Timestamp.fromDate(l.end_date));
+  String day = parseDay(true, Timestamp.fromDate(l.date));
+  return Text(
+      '$day,$st - $et' , style: infoValue(Theme.of(context).textSelectionColor),
+  );
+}
+Widget lituationResultStatusCard(Lituation l, BuildContext context){
+  return Container(
+    margin: EdgeInsets.only(right: 15),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+            text: TextSpan(
+                text: parseVibes(l.vibes.length.toString()),style: infoValue(Theme.of(context).textSelectionColor),
+                children: [
+                  TextSpan(text: ' vibes going\n' , style: infoValue(Theme.of(context).primaryColor))
+                ]
+            )
+        ),
+        RichText(
+            text: TextSpan(
+                text: lituation_result_entry_label,style: infoValue(Theme.of(context).textSelectionColor),
+                children: [
+                  TextSpan(text: l.entry + '\n' , style: infoValue(Theme.of(context).primaryColor))
+                ]
+            )
+        ),
+        RichText(
+            text: TextSpan(
+                text: 'capacity: ',style: infoValue(Theme.of(context).textSelectionColor),
+                children: [
+                  TextSpan(text: l.capacity , style: infoValue(Theme.of(context).primaryColor))
+                ]
+            )
+        ),
+      ],),
   );
 }
 Widget nullList(String username , String listname , Color c){

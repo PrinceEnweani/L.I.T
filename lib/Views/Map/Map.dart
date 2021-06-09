@@ -15,6 +15,7 @@ import 'package:lit_beta/Extensions/common_widgets.dart';
 import 'package:lit_beta/Extensions/search_filters.dart';
 import 'package:lit_beta/Models/Lituation.dart';
 import 'package:lit_beta/Providers/MapProvider/map_provider.dart';
+import 'package:lit_beta/Providers/SearchProvider/search_provider.dart';
 import 'package:lit_beta/Strings/constants.dart';
 import 'package:lit_beta/Strings/hint_texts.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
@@ -31,6 +32,7 @@ class MapPage extends StatefulWidget {
 class _MapState extends State<MapPage> {
 
   MapProvider mp;
+  SearchProvider sp;
   final Set<Marker> _mapMarkers = {};
   MapType _mapType = MapType.normal;
   LatLng userLatLng;
@@ -41,7 +43,8 @@ class _MapState extends State<MapPage> {
   List<PlacesSearchResult> placesSearchResults;
   List<String> addressResults;
   var lituationResults = [];
-  Position userPosition;
+  Position userPosition;  
+  var locationIcon;
 
   @override
   void dispose(){
@@ -59,6 +62,7 @@ class _MapState extends State<MapPage> {
   @override
   void initState() {
     mp = new MapProvider(widget.userID);
+    sp = new SearchProvider(widget.userID);
     getUserLocation();
     _controller = Completer();
     _places = GoogleMapsPlaces(apiKey: MAPS_KEY);
@@ -66,6 +70,8 @@ class _MapState extends State<MapPage> {
     placesSearchResults =  [];
     addressResults = [];
     zoom  = 12.0;
+    getBytesFromAssetFile('assets/images/litlocationicon.png' ,225)
+      .then((value) => locationIcon = value);
     super.initState();
   }
 
@@ -174,7 +180,6 @@ Widget resultsWidget(){
         ),
         suggestionsCallback: (pattern) async {
           lituationResults.clear();
-          var locationIcon = await getBytesFromAssetFile('assets/images/litlocationicon.png' ,225);
           return searchAddress(pattern).then((value) async {
             List<Marker> resultMarkers = [];
             List<String> ids = [];
@@ -188,22 +193,23 @@ Widget resultsWidget(){
                   target:latLngFromGeoPoint(lituations[0].data()['locationLatLng']),
                 ));
                 for(var event in lituations){
-                    setState(() {
-                      if(!ids.contains(event.id)) {
-                        ids.add(event.id);
-                        lituationResults.add(
-                            lituationResult(event.id));
-                        resultMarkers.add(googleMapMarker(
-                            event.data()['location'],
-                            BitmapDescriptor.fromBytes(locationIcon),
-                            latLngFromGeoPoint(
-                                event.data()['locationLatLng'])));
-                      }
-                      });
+                  if(!ids.contains(event.id)) {
+                    ids.add(event.id);
+                    lituationResults.add(
+                        lituationResult(event.id));
+                    resultMarkers.add(googleMapMarker(
+                        event.data()['location'],
+                        BitmapDescriptor.fromBytes(locationIcon),
+                        latLngFromGeoPoint(
+                            event.data()['locationLatLng'])));
+                  }
                 }
               });
               drawMarkers(resultMarkers);
             }
+            setState(() {
+              
+            });
             return value;
           });
         }
@@ -271,31 +277,28 @@ Widget resultsWidget(){
     final GoogleMapController ctrl = await _controller.future;
     ctrl.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
   }
-  Future<void> drawMarker(Marker n) async {
-    var locationIcon = await getBytesFromAssetFile('assets/images/litlocationicon.png' ,250);
+  void drawMarker(Marker n) {
     Marker k = Marker(markerId: n.markerId , position: n.position , icon: BitmapDescriptor.fromBytes(locationIcon));
     setState(() {
       _mapMarkers.clear();
       _mapMarkers.add(k);
       print(k.markerId);
     });
-    return;
   }
-  Future<void> drawMarkers(List<Marker> newMarkers) async {
+  void drawMarkers(List<Marker> newMarkers) async {
     setState(() {
       _mapMarkers.clear();
       _mapMarkers.addAll(newMarkers);
     });
-    return;
   }
   Widget lituationResult(String lID){
-    String url;
-    return StreamBuilder(
-        stream: mp.getLituation(lID),
-        builder: (ctx , l){
-          if(!l.hasData || l.connectionState == ConnectionState.waiting){
+    return FutureBuilder(
+        future: sp.getLituationById(lID),
+        builder: (ctx , builder){
+          if(!builder.hasData || builder.connectionState != ConnectionState.done){
             return Container();
           }
+          Lituation l = builder.data;
 
           return GestureDetector(
                 onTap: (){
@@ -322,7 +325,7 @@ Widget resultsWidget(){
         }
     );
   }
-  Widget lituationInfoRow(AsyncSnapshot l){
+  Widget lituationInfoRow(Lituation l){
     return Container(
       margin: EdgeInsets.only(top: 10),
       child: Row(
@@ -333,26 +336,26 @@ Widget resultsWidget(){
       ),
     );
   }
-  Widget lituationInfoCardWidget(AsyncSnapshot l){
+  Widget lituationInfoCardWidget(Lituation l){
     return Container(
       margin: EdgeInsets.only(top: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: Text(l.data['title'] , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 1.2,),),
+          Expanded(child: Text(l.title , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 1.2,),),
           //Expanded(child: Text(parseThemes(l) , textScaleFactor: 0.7 , style: TextStyle(color: Colors.blueAccent),),),
           //Expanded(child: lituationTimeWidget(l),),
-          Expanded(child: Text(l.data['location'] , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 0.7,),),
+          Expanded(child: Text(l.location , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 0.7,),),
         ],
       ),
     );
   }
-  Widget lituationTimeWidget(AsyncSnapshot l){
-    String st = parseTime(l.data['date']);
-    String et = parseTime(l.data['end_date']);
-    String day = parseDay(true, l.data['date']);
+  Widget lituationTimeWidget(Lituation l){
+    String st = parseTime(Timestamp.fromDate(l.date));
+    String et = parseTime(Timestamp.fromDate(l.end_date));
+    String day = parseDay(true, Timestamp.fromDate(l.date));
     return Text(
-      '$day,$st - $et' , style: infoValue(Theme.of(context).textSelectionColor),
+        '$day,$st - $et' , style: infoValue(Theme.of(context).textSelectionColor),
     );
   }
 }

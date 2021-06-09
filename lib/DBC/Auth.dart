@@ -304,6 +304,10 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
   Stream<DocumentSnapshot> getLituationByID(String lituationID){
     return dbRef.collection('lituations').doc(lituationID).snapshots();
   }
+  Future<DocumentSnapshot> getLituationSnapshotByID(String lituationID){
+    return dbRef.collection('lituations').doc(lituationID).get();
+  }
+
 
   //TODO add tumbnail update function
   Future<void> updateLituationTitle(String lID, String newTitle) async{
