@@ -254,6 +254,13 @@ class _SearchState extends State<SearchPage> {
     print(v.visitNote);
     Navigator.pushNamed(context, VisitProfilePageRoute , arguments: v);
   }
+  void _viewLituation(String lID , String lName){
+    LituationVisit lv = LituationVisit();
+    lv.userID = widget.userID;
+    lv.lituationID = lID;
+    lv.lituationName = lName;
+    Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);
+  }
   Widget lituationResult(String lID){
     String url;
     return StreamBuilder(
@@ -265,7 +272,7 @@ class _SearchState extends State<SearchPage> {
           return Container(
               child: GestureDetector(
                 onTap: (){
-                  //_viewLituation(lID , l.data['title']);
+                  _viewLituation(lID , l.data['title']);
                   },
                 child: Card(
                   color: Theme.of(context).backgroundColor,
@@ -317,6 +324,7 @@ class _SearchState extends State<SearchPage> {
       )
     );
   }
+
   Widget lituationInfoCardWidget(AsyncSnapshot l){
     return Container(
       margin: EdgeInsets.only(top: 2),

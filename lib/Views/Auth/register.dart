@@ -1,6 +1,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Providers/AuthProvider/register_provider.dart';
 import 'package:lit_beta/Strings/hint_texts.dart';
@@ -298,10 +299,18 @@ class _RegisterState extends State<RegisterPage> {
   Widget googleRegisterButton(){
     return Container(
         height: 50,
-        margin: EdgeInsets.fromLTRB(50, 10, 50, 0),
+        margin: EdgeInsets.fromLTRB(75, 10, 75, 0),
         padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
         child: RaisedButton(
-            child: Text(googleSignup ,style: infoValue(Theme.of(context).textSelectionColor),),
+          color: Colors.transparent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(MaterialCommunityIcons.google , color: Colors.green,),
+                Padding(padding: EdgeInsets.fromLTRB(5, 0, 5, 0),),
+                Text(googleSignup ,style: infoValue(Theme.of(context).textSelectionColor),),
+              ],
+            ),
             onPressed: (){
               //TODO Implement register
               registerGoogleUser();
@@ -313,10 +322,18 @@ class _RegisterState extends State<RegisterPage> {
   Widget fbRegisterButton(){
     return Container(
         height: 50,
-        margin: EdgeInsets.fromLTRB(50, 10, 50, 0),
+        margin: EdgeInsets.fromLTRB(75, 10, 75, 0),
         padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
         child: RaisedButton(
-            child: Text(fbSignup ,style: infoValue(Theme.of(context).textSelectionColor),),
+            color: Colors.transparent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(MaterialCommunityIcons.facebook , color: Colors.blueAccent,),
+                Padding(padding: EdgeInsets.fromLTRB(5, 0, 5, 0),),
+                Text(fbSignup ,style: infoValue(Theme.of(context).textSelectionColor),),
+              ],
+            ),
             onPressed: (){
               //TODO Implement register
               registerFBUser();
@@ -325,6 +342,7 @@ class _RegisterState extends State<RegisterPage> {
         )
     );
   }
+
   void registerUser() async {
       //TODO Add user to db as clean object
       final registrationForm = _formKey.currentState;

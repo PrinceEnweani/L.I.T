@@ -339,6 +339,9 @@ Widget viewList(BuildContext context, List data, List<Widget> removeButtons , St
     );
   }
 }
+Widget loadingWidget(BuildContext context){
+  return CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Theme.of(context).splashColor),);
+}
 Widget placeResultTile(BuildContext context, PlacesSearchResult suggestion){
   return  ListTile(
     tileColor: Theme.of(context).scaffoldBackgroundColor,
@@ -476,9 +479,9 @@ Widget lituationDateWidget(BuildContext context , AsyncSnapshot l){
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(child: Text(day, style: TextStyle(fontWeight: FontWeight.w600,color: Theme.of(context).textSelectionColor), textScaleFactor: 1.6,)),
-        Expanded(child: Container(margin: EdgeInsets.only(top: 10) ,child:Text(month, style: TextStyle(fontWeight: FontWeight.w200,color: Theme.of(context).textSelectionColor), textScaleFactor: 1,),)),
-        Expanded(child: Container(margin: EdgeInsets.only(top: 10) ,child: userProfileThumbnail(l.data['hostID'] , 'online'),)),
+        Expanded(flex: 1,child: Text(day, style: TextStyle(fontWeight: FontWeight.w600,color: Theme.of(context).textSelectionColor), textScaleFactor: 1.6,)),
+        Expanded(flex: 1,child: Container(margin: EdgeInsets.only(top: 10) ,child:Text(month, style: TextStyle(fontWeight: FontWeight.w200,color: Theme.of(context).textSelectionColor), textScaleFactor: 1,),)),
+        Expanded(flex: 2,child: Container(margin: EdgeInsets.only(top: 10) ,child: userProfileThumbnail(l.data['hostID'] , 'online'),)),
       ],
     ),
   );

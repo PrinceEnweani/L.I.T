@@ -1,6 +1,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:lit_beta/DBC/Auth.dart';
 import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Providers/AuthProvider/login_provider.dart';
@@ -221,27 +222,45 @@ class _LoginState extends State<LoginPage> {
       height: 50,
       margin: EdgeInsets.fromLTRB(45, 15, 45, 5),
       padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-      child: RaisedButton(
-        child: Text(googleSignin, style: infoValue(Theme.of(context).textSelectionColor)),
-        onPressed: (){
-          loginWithGoogle();
-        },
-        shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
+      child:  RaisedButton(
+          color: Colors.transparent,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(MaterialCommunityIcons.google , color: Colors.green,),
+              Padding(padding: EdgeInsets.fromLTRB(5, 0, 5, 0),),
+              Text(googleSignin, style: infoValue(Theme.of(context).textSelectionColor)),
+            ],
+          ),
+          onPressed: (){
+            //TODO Implement register
+            loginWithGoogle();
+          },
+          shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
       )
     );
   }
   Widget facebookLoginButton(){
     return Container(
-      height: 50,
-      margin: EdgeInsets.fromLTRB(45, 15, 45, 5),
-      padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-      child: RaisedButton(
-        child: Text(fbSignin, style: infoValue(Theme.of(context).textSelectionColor)),
-        onPressed: (){
-          loginWithGoogle();
-        },
-        shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
-      )
+        height: 50,
+        margin: EdgeInsets.fromLTRB(45, 15, 45, 5),
+        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+        child:  RaisedButton(
+            color: Colors.transparent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(MaterialCommunityIcons.facebook , color: Colors.blueAccent,),
+                Padding(padding: EdgeInsets.fromLTRB(5, 0, 5, 0),),
+                Text(fbSignin ,style: infoValue(Theme.of(context).textSelectionColor),),
+              ],
+            ),
+            onPressed: (){
+              //TODO Implement register
+              loginWithGoogle();
+            },
+            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
+        )
     );
   }
   void _toggle(){

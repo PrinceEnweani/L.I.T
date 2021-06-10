@@ -105,8 +105,8 @@ class _VisitProfileState extends State<VisitProfilePage>{
     return IndexedStack(
       index: _tabIdx,
       children: [
-        userVibeTabWithPrivacy(u),
-        //userLituationTab(u , context),
+        userVibeTabProvider(u),
+        userLituationTabProvider(u),
         //userActivityTab(context , u),
 
         //aboutList(u),
@@ -115,19 +115,29 @@ class _VisitProfileState extends State<VisitProfilePage>{
       ],
     );
   }
-  Widget userVibeTabWithPrivacy(AsyncSnapshot u){
-
+  Widget userLituationTabProvider(AsyncSnapshot u){
+    return StreamBuilder(
+      stream: provider.userSettingsStream(),
+      builder: (context , settings){
+        if(!settings.hasData || settings.connectionState == ConnectionState.waiting){
+          return CircularProgressIndicator();
+        }
+        return userLituationTabWithPrivacy(u, settings.data['lituation_visibility']);
+      },
+    );
+  }
+  Widget userVibeTabProvider(AsyncSnapshot u){
     return StreamBuilder(
         stream: provider.userSettingsStream(),
         builder: (context , settings){
           if(!settings.hasData || settings.connectionState == ConnectionState.waiting){
             return CircularProgressIndicator();
           }
-          return userVibeTabProvider(u, settings.data['vibe_visibility'] , settings.data['location_visibility']);
+          return userVibeTabWithPrivacy(u, settings.data['vibe_visibility'] , settings.data['location_visibility']);
     },
     );
   }
-  Widget userVibeTabProvider(AsyncSnapshot u , String setting , String location_visibility){
+  Widget userVibeTabWithPrivacy(AsyncSnapshot u , String setting , String location_visibility){
     Color  bg = Theme.of(context).scaffoldBackgroundColor;
     Color btnC = Theme.of(context).primaryColor;
     Color textCol = Theme.of(context).textSelectionColor;
@@ -142,12 +152,87 @@ class _VisitProfileState extends State<VisitProfilePage>{
       case PrivacySettings.PUBLIC:
         return userVibeTab(u , location_visibility);
       case PrivacySettings.HIDDEN:
-        return userVibeTabPrivate(1);
+        return userTabPrivate(1);
       case PrivacySettings.PRIVATE:
-        return checkPrivacy(userVibeTab(u ,location_visibility), userVibeTabPrivate(1));
+        return checkPrivacy(userVibeTab(u ,location_visibility), userTabPrivate(1));
       default:
-        return userVibeTabPrivate(0);
+        return userTabPrivate(0);
     }
+  }
+  Widget userLituationTabWithPrivacy(AsyncSnapshot u , String lituation_visibility){
+    Color  bg = Theme.of(context).scaffoldBackgroundColor;
+    Color btnC = Theme.of(context).primaryColor;
+    Color textCol = Theme.of(context).textSelectionColor;
+    String email = u.data['email'];
+    String username = u.data['username'].toString();
+    String gender = u.data["userVibe"]["gender"];
+    String birthday = u.data["userVibe"]["birthday"];
+    String prefs = u.data["userVibe"]["preference"];
+    String lituations = u.data["userVibe"]["lituationPrefs"];
+    String location = u.data["userLocation"];
+    switch(lituation_visibility){
+      case PrivacySettings.PUBLIC:
+        return userLituationTab(u);
+      case PrivacySettings.HIDDEN:
+        return userTabPrivate(1);
+      case PrivacySettings.PRIVATE:
+        return checkPrivacy(userLituationTab(u), userTabPrivate(1));
+      default:
+        return userTabPrivate(0);
+    }
+  }
+  Widget userLituationTab(AsyncSnapshot u){
+    String username = u.data['username'];
+
+    return StreamBuilder(
+        stream: provider.userLituationsStream(),
+        builder: (context, userLituations){
+          if(!userLituations.hasData || userLituations.connectionState == ConnectionState.waiting){
+            return CircularProgressIndicator();
+          }
+          return Column(
+            children: [
+              infoSectionHeader(username+'\'s Lituations', Theme.of(context).textSelectionColor),
+              lituationList(context, username, 'upcoming lituations', userLituations.data['upcomingLituations']),
+              //lituationList(c, username,'pending lituations', userLituations.data['pendingLituations']),
+              lituationList(context, username,'past lituations', userLituations.data['pastLituations']),
+              //lituationList(c, username,'draft lituations', userLituations.data['drafts']),
+              //lituationList(c, username,'watched lituations', userLituations.data['observedLituations']),
+            ],
+          );
+        }
+    );
+  }
+  Widget lituationList(BuildContext c, String username ,String listname , List lituationIDs){
+    Color bg = Theme.of(context).textSelectionColor;
+    return Card(
+      elevation: 3,
+      margin: EdgeInsets.fromLTRB(0, 15, 0, 0),
+      child: Container(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          padding: EdgeInsets.all(5.0),
+          height: 250,
+          child: StreamBuilder<QuerySnapshot>(
+              stream: provider.allLituationsStream(), //db.getLituations
+              builder: (ctx , lituations){
+                if(!lituations.hasData){
+                  return CircularProgressIndicator();
+                }
+                List lList = List.from(lituations.data.docs);
+                List data = List();
+                for(var l in lList){
+                  if(lituationIDs.contains(l.id.toString())){
+                    data.add(l);
+                  }
+                }
+                if(data.length > 0) {
+                  return viewList(c , data , [Container()],listname , bg);
+                }
+                return nullList(username, listname , bg);
+              }
+          )
+      ),
+    );
   }
   Widget userVibeTab(AsyncSnapshot u , String location_visibility){
     Color  bg = Theme.of(context).scaffoldBackgroundColor;
@@ -164,9 +249,6 @@ class _VisitProfileState extends State<VisitProfilePage>{
       children: [
         infoSectionHeader(info_about_hint + u.data['username'], Theme.of(context).textSelectionColor),
         bioCard(bioLabelWidget(u.data['username'] , Container()), Text(u.data['userVibe']['bio'] , style: infoValue(Theme.of(context).textSelectionColor),), Theme.of(context).scaffoldBackgroundColor),
-        //infoCard(info_username_hint, username, Icons.title, bg , btnC , textCol),
-        //infoCard(info_gender_hint, gender, Icons.all_inclusive, bg , btnC , textCol),
-        //infoCard(info_birthday_hint, birthday, Icons.cake, bg , btnC , textCol),
         infoSectionHeader(username + '\'s vibe', Theme.of(context).textSelectionColor),
         infoCard(info_attendance_hint, prefs, Icons.email, bg , btnC , textCol),
         infoCard(info_preference_hint, lituations==''?update_hint:lituations, Ionicons.ios_heart, bg , btnC , textCol),
@@ -200,18 +282,20 @@ class _VisitProfileState extends State<VisitProfilePage>{
       },
     );
   }
-  Widget userVibeTabPrivate(int hidden){
+  Widget userTabPrivate(int hidden){
     if(hidden == 1){
         return Container(
-        height: 500,
-        width: 500,
-        color: Colors.blue,
+        height: 250,
+        child: Center(
+          child: Text("Private\n(vibing only)", textAlign: TextAlign.center , style: infoLabel(Theme.of(context).textSelectionColor),),
+        ),
       );
     }
     return Container(
-      height: 500,
-      width: 500,
-      color: Colors.red,
+      height: 250,
+      child: Center(
+        child: Text("Unavailable :(", textAlign: TextAlign.center , style: infoLabel(Theme.of(context).textSelectionColor),),
+      ),
     );
   }
   List<Widget> bioLabelWidget(String username , Widget button){
@@ -336,7 +420,8 @@ class _VisitProfileState extends State<VisitProfilePage>{
                 color: btnColor,
                 textColor: Theme.of(context).textSelectionColor,
                 child: Text(val , style: infoValue(Theme.of(context).textSelectionColor),),                
-                onPressed: val == 'vibed' ? null : (){
+                onPressed: () {
+                  if(val == 'vibed')
                  setState(() {
                    provider.sendVibeRequest(widget.visit.visitorID);
                  });

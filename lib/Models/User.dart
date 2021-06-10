@@ -13,7 +13,7 @@ class User {
   UserVibe _userVibe;
   String _username;
   UserStatus _status;
-  int _deviceToken;
+  String _deviceToken;
   User(
       {String email,
         String pass,
@@ -25,7 +25,7 @@ class User {
         UserVibe userVibe,
         String username,
         UserStatus status,
-        int deviceToken,
+        String deviceToken,
       }) {
     this._email = email;
     this._pass = pass;
@@ -59,8 +59,8 @@ class User {
   set status(UserStatus status) => _status = status;
   LatLng get userLocLatLng => _userLocLatLng;
   set userLocLatLng(LatLng userLocLatLng) => _userLocLatLng = userLocLatLng;
-  set deviceToken(int deviceToken) => _deviceToken = deviceToken;
-  int get deviceToken => _deviceToken;
+  set deviceToken(String deviceToken) => _deviceToken = deviceToken;
+  String get deviceToken => _deviceToken;
 
   User.fromJson(Map<String, dynamic> json) {
     _email = json['email'];
@@ -163,7 +163,7 @@ class UserStatus {
   LatLng _currentLocation;
   String _updateMessage;
   String _accumulatedClout; //managed as int
-  List<String> _achievements;
+  List _achievements;
 
   UserStatus(
       {String user_id,
@@ -172,7 +172,7 @@ class UserStatus {
         LatLng currentLocation,
         String  updateMessage,
         String accumulatedClout,
-        List<String> achievements,
+        List achievements,
       }) {
     this._user_id;
     this._time;
@@ -195,7 +195,7 @@ class UserStatus {
   set accumulatedClout(String accumulatedClout) => _accumulatedClout = accumulatedClout;
   String get accumulatedClout => _accumulatedClout;
   set updateMessage(String updateMessage) => _updateMessage = updateMessage;
-  List<String> get achievements => _achievements;
+  List get achievements => _achievements;
   set achievements(List<String> achievements) => _achievements = achievements;
 
   UserStatus.fromJson(Map<String, dynamic> json) {

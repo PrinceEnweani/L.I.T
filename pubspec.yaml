@@ -68,6 +68,7 @@ dependencies:
   loading_overlay: ^0.3.0
   modal_bottom_sheet: ^2.0.0
   better_player: ^0.0.28
+  ffi: ^1.0.0
 
 dev_dependencies:
   flutter_test:
