@@ -55,24 +55,28 @@ class _ChatPageStateV2 extends State<ChatPageV2>{
     setState(() {
       loading = true;
     });
-    File result;
-    final picker = ImagePicker();
-    final pickedMedia = await picker.getImage(source: ImageSource.gallery , imageQuality: 80 , maxHeight: 400 , maxWidth: 400);
-    if(pickedMedia != null){
-      result = File(pickedMedia.path);
-    }else{
-      print('no media selected');
-      return;
-    }
+    try {
+      File result;
+      final picker = ImagePicker();
+      final pickedMedia = await picker.getImage(source: ImageSource.gallery , imageQuality: 80 , maxHeight: 400 , maxWidth: 400);
+      if(pickedMedia != null){
+        result = File(pickedMedia.path);
+      }else{
+        print('no media selected');
+        return;
+      }
 
-    if(result != null){
-      String ext = result.path.split(".").last;
-      String id = Uuid().v4().toString();
-      final StorageRef = db.dbMediaRef.ref().child(widget.args.roomID).child("images/$id.$ext");
-      await StorageRef.putFile(result);
-      String url = await StorageRef.getDownloadURL();
-      ChatMessage msg = ChatMessage(text: "", user: user, image: url,);
-      db.sendMessageToRoom(widget.args.roomID, msg);
+      if(result != null){
+        String ext = result.path.split(".").last;
+        String id = Uuid().v4().toString();
+        final StorageRef = db.dbMediaRef.ref().child(widget.args.roomID).child("images/$id.$ext");
+        await StorageRef.putFile(result);
+        String url = await StorageRef.getDownloadURL();
+        ChatMessage msg = ChatMessage(text: "", user: user, image: url,);
+        db.sendMessageToRoom(widget.args.roomID, msg);
+      }
+    } catch (e) {
+      
     }
     setState(() {
       loading = false;

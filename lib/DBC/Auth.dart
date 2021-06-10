@@ -72,6 +72,7 @@ class Auth implements DBA {
 
       // Once signed in, return the UserCredential
       UserCredential u = await FirebaseAuth.instance.signInWithCredential(credential);
+      await u.user.updateEmail(googleUser.email);
       return u;
     } on FirebaseAuthException catch (e) {
       throw e;

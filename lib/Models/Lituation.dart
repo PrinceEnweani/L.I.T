@@ -128,7 +128,7 @@ class Lituation {
     this._specialGuests = List<String>.from(json['specialGuests']);
     this._observers = List<String>.from(json['observers']);
     this._vibes = List<String>.from(json['vibes']);
-    this._invited = List<String>.from(json['invited']);
+    this._invited = List<String>.from(json['invited'] ?? []);
     this._pending = List<String>.from(json['pending']);
     this._thumbnailURLs = List<String>.from(json['thumbnail']); 
   }

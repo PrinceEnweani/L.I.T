@@ -13,7 +13,7 @@ class User {
   UserVibe _userVibe;
   String _username;
   UserStatus _status;
-  int _deviceToken;
+  String _deviceToken;
   User(
       {String email,
         String pass,
@@ -25,7 +25,7 @@ class User {
         UserVibe userVibe,
         String username,
         UserStatus status,
-        int deviceToken,
+        String deviceToken,
       }) {
     this._email = email;
     this._pass = pass;
@@ -59,8 +59,8 @@ class User {
   set status(UserStatus status) => _status = status;
   LatLng get userLocLatLng => _userLocLatLng;
   set userLocLatLng(LatLng userLocLatLng) => _userLocLatLng = userLocLatLng;
-  set deviceToken(int deviceToken) => _deviceToken = deviceToken;
-  int get deviceToken => _deviceToken;
+  set deviceToken(String deviceToken) => _deviceToken = deviceToken;
+  String get deviceToken => _deviceToken;
 
   User.fromJson(Map<String, dynamic> json) {
     _email = json['email'];
@@ -205,7 +205,7 @@ class UserStatus {
     _currentLocation = json['currentLocation'];
     _updateMessage = json['updateMessage'];
     _accumulatedClout = json['accumulatedClout'];
-    _achievements = json['achievements'];
+    _achievements = List<String>.from(['achievements']);
   }
 
   Map<String, dynamic> toJson() {

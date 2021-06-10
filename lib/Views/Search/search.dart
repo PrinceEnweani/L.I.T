@@ -108,6 +108,18 @@ class _SearchState extends State<SearchPage> {
     );
   }
   Widget lituationResultList(){
+    if(query_lit == ''){
+      return Container(
+        margin: EdgeInsets.all(15),
+        child: Card(
+          elevation: 3,
+          color: Theme.of(context).backgroundColor,
+          child: ListTile(
+            leading: Text("" , style: infoLabel(Theme.of(context).textSelectionColor),),
+          ),
+        ),
+      );
+    }
     return Expanded(
         child: FutureBuilder(
           future: sp.searchLituation(query_lit, BY_TITLE),
@@ -235,7 +247,12 @@ class _SearchState extends State<SearchPage> {
               child: new Icon(Icons.clear ,
                 color: Theme.of(context).textSelectionColor,
               ),
-              onTap: (){vibesSearchController.clear();},
+              onTap: (){
+                vibesSearchController.clear();
+                setState(() {
+                  query_vibe = "";
+                });
+              },
             ):Container(width: 0),
             enabledBorder: UnderlineInputBorder(
               borderRadius: BorderRadius.only(
@@ -412,7 +429,12 @@ class _SearchState extends State<SearchPage> {
               child: new Icon(Icons.clear ,
                 color: Theme.of(context).textSelectionColor,
               ),
-              onTap: (){lituationsSearchController.clear();},
+              onTap: (){
+                lituationsSearchController.clear();                
+                setState(() {
+                  query_lit = "";
+                });
+              },
             ):Container(width: 0),
             enabledBorder: UnderlineInputBorder(
               borderRadius: BorderRadius.only(

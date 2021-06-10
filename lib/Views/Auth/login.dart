@@ -8,6 +8,7 @@ import 'package:lit_beta/Strings/hint_texts.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
 import 'package:lit_beta/Styles/theme_resolver.dart';
 import 'package:lit_beta/Utils/SharedPrefsHelper.dart';
+import 'package:loading_overlay/loading_overlay.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key}) : super(key: key);
@@ -25,6 +26,8 @@ class _LoginState extends State<LoginPage> {
   GlobalKey<FormState> _formKey;
   LoginProvider lp = LoginProvider();
   Auth db = Auth();
+  bool loading = false;
+
   @override
   void dispose(){
     super.dispose();
@@ -54,7 +57,8 @@ class _LoginState extends State<LoginPage> {
   Widget loginProvider(){
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
-      body: Form(
+      body: LoadingOverlay(child: Container(
+       child: Form(
         key: _formKey,
         child: ListView(
           children: <Widget>[
@@ -73,6 +77,7 @@ class _LoginState extends State<LoginPage> {
           ],
         ),
       ),
+     ), isLoading: loading),
     );
   }
   Widget noAccountText(){
@@ -259,6 +264,9 @@ class _LoginState extends State<LoginPage> {
     final loginForm = _formKey.currentState;
     loginForm.save();
     if(loginForm.validate()) {
+      setState(() {
+        loading = true;
+      });
       await db.signIn(email_tec.text, password_tec.text).then((value) {
         if(value.contains('ERROR')){
           setState(() {
@@ -275,8 +283,14 @@ class _LoginState extends State<LoginPage> {
         return;
       });
     }
+    setState(() {
+      loading = false;
+    });
   }
   void loginWithGoogle() async {
+    setState(() {
+      loading = true;
+    });
     await db.signInWithGoogle().then((value) {
         if(value.contains('ERROR')){
           setState(() {
@@ -290,6 +304,13 @@ class _LoginState extends State<LoginPage> {
           HelperExtension.saveUserNameSharedPrefs(u.displayName);
       });
       _toHome(value);
+    }).catchError((error) {      
+      setState(() {
+        loading = false;
+      });
+    });
+    setState(() {
+      loading = false;
     });
   }
   void _toHome(String uID){

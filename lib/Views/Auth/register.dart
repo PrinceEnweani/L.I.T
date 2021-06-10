@@ -6,6 +6,7 @@ import 'package:lit_beta/Providers/AuthProvider/register_provider.dart';
 import 'package:lit_beta/Strings/hint_texts.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
 import 'package:lit_beta/Styles/theme_resolver.dart';
+import 'package:loading_overlay/loading_overlay.dart';
 
 class RegisterPage extends StatefulWidget {
   RegisterPage({Key key}) : super(key: key);
@@ -27,6 +28,7 @@ class _RegisterState extends State<RegisterPage> {
   String _confirm_password = '';
   bool pObscure = false;
   bool cpObscure = false;
+  bool loading = false;
   RegisterProvider rp = RegisterProvider();
   GlobalKey<FormState> _formKey;
 
@@ -61,7 +63,8 @@ class _RegisterState extends State<RegisterPage> {
   Widget registerProvider(){
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
-      body: Form(
+      body: LoadingOverlay(child: Container(
+       child: Form(
         key: _formKey,
         child: ListView(
           children: <Widget>[
@@ -80,7 +83,7 @@ class _RegisterState extends State<RegisterPage> {
             ),
           ],
         ),
-      ),
+      )), isLoading: loading)
     );
   }
   Widget errorText(){
@@ -329,27 +332,45 @@ class _RegisterState extends State<RegisterPage> {
       //TODO Add user to db as clean object
       final registrationForm = _formKey.currentState;
       if(registrationForm.validate()){
-      await rp.registerNewUser(_email, _password, _username).then((value){
-        if(value.contains("ERROR")){
-          setState(() {
-            error = value.split(':')[1];
-          });
-          return;
-        }
-        beginSurvey(value);
+        setState(() {
+          loading = true;
+        });
+        await rp.registerNewUser(_email, _password, _username).then((value){
+          if(value.contains("ERROR")){
+            setState(() {
+              loading = false;
+              error = value.split(':')[1];
+            });
+            return;
+          }
+          beginSurvey(value);
+        });
+        setState(() {
+          loading = false;
         });
       }
   }
   void registerGoogleUser() async {
+    setState(() {
+      loading = true;
+    });
     await rp.registerGoogleNewUser().then((value){
-        if(value.contains("ERROR")){
-          setState(() {
-            error = value.split(':')[1];
-          });
-          return;
-        }
-        beginSurvey(value);
+      if(value.contains("ERROR")){
+        setState(() {
+          error = value.split(':')[1];
+          loading = false;
+        });
+        return;
+      }
+      beginSurvey(value);
+    }).catchError((error) {
+      setState(() {
+        loading = false;
       });
+    });
+    setState(() {
+      loading = false;
+    });
   }
   void registerFBUser() async {
 

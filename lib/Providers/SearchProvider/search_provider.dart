@@ -70,8 +70,10 @@ class SearchProvider {
       for(DocumentSnapshot l in lituations){          
         Lituation lit = Lituation.fromJson(l.data());
         DocumentSnapshot snap = await db.getUserSnapShot(lit.hostID);
-        User host = User.fromJson(snap.data());
-        lit.host = host;
+        if (snap.exists == true) {
+          User host = User.fromJson(snap.data());
+          lit.host = host;
+        }
         if (query == '' || (filterCompare(filter, query, lit) && !resultIDs.contains(lit.eventID))) {
           lituationResults.add(lit);
           resultIDs.add(lit.eventID);
@@ -117,22 +119,24 @@ class SearchProvider {
     DocumentSnapshot l = await db.getLituationSnapshotByID(id);
     Lituation lit = Lituation.fromJson(l.data());
     DocumentSnapshot snap = await db.getUserSnapShot(lit.hostID);
-    User host = User.fromJson(snap.data());
-    lit.host = host;
+    if(snap.exists == true) {
+      User host = User.fromJson(snap.data());
+      lit.host = host;
+    }
     return lit;
   }
 
-  Future<List<Lituation>> getRecommendLituations() async {    
-    DocumentSnapshot meSnap = await db.getUserSnapShot(userID);
-    User me = User.fromJson(meSnap.data());
+  Future<List<Lituation>> getRecommendLituations() async {
     List<Lituation> lituationResults = [];
     await db.getAllLituationsSnapShot().then((value)async {
       var lituations = List.from(value.docs);
       for(DocumentSnapshot l in lituations){
         Lituation lit = Lituation.fromJson(l.data());
         DocumentSnapshot snap = await db.getUserSnapShot(lit.hostID);
-        User host = User.fromJson(snap.data());
-        lit.host = host;
+        if (snap.exists == true) {
+          User host = User.fromJson(snap.data());
+          lit.host = host;
+        }
         lituationResults.add(lit);
         if (lituationResults.length >= 5)
           break;

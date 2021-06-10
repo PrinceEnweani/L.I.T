@@ -162,7 +162,7 @@ Widget infoCard(String label , String value , IconData icon , Color bgColor , Co
                 Flexible(
                     child: Container(
                     padding: EdgeInsets.fromLTRB(0 , 10 , 0 , 0),
-                    child: Text(value , style: infoValue(textCol),)
+                    child: Text(value ?? "" , style: infoValue(textCol),)
                 )
                 ),
                 Container(
