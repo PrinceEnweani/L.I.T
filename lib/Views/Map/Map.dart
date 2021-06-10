@@ -77,11 +77,16 @@ class _MapState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor,
-      body: liveMapWidget(),
+    return new WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        backgroundColor: Theme.of(context).backgroundColor,
+        body: liveMapWidget(),
+      )
     );
 
+  } 
+  Future<bool> _onWillPop() async {
   }
 
   void _onMapCreated(GoogleMapController controller) {

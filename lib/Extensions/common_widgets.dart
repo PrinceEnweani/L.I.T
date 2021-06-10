@@ -5,9 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:lit_beta/Models/Lituation.dart';
+import 'package:lit_beta/Models/User.dart';
+import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Strings/constants.dart';
 import 'package:lit_beta/Strings/hint_texts.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
+import 'package:lit_beta/Utils/Common.dart';
 
 import 'common_functions.dart';
 
@@ -568,8 +571,12 @@ Widget lituationDetailCard(BuildContext ctx , String lID , String thumbnail , St
 Widget lituationCard(Lituation l, BuildContext context) {    
   return Container(
       child: GestureDetector(
-        onTap: (){
-          //_viewLituation(lID , l.data['title']);
+        onTap: () async {          
+            LituationVisit lv = LituationVisit();
+            lv.userID = l.hostID;
+            lv.lituationID = l.eventID;
+            lv.lituationName = l.title;
+            Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);
           },
         child: Card(
           color: Theme.of(context).backgroundColor,
