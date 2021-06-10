@@ -205,7 +205,7 @@ class UserStatus {
     _currentLocation = json['currentLocation'];
     _updateMessage = json['updateMessage'];
     _accumulatedClout = json['accumulatedClout'];
-    _achievements = json['achievements'];
+    _achievements = List<String>.from(['achievements']);
   }
 
   Map<String, dynamic> toJson() {

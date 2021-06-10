@@ -69,6 +69,9 @@ dependencies:
   modal_bottom_sheet: ^2.0.0
   better_player: ^0.0.28
   ffi: ^1.0.0
+  add_2_calendar: ^2.1.0
+  flutter_email_sender: ^5.0.0
+  qr_flutter: ^4.0.0
 
 dev_dependencies:
   flutter_test:

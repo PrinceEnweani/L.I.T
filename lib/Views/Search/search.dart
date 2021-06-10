@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:lit_beta/Extensions/common_functions.dart';
 import 'package:lit_beta/Extensions/common_widgets.dart';
 import 'package:lit_beta/Extensions/search_filters.dart';
+import 'package:lit_beta/Models/Lituation.dart';
 import 'package:lit_beta/Models/User.dart';
 import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Providers/SearchProvider/search_provider.dart';
@@ -28,6 +29,9 @@ class _SearchState extends State<SearchPage> {
   TextEditingController vibesSearchController;
   TextEditingController lituationsSearchController;
   SearchProvider sp;
+  String query_lit = "";
+  String query_vibe = "";
+
   @override
   void dispose(){
     super.dispose();
@@ -104,47 +108,90 @@ class _SearchState extends State<SearchPage> {
     );
   }
   Widget lituationResultList(){
-    if(lituationResults.length < 1 && lituationsSearchController.text.length > 0){
+    if(query_lit == ''){
       return Container(
         margin: EdgeInsets.all(15),
         child: Card(
           elevation: 3,
           color: Theme.of(context).backgroundColor,
           child: ListTile(
-            leading: Text("No lituations found...Try someone else." , style: infoLabel(Theme.of(context).textSelectionColor),),
+            leading: Text("" , style: infoLabel(Theme.of(context).textSelectionColor),),
           ),
         ),
       );
     }
     return Expanded(
-        child: ListView.builder(
-          itemCount: lituationResults.length,
-          itemBuilder: (context , idx){
-            return  lituationResults[idx];
+        child: FutureBuilder(
+          future: sp.searchLituation(query_lit, BY_TITLE),
+          builder: (context, projectSnap) {
+            if (projectSnap.connectionState != ConnectionState.done ||
+                projectSnap.hasData == false) {
+              return Center(child: CircularProgressIndicator());
+            }
+            List<Lituation> data = projectSnap.data;
+            if (data.length <= 0)
+              return Container(
+                margin: EdgeInsets.all(15),
+                child: Card(
+                  elevation: 3,
+                  color: Theme.of(context).backgroundColor,
+                  child: ListTile(
+                    leading: Text("No lituations found...Try someone else." , style: infoLabel(Theme.of(context).textSelectionColor),),
+                  ),
+                ),
+              );
+            return ListView.builder(
+              itemCount: data.length,
+              itemBuilder: (context , idx){
+                return  lituationResult(data[idx]);
+              },
+            );
           },
         )
     );
   }
-  Widget vibeResultList(){
-    if(vibeResults.length < 1 && vibesSearchController.text.length > 1){
+  Widget vibeResultList(){    
+    if(query_vibe == ''){
       return Container(
         margin: EdgeInsets.all(15),
         child: Card(
           elevation: 3,
           color: Theme.of(context).backgroundColor,
           child: ListTile(
-            leading: Text("No users found...Try someone else." , style: infoLabel(Theme.of(context).textSelectionColor),),
+            leading: Text("" , style: infoLabel(Theme.of(context).textSelectionColor),),
           ),
         ),
       );
     }
     return Expanded(
-      child: ListView.builder(
-        itemCount: vibeResults.length,
-        itemBuilder: (context , idx){
-          return  vibeResults[idx];
-        },
-      )
+        child: FutureBuilder(
+          future: sp.searchUser(query_vibe, widget.userID),
+          builder: (context, projectSnap) {
+            if (projectSnap.connectionState != ConnectionState.done ||
+                projectSnap.hasData == false) {
+              return Center(child: CircularProgressIndicator());
+            }
+            List<User> data = projectSnap.data;
+            if (data.length <= 0)
+              return Container(
+                margin: EdgeInsets.all(15),
+                child: Card(
+                  elevation: 3,
+                  color: Theme.of(context).backgroundColor,
+                  child: ListTile(
+                    leading: Text("No users found...Try someone else." , style: infoLabel(Theme.of(context).textSelectionColor),),
+                  ),
+                ),
+              );
+            return ListView.builder(
+              itemCount: data.length,
+              itemBuilder: (context , idx){
+                User u = data[idx];
+                return  userResultCard(userResultTile(u.username, u.profileURL, context), u.userID, u.username);
+              },
+            );
+          },
+        )
     );
   }
   Widget tappableTab(String title, int idx){
@@ -200,7 +247,12 @@ class _SearchState extends State<SearchPage> {
               child: new Icon(Icons.clear ,
                 color: Theme.of(context).textSelectionColor,
               ),
-              onTap: (){vibesSearchController.clear();},
+              onTap: (){
+                vibesSearchController.clear();
+                setState(() {
+                  query_vibe = "";
+                });
+              },
             ):Container(width: 0),
             enabledBorder: UnderlineInputBorder(
               borderRadius: BorderRadius.only(
@@ -214,24 +266,8 @@ class _SearchState extends State<SearchPage> {
                 borderSide: BorderSide(color: Theme.of(context).buttonColor , width: 1))
         ),
         onChanged: (value) async {
-          var res = [];
-          await sp.searchUser(vibesSearchController.text).then((users) async {
           setState(() {
-            vibeResults.clear();
-            for(User u in users){
-              if(u.username.toLowerCase().contains(value.toLowerCase())){
-                if(!res.contains(u.userID) && u.userID != widget.userID){
-                  //String status = await sp.getVibingStatus(u.data()['userID']);
-                  res.add(u.userID);
-                  vibeResults.add(
-                      userResultCard(userResultTile(u.username, u.profileURL, context), u.userID, u.username)
-                  );
-                }
-              }else{
-                vibeResults.clear();
-              }
-            }
-          });
+            query_vibe = value;            
           });
         },
       ),
@@ -261,41 +297,32 @@ class _SearchState extends State<SearchPage> {
     lv.lituationName = lName;
     Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);
   }
-  Widget lituationResult(String lID){
-    String url;
-    return StreamBuilder(
-        stream: sp.getLituation(lID),
-        builder: (ctx , l){
-          if(!l.hasData || l.connectionState == ConnectionState.waiting){
-            return Container();
-          }
-          return Container(
-              child: GestureDetector(
-                onTap: (){
-                  _viewLituation(lID , l.data['title']);
-                  },
-                child: Card(
-                  color: Theme.of(context).backgroundColor,
-                  elevation: 5,
-                  child: Container(
-                    padding: EdgeInsets.only(bottom: 10),
-                    height: 325,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(flex: 5,child: lituationThumbnailWidget(l),),
-                        Expanded(flex: 3,child: lituationInfoRow(l),)
-                      ],
-                    ),
-                  ),
-                ),
-              )
-          );
-        }
+  Widget lituationResult(Lituation l){
+    return Container(
+        child: GestureDetector(
+          onTap: (){
+            _viewLituation(l.eventID , l.title);
+            },
+          child: Card(
+            color: Theme.of(context).backgroundColor,
+            elevation: 5,
+            child: Container(
+              padding: EdgeInsets.only(bottom: 10),
+              height: 325,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 5,child: lituationThumbnailWidget(l),),
+                  Expanded(flex: 3,child: lituationInfoRow(l),)
+                ],
+              ),
+            ),
+          ),
+        )
     );
   }
-  Widget lituationInfoRow(AsyncSnapshot l){
+  Widget lituationInfoRow(Lituation l){
     return Container(
       margin: EdgeInsets.only(top: 10),
       child: Row(
@@ -308,7 +335,7 @@ class _SearchState extends State<SearchPage> {
       ),
     );
   }
-  Widget lituationInfoRow2(AsyncSnapshot l){
+  Widget lituationInfoRow2(Lituation l){
     return Container(
       child: Column(
         children: [
@@ -324,31 +351,30 @@ class _SearchState extends State<SearchPage> {
       )
     );
   }
-
-  Widget lituationInfoCardWidget(AsyncSnapshot l){
+  Widget lituationInfoCardWidget(Lituation l){
     return Container(
       margin: EdgeInsets.only(top: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: Text(l.data['title'] , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 1.2,),),
+          Expanded(child: Text(l.title , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 1.2,),),
           Expanded(child: Text(parseThemes(l) , textScaleFactor: 0.7 , style: TextStyle(color: Colors.blueAccent),),),
           Expanded(child: lituationTimeWidget(l),),
-          Expanded(child: Text(l.data['location'] , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 0.7,),),
+          Expanded(child: Text(l.title , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 0.7,),),
         ],
       ),
     );
   }
   //shows time from 2 time stamps
-  Widget lituationTimeWidget(AsyncSnapshot l){
-    String st = parseTime(l.data['date']);
-    String et = parseTime(l.data['end_date']);
-    String day = parseDay(true, l.data['date']);
+  Widget lituationTimeWidget(Lituation l){
+    String st = parseTime(Timestamp.fromDate(l.date));
+    String et = parseTime(Timestamp.fromDate(l.end_date));
+    String day = parseDay(true, Timestamp.fromDate(l.date));
     return Text(
         '$day,$st - $et' , style: infoValue(Theme.of(context).textSelectionColor),
     );
   }
-  Widget lituationResultStatusCard(AsyncSnapshot l){
+  Widget lituationResultStatusCard(Lituation l){
     return Container(
       margin: EdgeInsets.only(right: 15),
       child: Column(
@@ -356,7 +382,7 @@ class _SearchState extends State<SearchPage> {
         children: [
           RichText(
               text: TextSpan(
-                  text: parseVibes(List.from(l.data['vibes']).length.toString()),style: infoValue(Theme.of(context).textSelectionColor),
+                  text: parseVibes(l.vibes.length.toString()),style: infoValue(Theme.of(context).textSelectionColor),
                   children: [
                     TextSpan(text: ' vibes going\n' , style: infoValue(Theme.of(context).primaryColor))
                   ]
@@ -366,7 +392,7 @@ class _SearchState extends State<SearchPage> {
               text: TextSpan(
                   text: lituation_result_entry_label,style: infoValue(Theme.of(context).textSelectionColor),
                   children: [
-                    TextSpan(text: l.data['entry'] + '\n' , style: infoValue(Theme.of(context).primaryColor))
+                    TextSpan(text: l.entry + '\n' , style: infoValue(Theme.of(context).primaryColor))
                   ]
               )
           ),
@@ -374,7 +400,7 @@ class _SearchState extends State<SearchPage> {
               text: TextSpan(
                   text: 'capacity: ',style: infoValue(Theme.of(context).textSelectionColor),
                   children: [
-                    TextSpan(text: l.data['capacity'] , style: infoValue(Theme.of(context).primaryColor))
+                    TextSpan(text: l.capacity , style: infoValue(Theme.of(context).primaryColor))
                   ]
               )
           ),
@@ -409,7 +435,12 @@ class _SearchState extends State<SearchPage> {
               child: new Icon(Icons.clear ,
                 color: Theme.of(context).textSelectionColor,
               ),
-              onTap: (){lituationsSearchController.clear();},
+              onTap: (){
+                lituationsSearchController.clear();                
+                setState(() {
+                  query_lit = "";
+                });
+              },
             ):Container(width: 0),
             enabledBorder: UnderlineInputBorder(
               borderRadius: BorderRadius.only(
@@ -422,17 +453,9 @@ class _SearchState extends State<SearchPage> {
                     bottomLeft: Radius.circular(10)),
                 borderSide: BorderSide(color: Theme.of(context).buttonColor , width: 1))
         ),
-        onChanged: (value)  async {
-            setState(() {
-              lituationResults.clear();
-            });
-            await sp.searchLituation(value, BY_TITLE).then((res){
-            for(var l in res){
-              print(l.data()['title']);
-              setState(() {
-                lituationResults.add(lituationResult(l.data()['eventID']));
-              });
-            }
+        onChanged: (value)  async {     
+            setState((){
+              query_lit = value;
             });
         },
       ),

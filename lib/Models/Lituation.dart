@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lit_beta/Models/User.dart';
 
 class Lituation {
   String _capacity;
@@ -11,6 +12,7 @@ class Lituation {
   String _entry;
   String _eventID;
   String _hostID;
+  User _host;
   String _fee;
   String _location;
   LatLng _locationLatLng;
@@ -105,6 +107,33 @@ class Lituation {
     return data;
   }
 
+  Lituation.fromJson(Map<String, dynamic> json) {    
+    this._capacity = json['capacity'];
+    this._date = json['date'].toDate();
+    this._end_date = json['end_date'].toDate();
+    this._dateCreated = json['dateCreated'].toDate();
+    this._description = json['description'];
+    this._title = json['title'];
+    this._entry = json['entry'];
+    this._hostID = json['hostID'];
+    this._eventID = json['eventID'];
+    this._status = json['status'];
+    this._fee = json['fee'];
+    this._clout = json['clout'];
+    this._location = json['location'];
+    this._locationLatLng = LatLng(json['locationLatLng'].latitude, json['locationLatLng'].longitude);
+    this._musicGenres = List<String>.from(json['musicGenres']);
+    this._requirements = List<String>.from(json['requirements']);
+    this._themes = json['themes'];
+    this._specialGuests = List<String>.from(json['specialGuests']);
+    this._observers = List<String>.from(json['observers']);
+    this._vibes = List<String>.from(json['vibes']);
+    this._invited = List<String>.from(json['invited'] ?? []);
+    this._pending = List<String>.from(json['pending']);
+    this._thumbnailURLs = List<String>.from(json['thumbnail']); 
+  }
+
+
 
   DateTime get date => _date;
 
@@ -162,6 +191,11 @@ class Lituation {
 
   set hostID(String value) {
     _hostID = value;
+  }
+
+  User get host => _host;
+  set host(User u) {
+    _host = u;
   }
 
   int get clout => _clout;

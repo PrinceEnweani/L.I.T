@@ -2,7 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:latlong/latlong.dart';
+import 'package:lit_beta/Models/Lituation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:add_2_calendar/add_2_calendar.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 double distance(double l1, double d1, double l2, double d2) {
   Distance distance = new Distance();  
@@ -35,4 +38,48 @@ Future<String> downloadFile(String url, String dir, String ext) async {
   }
 
   return filePath;
+}
+
+void addEvent2Calendar(Lituation lit) {
+  Event e =  Event(
+    title: lit.title,
+    description: lit.description,
+    location: lit.location,
+    startDate: lit.date,
+    endDate: lit.end_date,
+    allDay: false,
+    iosParams: IOSParams(
+      reminder: Duration(minutes: 40),
+    ),
+    androidParams: AndroidParams(
+    ),
+    recurrence:  null,
+  );
+  Add2Calendar.addEvent2Cal(e);
+}
+
+Future<String> sendEmail(Lituation lit) async {
+  String body = """
+    <p>I'd like to invite you ${lit.title}.</p>
+
+    <p>Address: ${lit.location}</p>
+    <p>Start: ${lit.date.toString()}\n</p>
+    <p>End: ${lit.end_date.toString()}\n</p>
+  """;
+  final Email email = Email(
+    body: body,
+    subject: "Invite to " + lit.title,
+    recipients: [],
+    isHTML: true,
+  );
+
+  String platformResponse;
+
+  try {
+    await FlutterEmailSender.send(email);
+    platformResponse = 'success';
+  } catch (error) {
+    platformResponse = error.toString();
+  }
+  return platformResponse;
 }
