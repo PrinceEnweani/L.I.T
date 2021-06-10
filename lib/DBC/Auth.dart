@@ -235,7 +235,7 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 * if already vibed: remove user from visited pending vibing and remove visited from user vibed
 * handles send, cancel and remove
 * */
-  Future<void> sendVibeRequest(String visitor , String visited) async{
+  Future<void> sendVibeRequest(String visitor , String visited) async {
     var vd = [visited];
     var vo = [visitor];
     //we add them to the list of pending vibes

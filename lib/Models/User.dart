@@ -163,7 +163,7 @@ class UserStatus {
   LatLng _currentLocation;
   String _updateMessage;
   String _accumulatedClout; //managed as int
-  List<String> _achievements;
+  List _achievements;
 
   UserStatus(
       {String user_id,
@@ -172,7 +172,7 @@ class UserStatus {
         LatLng currentLocation,
         String  updateMessage,
         String accumulatedClout,
-        List<String> achievements,
+        List achievements,
       }) {
     this._user_id;
     this._time;
@@ -195,7 +195,7 @@ class UserStatus {
   set accumulatedClout(String accumulatedClout) => _accumulatedClout = accumulatedClout;
   String get accumulatedClout => _accumulatedClout;
   set updateMessage(String updateMessage) => _updateMessage = updateMessage;
-  List<String> get achievements => _achievements;
+  List get achievements => _achievements;
   set achievements(List<String> achievements) => _achievements = achievements;
 
   UserStatus.fromJson(Map<String, dynamic> json) {

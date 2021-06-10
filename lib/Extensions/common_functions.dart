@@ -60,7 +60,7 @@ showConfirmationDialog(BuildContext context ,String title , String message , Lis
       context: context,
       builder: (_) => new CupertinoAlertDialog(
         title: new Text(title , style: infoLabel(Theme.of(context).buttonColor),),
-        content: new Text(message , style: infoValue(Theme.of(context).textSelectionColor),),
+        content: new Text(message , style: infoValue(Theme.of(context).buttonColor),),
         actions: actions
       ));
 }
