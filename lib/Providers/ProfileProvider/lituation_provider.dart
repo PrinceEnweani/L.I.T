@@ -10,7 +10,9 @@ class LituationProvider {
 
   LituationProvider(this.lID , this.userID);
 
-  lituationStream(){}
+  lituationStream(){
+    return db.getLituationByID(lID);
+  }
 
   Future<DocumentSnapshot> getCategories(){
     return db.getLituationCategories();
