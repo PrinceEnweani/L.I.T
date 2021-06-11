@@ -1,5 +1,6 @@
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -12,12 +13,18 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lit_beta/DBC/Auth.dart';
 import 'package:lit_beta/Models/Lituation.dart';
 import 'package:lit_beta/Models/User.dart';
 import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Strings/constants.dart';
+import 'package:lit_beta/Utils/Common.dart';
+import 'package:lit_beta/Views/Lituations/qr_viewer.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:rflutter_alert/rflutter_alert.dart';
+
 Color primaryColor = Colors.deepOrange;
 Color secondaryColor = Colors.black;
 
@@ -31,6 +38,8 @@ class ViewLituation extends StatefulWidget{
 }
 
 class _ViewLituationState extends State<ViewLituation>{
+  
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   //INPUT CONTROLLERS
   final TextEditingController titleController = TextEditingController();
   final TextEditingController feeController = TextEditingController();
@@ -94,6 +103,7 @@ class _ViewLituationState extends State<ViewLituation>{
           }
           List<String> tempThumbnails = List.from(l.data['thumbnail']);
           List<String> mediaURLs = [];
+          Lituation lit = Lituation.fromJson(l.data.data());
           thumbnails.clear();
           for(String nail in tempThumbnails){
             if(!mediaURLs.contains(nail)){
@@ -114,8 +124,9 @@ class _ViewLituationState extends State<ViewLituation>{
             }
           }
           return Scaffold(
+            key: _scaffoldKey,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            appBar: viewLituationNav(context),
+            appBar: viewLituationNav(context, lit),
             bottomNavigationBar: bottomButtons(l),
             body:  ListView(
                 padding: EdgeInsets.fromLTRB(0,0, 0, 50),
@@ -958,12 +969,12 @@ class _ViewLituationState extends State<ViewLituation>{
         });
   }
 
-  Widget viewLituationNav(BuildContext ctx){
+  Widget viewLituationNav(BuildContext ctx, Lituation lit){
     return AppBar(
       leading: Container(
         padding: EdgeInsets.all(10),
         child:  IconButton(
-          icon: Icon(Icons.arrow_back_ios,color: Theme.of(context).primaryColor,size: 25,
+          icon: Icon(Icons.arrow_back_ios,color: Theme.of(context).textSelectionColor,size: 25,
           ),
           onPressed: (){Navigator.of(ctx).pop();},
         ),
@@ -976,18 +987,120 @@ class _ViewLituationState extends State<ViewLituation>{
       ),
       actions: [
         Container(
-          padding: EdgeInsets.all(10),
+          padding: EdgeInsets.all(0),
           child:  IconButton(
-            icon: Icon(Icons.share,color: Theme.of(context).primaryColor,size: 25,
+            icon: Icon(Icons.share,color: Theme.of(context).textSelectionColor,size: 25,
             ),
-            onPressed: (){},
+            onPressed: (){
+              sendEmail(lit);
+            },
           ),
         ) ,
-
+        PopupMenuButton<String>(
+          icon: Icon(Icons.more_vert),
+          onSelected: (String result) async {
+            switch (result) {
+              case 'calendar':
+                print('filter 1 clicked');
+                addEvent2Calendar(lit);
+                break;
+              case 'ticket_check':
+                print('filter 2 clicked');
+                await checkTicket(lit);               
+                break;
+              case 'ticket_generate':
+                print('Clear filters');                
+                showDialog(context: context,
+                  builder: (BuildContext context){
+                  return QRViewer(
+                    lit: lit,
+                    userID: widget.lituationVisit.userID
+                  );
+                  }
+                );
+                break;
+              case 'invite':
+                print('Clear filters');
+                break;
+              default:
+            }
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+            const PopupMenuItem<String>(
+              value: 'calendar',
+              child: Text('Add to calendar'),
+            ),
+            const PopupMenuItem<String>(
+              value: 'ticket_check',
+              child: Text('Ticket Check'),
+            ),
+            const PopupMenuItem<String>(
+              value: 'ticket_generate',
+              child: Text('Ticket Generate'),
+            ),
+            const PopupMenuItem<String>(
+              value: 'invite',
+              child: Text('Invite'),
+            ),
+          ],
+        ),
       ],
     );
   }
 
+  checkTicket(Lituation lit) async {    
+    try {
+      String barcode = await scanner.scan();/*
+      File file = await ImagePicker.pickImage(source: ImageSource.camera);
+      if (file == null) return;
+      Uint8List bytes = file.readAsBytesSync();
+      String barcode = await scanner.scanBytes(bytes);*/
+      List<String> codes = barcode.split(":");
+      if (codes[0] == QR_ID && codes.length >= 3) {
+        if(codes[1] == lit.eventID /*&& lit.invited.contains(codes[2])*/) {
+          return Alert(
+            context:_scaffoldKey.currentContext, 
+            title: "Success",
+            desc: "This user can attend.",
+            type: AlertType.success,
+            buttons: [
+              DialogButton(
+                child: Text(
+                  "OK",
+                  style: TextStyle(color: Theme.of(_scaffoldKey.currentContext).textSelectionColor, fontSize: 18),
+                ),
+                onPressed: () {
+                  Navigator.pop(_scaffoldKey.currentContext);
+                },
+                color: Theme.of(_scaffoldKey.currentContext).primaryColor,
+              ),
+            ],                            
+          ).show();
+        }
+      }     
+      Alert(
+          context:_scaffoldKey.currentContext, 
+          title: "Failed",
+          desc: "This user can't attend.",
+          type: AlertType.success,
+          buttons: [
+            DialogButton(
+              child: Text(
+                "OK",
+                style: TextStyle(color: Theme.of(_scaffoldKey.currentContext).textSelectionColor, fontSize: 18),
+              ),
+              onPressed: () {
+                Navigator.pop(_scaffoldKey.currentContext);
+              },
+              color: Theme.of(_scaffoldKey.currentContext).primaryColor,
+            ),
+          ],                            
+        ).show();
+      print(barcode);
+    } catch (e) {
+
+    }
+  }
 
   void _toProfile(String uID){
     Navigator.pushReplacementNamed(context, HomePageRoute , arguments: uID);
