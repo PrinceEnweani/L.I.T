@@ -53,7 +53,22 @@ String parseDate(Timestamp d){
   DateTime date = DateTime.fromMicrosecondsSinceEpoch(d.millisecondsSinceEpoch * c);
   return DateFormat.yMd().addPattern('\n').add_jm().format(date);
 }
-
+DateTime dateTimeToTimeStamp(Timestamp d){
+  return  DateTime.fromMicrosecondsSinceEpoch(d.millisecondsSinceEpoch * 1000);
+}
+bool getStatusAsBool(String status){
+  //Online , Live , etc
+  if(status.contains('online') || status.contains('live')){
+    return true;
+  }
+  return false;
+}
+Color getStatusRingColor(bool online){
+  if(online){
+    return Colors.green;
+  }
+  return Colors.red;
+}
 showConfirmationDialog(BuildContext context ,String title , String message , List<Widget> actions ){
   showDialog(
       context: context,

@@ -58,6 +58,33 @@ Widget nullUrl(){
   );
 }
 
+Widget minimizeableList(Widget listWidget , bool minimize){
+  if(minimize){
+    return Container();
+  }else{
+    return listWidget;
+  }
+}
+Widget nullProfileUrl(BuildContext context){
+  return Container(
+    padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+    width: 125.0,
+    height: 125.0,
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.lightGreen),
+      borderRadius: BorderRadius.circular(75),
+    ),
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        Opacity(
+          opacity: 0.8,
+          child: Image.asset('assets/images/litlogo.png'),
+        )
+      ],
+    ),
+  );
+}
 //labeL
 Widget bioCard(List<Widget> labelAndEdit , Widget value, Color bgColor){
   return Card(
