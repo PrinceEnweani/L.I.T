@@ -846,7 +846,7 @@ class _ProfileState extends State<ProfilePage>{
           return CircularProgressIndicator();
         }
         List<String> invitationIds = List.from(ul.data['invitations']);
-        if(invitationIds.isNotEmpty){
+        if(invitationIds.isEmpty){
           return Column(
             children: [
               horizontalDivider(Theme.of(context).dividerColor, 250),

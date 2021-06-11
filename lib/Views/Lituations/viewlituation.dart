@@ -16,11 +16,13 @@ import 'package:google_maps_webservice/places.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lit_beta/DBC/Auth.dart';
+import 'package:lit_beta/Extensions/common_functions.dart';
 import 'package:lit_beta/Models/Lituation.dart';
 import 'package:lit_beta/Models/User.dart';
 import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Strings/constants.dart';
 import 'package:lit_beta/Utils/Common.dart';
+import 'package:lit_beta/Views/Lituations/invite_users.dart';
 import 'package:lit_beta/Views/Lituations/qr_viewer.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -127,7 +129,7 @@ class _ViewLituationState extends State<ViewLituation>{
             key: _scaffoldKey,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             appBar: viewLituationNav(context, lit),
-            bottomNavigationBar: bottomButtons(l),
+            bottomNavigationBar: widget.lituationVisit.action == "edit" ? bottomButtons(l) : null,
             body:  ListView(
                 padding: EdgeInsets.fromLTRB(0,0, 0, 50),
                 children: <Widget>[
@@ -148,6 +150,7 @@ class _ViewLituationState extends State<ViewLituation>{
                       )
                   ),
                   aboutRow(l.data['entry'], dateTimeToTimeStamp(l.data['date']), List.from(l.data['vibes']).length.toString()),
+                  ratingRow(lit.likes, lit.dislikes),
                   pendingWidgetProvider(l),
                   lituationTitleWidget(l),
                   hostInfoProvider(l.data['hostID']),
@@ -735,6 +738,64 @@ class _ViewLituationState extends State<ViewLituation>{
       ),
     );
   }
+
+  SnackBar sBar(String text){
+    return SnackBar(
+        backgroundColor: Theme.of(context).primaryColor,
+        content: Text(text , style: TextStyle(color: Theme.of(context).textSelectionColor),));
+  }
+  Widget ratingRow(List<String> likes , List<String> dislikes){
+    String up = "${likes != null? likes.length : 0} Likes";
+    String down = "${dislikes != null? dislikes.length : 0} Dislikes";
+
+    return Card(
+      elevation: 5,
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [      
+          Expanded( //lo
+            child:    GestureDetector(
+                onTap: (){
+                  if (likes.contains(widget.lituationVisit.userID)) {
+                    _scaffoldKey.currentState.showSnackBar(sBar('You already like!'));
+                  }
+                  db.addLikeLituation(widget.lituationVisit.userID, widget.lituationVisit.lituationID);
+                },
+                child: Container(
+                    padding: EdgeInsets.all(10.0),
+                    child:  Column(
+                      children: [
+                        Icon(MaterialCommunityIcons.thumb_up , color: Theme.of(context).primaryColor,),
+                        Text(up, style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 14)),
+                      ],
+                    )
+                )
+            ),
+          ), 
+          Expanded( //lo
+            child:    GestureDetector(
+                onTap: (){
+                  if (dislikes.contains(widget.lituationVisit.userID)) {
+                    _scaffoldKey.currentState.showSnackBar(sBar('You already like!'));
+                  }
+                  db.addDislikeLituation(widget.lituationVisit.userID, widget.lituationVisit.lituationID);
+                },
+                child: Container(
+                    padding: EdgeInsets.all(10.0),
+                    child:  Column(
+                      children: [
+                        Icon(MaterialCommunityIcons.thumb_down , color: Theme.of(context).primaryColor,),
+                        Text(down, style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 14)),
+                      ],
+                    )
+                )
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   Widget aboutRow(String entry , DateTime date , String vibing){
     String str;
     if(date == null){
@@ -781,8 +842,7 @@ class _ViewLituationState extends State<ViewLituation>{
                     )
                 )
             ),
-          )
-
+          ),
         ],
       ),
     );
@@ -986,16 +1046,38 @@ class _ViewLituationState extends State<ViewLituation>{
           child: Text(widget.lituationVisit.lituationName, style: TextStyle(color: Theme.of(context).textSelectionColor),)
       ),
       actions: [
-        Container(
-          padding: EdgeInsets.all(0),
-          child:  IconButton(
-            icon: Icon(Icons.share,color: Theme.of(context).textSelectionColor,size: 25,
+        PopupMenuButton<String>(
+          icon: Icon(Icons.share),
+          onSelected: (String result) async {
+            switch (result) {
+              case 'invite':
+                print('filter 1 clicked');       
+                showDialog(context: context,
+                  builder: (BuildContext context){
+                  return InviteView(
+                    lit: lit,
+                    userID: widget.lituationVisit.userID
+                  );
+                  }
+                );
+                break;
+              case 'share':
+                sendEmail(lit);         
+                break;
+              default:
+            }
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+            const PopupMenuItem<String>(
+              value: 'invite',
+              child: Text('Invite'),
             ),
-            onPressed: (){
-              sendEmail(lit);
-            },
-          ),
-        ) ,
+            const PopupMenuItem<String>(
+              value: 'share',
+              child: Text('Share'),
+            ),            
+          ],
+        ),
         PopupMenuButton<String>(
           icon: Icon(Icons.more_vert),
           onSelected: (String result) async {

@@ -348,6 +348,7 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     lv.userID = widget.newLituation.hostID;
     lv.lituationID = lID;
     lv.lituationName = lName;
+    lv.action = "edit";
     Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);
   }
 

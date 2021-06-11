@@ -587,16 +587,18 @@ class LituationVisit{
   String userID;
   String lituationID;
   String lituationName;
+  String action;
 
   LituationVisit(
       {  String userID,
         String lituationID,
         String lituationName,
+        String action
       }) {
     this.userID = userID;
     this.lituationID = lituationID;
     this.lituationName = lituationName;
-
+    this.action = action;
   }
 
 }

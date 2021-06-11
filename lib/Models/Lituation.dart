@@ -27,6 +27,8 @@ class Lituation {
   List<String> _vibes;
   List<String> _pending;
   List<String> _thumbnailURLs;
+  List<String> _likes;
+  List<String> _dislikes;
 
   Lituation({
     String capacity,
@@ -52,6 +54,8 @@ class Lituation {
     List<String> invited,
     List<String> pending,
     List<String> thumbnailURLs,
+    List<String> likes,
+    List<String> dislikes
   }) {
     this._capacity = capacity;
     this._date = date;
@@ -75,6 +79,8 @@ class Lituation {
     this._vibes = vibes;
     this._invited = invited;
     this._thumbnailURLs = thumbnailURLs;
+    this._likes = likes;
+    this._dislikes = dislikes;
   }
 
   Map<String, dynamic> toJson() {
@@ -103,6 +109,8 @@ class Lituation {
     data['invited'] = this._invited;
     data['pending'] = this._pending;
     data['thumbnail'] = this._thumbnailURLs;
+    data['likes'] = this._likes;
+    data['dislikes'] = this._dislikes;
 
     return data;
   }
@@ -131,6 +139,8 @@ class Lituation {
     this._invited = List<String>.from(json['invited'] ?? []);
     this._pending = List<String>.from(json['pending']);
     this._thumbnailURLs = List<String>.from(json['thumbnail']); 
+    this._likes = List<String>.from(json['likes'] ?? []);
+    this._dislikes = List<String>.from(json['dislikes'] ?? []); 
   }
 
 
@@ -272,5 +282,17 @@ class Lituation {
 
   set pending(List<String> value) {
     _pending = value;
+  }
+
+  List<String> get likes => _likes;
+  
+  set likes(List<String> value) {
+    _likes = value;
+  }
+
+  List<String> get dislikes => _dislikes;
+  
+  set dislikes(List<String> value) {
+    _dislikes = value;
   }
 }

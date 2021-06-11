@@ -333,6 +333,15 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     dbRef.collection("lituations").doc(lID).update({'locationLatLng' : GeoPoint(newLocationLatLng.latitude , newLocationLatLng.longitude)});
   }
 
+  Future<void> addLikeLituation(String userId, String lID) async {
+    var data = [userId];
+    dbRef.collection('lituations').doc(lID).update({"likes": FieldValue.arrayUnion(data)});
+  }
+  Future<void> addDislikeLituation(String userId, String lID) async {
+    var data = [userId];
+    dbRef.collection('lituations').doc(lID).update({"dislikes": FieldValue.arrayUnion(data)});
+  }
+
    Future<void> watchLituation(String userID , String lID){
     var u = [userID];
     var l = [lID];
@@ -441,10 +450,15 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     var data = [lID];
     dbRef.collection('users_lituations').doc(userId).update({"observedLituations": FieldValue.arrayRemove((data))});
   }
-
   Future<void> removePendingLituation(String userId , String lID) async {
     var data = [lID];
     dbRef.collection('users_lituations').doc(userId).update({"pendingLituations": FieldValue.arrayRemove((data))});
+  }
+  Future<void> removeInvitationLituation(String userId , String lID, String fromId) async {
+    var data = ["${fromId}:${lID}"];
+    var invites = [userId];
+    await dbRef.collection('users_lituations').doc(userId).update({"invitations": FieldValue.arrayRemove(data)});
+    await dbRef.collection('lituations').doc(lID).update({"invited": FieldValue.arrayRemove(invites)});
   }
 
   //DB lITUATION FUNCTIONS ----------------------------------------------
@@ -517,6 +531,12 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
   Future<void> addToUpcomingLituations(String userId , String lID) async {
     var data = [lID];
     dbRef.collection('users_lituations').doc(userId).update({"upcomingLituations": FieldValue.arrayUnion(data)});
+  }
+  Future<void> addToUserInvitation(String userId , String lID, String fromId) async {
+    var data = ["${fromId}:${lID}"];
+    var invites = [userId];
+    await dbRef.collection('users_lituations').doc(userId).update({"invitations": FieldValue.arrayUnion(data)});
+    await dbRef.collection('lituations').doc(lID).update({"invited": FieldValue.arrayUnion(invites)});
   }
 
 //VIBE Queries
