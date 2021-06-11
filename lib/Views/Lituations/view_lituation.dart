@@ -82,7 +82,7 @@ class _ViewLituationState extends State<ViewLituation>{
   Widget lituationDetailsProvider(AsyncSnapshot l){
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
-      appBar: topNav(backButton(), pageTitle(l.data['title'], Theme.of(context).primaryColor), [shareButton()], Theme.of(context).scaffoldBackgroundColor),
+      appBar: topNav(backButton(), pageTitle(l.data['title'], Theme.of(context).textSelectionColor), [shareButton()], Theme.of(context).scaffoldBackgroundColor),
       //bottomNavigationBar: bottomButtons(l),
       body:  ListView(
         padding: EdgeInsets.fromLTRB(0,0, 0, 50),
