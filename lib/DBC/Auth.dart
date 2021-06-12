@@ -335,11 +335,13 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 
   Future<void> addLikeLituation(String userId, String lID) async {
     var data = [userId];
-    dbRef.collection('lituations').doc(lID).update({"likes": FieldValue.arrayUnion(data)});
+    await dbRef.collection('lituations').doc(lID).update({"likes": FieldValue.arrayUnion(data)});
+    await dbRef.collection('lituations').doc(lID).update({"clout": FieldValue.increment(5)});
   }
   Future<void> addDislikeLituation(String userId, String lID) async {
     var data = [userId];
-    dbRef.collection('lituations').doc(lID).update({"dislikes": FieldValue.arrayUnion(data)});
+    await dbRef.collection('lituations').doc(lID).update({"dislikes": FieldValue.arrayUnion(data)});
+    await dbRef.collection('lituations').doc(lID).update({"clout": FieldValue.increment(-3)});
   }
 
    Future<void> watchLituation(String userID , String lID){

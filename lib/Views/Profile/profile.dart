@@ -1046,6 +1046,8 @@ class _ProfileState extends State<ProfilePage>{
         if(!user.hasData){
           return CircularProgressIndicator();
         }
+        if (user.data.exists == false)
+          return Container();
         return GestureDetector(
             onTap: (){
               if(userID != widget.userID){

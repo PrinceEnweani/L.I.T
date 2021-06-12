@@ -26,6 +26,8 @@ import 'package:lit_beta/Views/Lituations/invite_users.dart';
 import 'package:lit_beta/Views/Lituations/qr_viewer.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 Color primaryColor = Colors.deepOrange;
 Color secondaryColor = Colors.black;
@@ -745,8 +747,8 @@ class _ViewLituationState extends State<ViewLituation>{
         content: Text(text , style: TextStyle(color: Theme.of(context).textSelectionColor),));
   }
   Widget ratingRow(List<String> likes , List<String> dislikes){
-    String up = "${likes != null? likes.length : 0} Likes";
-    String down = "${dislikes != null? dislikes.length : 0} Dislikes";
+    String up = "${likes != null? likes.length : 0} lit";
+    String down = "${dislikes != null? dislikes.length : 0} nope";
 
     return Card(
       elevation: 5,
@@ -758,7 +760,10 @@ class _ViewLituationState extends State<ViewLituation>{
             child:    GestureDetector(
                 onTap: (){
                   if (likes.contains(widget.lituationVisit.userID)) {
-                    _scaffoldKey.currentState.showSnackBar(sBar('You already like!'));
+                    return _scaffoldKey.currentState.showSnackBar(sBar('You already lit!'));
+                  }
+                  if (dislikes.contains(widget.lituationVisit.userID)) {
+                    return _scaffoldKey.currentState.showSnackBar(sBar('You already nope!'));
                   }
                   db.addLikeLituation(widget.lituationVisit.userID, widget.lituationVisit.lituationID);
                 },
@@ -766,7 +771,7 @@ class _ViewLituationState extends State<ViewLituation>{
                     padding: EdgeInsets.all(10.0),
                     child:  Column(
                       children: [
-                        Icon(MaterialCommunityIcons.thumb_up , color: Theme.of(context).primaryColor,),
+                        Icon(Icons.local_fire_department , color: Theme.of(context).primaryColor,),
                         Text(up, style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 14)),
                       ],
                     )
@@ -776,8 +781,11 @@ class _ViewLituationState extends State<ViewLituation>{
           Expanded( //lo
             child:    GestureDetector(
                 onTap: (){
+                  if (likes.contains(widget.lituationVisit.userID)) {
+                    return _scaffoldKey.currentState.showSnackBar(sBar('You already lit!'));
+                  }
                   if (dislikes.contains(widget.lituationVisit.userID)) {
-                    _scaffoldKey.currentState.showSnackBar(sBar('You already like!'));
+                    return _scaffoldKey.currentState.showSnackBar(sBar('You already nope!'));
                   }
                   db.addDislikeLituation(widget.lituationVisit.userID, widget.lituationVisit.lituationID);
                 },
@@ -785,7 +793,7 @@ class _ViewLituationState extends State<ViewLituation>{
                     padding: EdgeInsets.all(10.0),
                     child:  Column(
                       children: [
-                        Icon(MaterialCommunityIcons.thumb_down , color: Theme.of(context).primaryColor,),
+                        Icon(Icons.fire_extinguisher , color: Theme.of(context).primaryColor,),
                         Text(down, style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 14)),
                       ],
                     )
@@ -1101,9 +1109,6 @@ class _ViewLituationState extends State<ViewLituation>{
                   }
                 );
                 break;
-              case 'invite':
-                print('Clear filters');
-                break;
               default:
             }
           },
@@ -1120,10 +1125,6 @@ class _ViewLituationState extends State<ViewLituation>{
               value: 'ticket_generate',
               child: Text('Ticket Generate'),
             ),
-            const PopupMenuItem<String>(
-              value: 'invite',
-              child: Text('Invite'),
-            ),
           ],
         ),
       ],
@@ -1132,11 +1133,8 @@ class _ViewLituationState extends State<ViewLituation>{
 
   checkTicket(Lituation lit) async {    
     try {
-      String barcode = await scanner.scan();/*
-      File file = await ImagePicker.pickImage(source: ImageSource.camera);
-      if (file == null) return;
-      Uint8List bytes = file.readAsBytesSync();
-      String barcode = await scanner.scanBytes(bytes);*/
+      await Permission.camera.request();
+      String barcode = await scanner.scan();
       List<String> codes = barcode.split(":");
       if (codes[0] == QR_ID && codes.length >= 3) {
         if(codes[1] == lit.eventID /*&& lit.invited.contains(codes[2])*/) {
@@ -1164,7 +1162,7 @@ class _ViewLituationState extends State<ViewLituation>{
           context:_scaffoldKey.currentContext, 
           title: "Failed",
           desc: "This user can't attend.",
-          type: AlertType.success,
+          type: AlertType.error,
           buttons: [
             DialogButton(
               child: Text(
