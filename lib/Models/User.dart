@@ -205,7 +205,7 @@ class UserStatus {
     _currentLocation = json['currentLocation'];
     _updateMessage = json['updateMessage'];
     _accumulatedClout = json['accumulatedClout'];
-    _achievements = json['achievements'];
+    _achievements = List<String>.from(['achievements']);
   }
 
   Map<String, dynamic> toJson() {
@@ -587,16 +587,18 @@ class LituationVisit{
   String userID;
   String lituationID;
   String lituationName;
+  String action;
 
   LituationVisit(
       {  String userID,
         String lituationID,
         String lituationName,
+        String action
       }) {
     this.userID = userID;
     this.lituationID = lituationID;
     this.lituationName = lituationName;
-
+    this.action = action;
   }
 
 }

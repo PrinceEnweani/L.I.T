@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lit_beta/DBC/Auth.dart';
 import 'package:lit_beta/Models/Lituation.dart';
+import 'package:lit_beta/Models/User.dart';
 
 class LituationProvider {
   Auth db = Auth();
@@ -23,6 +24,24 @@ class LituationProvider {
   getUserStreamByID(String id){
     return db.getUser(id);
   }
+  
+  Future<dynamic> queryUsers(String username) async {
+    List<String> results = [];
+   var users = [];
+    await db.getUsers().then((value){
+      for(var d in value.docs){
+        User u = User.fromJson(d.data());
+        if(u.username.toLowerCase().contains(username.toLowerCase())){
+          if(!results.contains(u.userID)) {
+            results.add(u.userID);
+            users.add(u);
+          }
+        }
+      }
+    });
+    return users;
+}
+  
   approveUser(String userID){
     db.approveUser(userID, lID);
   }
@@ -34,6 +53,7 @@ class LituationProvider {
     db.removeUserFromLituation(userID, lID);
     //TODO Notify user
   }
+  
   Future<dynamic> searchUser(String username) async {
     List<String> results = [];
    var users = [];

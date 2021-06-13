@@ -1,5 +1,6 @@
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -12,12 +13,22 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lit_beta/DBC/Auth.dart';
+import 'package:lit_beta/Extensions/common_functions.dart';
 import 'package:lit_beta/Models/Lituation.dart';
 import 'package:lit_beta/Models/User.dart';
 import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Strings/constants.dart';
+import 'package:lit_beta/Utils/Common.dart';
+import 'package:lit_beta/Views/Lituations/invite_users.dart';
+import 'package:lit_beta/Views/Lituations/qr_viewer.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 Color primaryColor = Colors.deepOrange;
 Color secondaryColor = Colors.black;
 
@@ -31,6 +42,8 @@ class ViewLituation extends StatefulWidget{
 }
 
 class _ViewLituationState extends State<ViewLituation>{
+  
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   //INPUT CONTROLLERS
   final TextEditingController titleController = TextEditingController();
   final TextEditingController feeController = TextEditingController();
@@ -94,6 +107,7 @@ class _ViewLituationState extends State<ViewLituation>{
           }
           List<String> tempThumbnails = List.from(l.data['thumbnail']);
           List<String> mediaURLs = [];
+          Lituation lit = Lituation.fromJson(l.data.data());
           thumbnails.clear();
           for(String nail in tempThumbnails){
             if(!mediaURLs.contains(nail)){
@@ -114,9 +128,10 @@ class _ViewLituationState extends State<ViewLituation>{
             }
           }
           return Scaffold(
+            key: _scaffoldKey,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            appBar: viewLituationNav(context),
-            bottomNavigationBar: bottomButtons(l),
+            appBar: viewLituationNav(context, lit),
+            bottomNavigationBar: widget.lituationVisit.action == "edit" ? bottomButtons(l) : null,
             body:  ListView(
                 padding: EdgeInsets.fromLTRB(0,0, 0, 50),
                 children: <Widget>[
@@ -137,6 +152,7 @@ class _ViewLituationState extends State<ViewLituation>{
                       )
                   ),
                   aboutRow(l.data['entry'], dateTimeToTimeStamp(l.data['date']), List.from(l.data['vibes']).length.toString()),
+                  ratingRow(lit.likes, lit.dislikes),
                   pendingWidgetProvider(l),
                   lituationTitleWidget(l),
                   hostInfoProvider(l.data['hostID']),
@@ -724,6 +740,70 @@ class _ViewLituationState extends State<ViewLituation>{
       ),
     );
   }
+
+  SnackBar sBar(String text){
+    return SnackBar(
+        backgroundColor: Theme.of(context).primaryColor,
+        content: Text(text , style: TextStyle(color: Theme.of(context).textSelectionColor),));
+  }
+  Widget ratingRow(List<String> likes , List<String> dislikes){
+    String up = "${likes != null? likes.length : 0} lit";
+    String down = "${dislikes != null? dislikes.length : 0} nope";
+
+    return Card(
+      elevation: 5,
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [      
+          Expanded( //lo
+            child:    GestureDetector(
+                onTap: (){
+                  if (likes.contains(widget.lituationVisit.userID)) {
+                    return _scaffoldKey.currentState.showSnackBar(sBar('You already lit!'));
+                  }
+                  if (dislikes.contains(widget.lituationVisit.userID)) {
+                    return _scaffoldKey.currentState.showSnackBar(sBar('You already nope!'));
+                  }
+                  db.addLikeLituation(widget.lituationVisit.userID, widget.lituationVisit.lituationID);
+                },
+                child: Container(
+                    padding: EdgeInsets.all(10.0),
+                    child:  Column(
+                      children: [
+                        Icon(Icons.local_fire_department , color: Theme.of(context).primaryColor,),
+                        Text(up, style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 14)),
+                      ],
+                    )
+                )
+            ),
+          ), 
+          Expanded( //lo
+            child:    GestureDetector(
+                onTap: (){
+                  if (likes.contains(widget.lituationVisit.userID)) {
+                    return _scaffoldKey.currentState.showSnackBar(sBar('You already lit!'));
+                  }
+                  if (dislikes.contains(widget.lituationVisit.userID)) {
+                    return _scaffoldKey.currentState.showSnackBar(sBar('You already nope!'));
+                  }
+                  db.addDislikeLituation(widget.lituationVisit.userID, widget.lituationVisit.lituationID);
+                },
+                child: Container(
+                    padding: EdgeInsets.all(10.0),
+                    child:  Column(
+                      children: [
+                        Icon(Icons.fire_extinguisher , color: Theme.of(context).primaryColor,),
+                        Text(down, style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 14)),
+                      ],
+                    )
+                )
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   Widget aboutRow(String entry , DateTime date , String vibing){
     String str;
     if(date == null){
@@ -770,8 +850,7 @@ class _ViewLituationState extends State<ViewLituation>{
                     )
                 )
             ),
-          )
-
+          ),
         ],
       ),
     );
@@ -958,12 +1037,12 @@ class _ViewLituationState extends State<ViewLituation>{
         });
   }
 
-  Widget viewLituationNav(BuildContext ctx){
+  Widget viewLituationNav(BuildContext ctx, Lituation lit){
     return AppBar(
       leading: Container(
         padding: EdgeInsets.all(10),
         child:  IconButton(
-          icon: Icon(Icons.arrow_back_ios,color: Theme.of(context).primaryColor,size: 25,
+          icon: Icon(Icons.arrow_back_ios,color: Theme.of(context).textSelectionColor,size: 25,
           ),
           onPressed: (){Navigator.of(ctx).pop();},
         ),
@@ -975,19 +1054,133 @@ class _ViewLituationState extends State<ViewLituation>{
           child: Text(widget.lituationVisit.lituationName, style: TextStyle(color: Theme.of(context).textSelectionColor),)
       ),
       actions: [
-        Container(
-          padding: EdgeInsets.all(10),
-          child:  IconButton(
-            icon: Icon(Icons.share,color: Theme.of(context).primaryColor,size: 25,
+        PopupMenuButton<String>(
+          icon: Icon(Icons.share),
+          onSelected: (String result) async {
+            switch (result) {
+              case 'invite':
+                print('filter 1 clicked');       
+                showDialog(context: context,
+                  builder: (BuildContext context){
+                  return InviteView(
+                    lit: lit,
+                    userID: widget.lituationVisit.userID
+                  );
+                  }
+                );
+                break;
+              case 'share':
+                sendEmail(lit);         
+                break;
+              default:
+            }
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+            const PopupMenuItem<String>(
+              value: 'invite',
+              child: Text('Invite'),
             ),
-            onPressed: (){},
-          ),
-        ) ,
-
+            const PopupMenuItem<String>(
+              value: 'share',
+              child: Text('Share'),
+            ),            
+          ],
+        ),
+        PopupMenuButton<String>(
+          icon: Icon(Icons.more_vert),
+          onSelected: (String result) async {
+            switch (result) {
+              case 'calendar':
+                print('filter 1 clicked');
+                addEvent2Calendar(lit);
+                break;
+              case 'ticket_check':
+                print('filter 2 clicked');
+                await checkTicket(lit);               
+                break;
+              case 'ticket_generate':
+                print('Clear filters');                
+                showDialog(context: context,
+                  builder: (BuildContext context){
+                  return QRViewer(
+                    lit: lit,
+                    userID: widget.lituationVisit.userID
+                  );
+                  }
+                );
+                break;
+              default:
+            }
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+            const PopupMenuItem<String>(
+              value: 'calendar',
+              child: Text('Add to calendar'),
+            ),
+            const PopupMenuItem<String>(
+              value: 'ticket_check',
+              child: Text('Ticket Check'),
+            ),
+            const PopupMenuItem<String>(
+              value: 'ticket_generate',
+              child: Text('Ticket Generate'),
+            ),
+          ],
+        ),
       ],
     );
   }
 
+  checkTicket(Lituation lit) async {    
+    try {
+      await Permission.camera.request();
+      String barcode = await scanner.scan();
+      List<String> codes = barcode.split(":");
+      if (codes[0] == QR_ID && codes.length >= 3) {
+        if(codes[1] == lit.eventID /*&& lit.invited.contains(codes[2])*/) {
+          return Alert(
+            context:_scaffoldKey.currentContext, 
+            title: "Success",
+            desc: "This user can attend.",
+            type: AlertType.success,
+            buttons: [
+              DialogButton(
+                child: Text(
+                  "OK",
+                  style: TextStyle(color: Theme.of(_scaffoldKey.currentContext).textSelectionColor, fontSize: 18),
+                ),
+                onPressed: () {
+                  Navigator.pop(_scaffoldKey.currentContext);
+                },
+                color: Theme.of(_scaffoldKey.currentContext).primaryColor,
+              ),
+            ],                            
+          ).show();
+        }
+      }     
+      Alert(
+          context:_scaffoldKey.currentContext, 
+          title: "Failed",
+          desc: "This user can't attend.",
+          type: AlertType.error,
+          buttons: [
+            DialogButton(
+              child: Text(
+                "OK",
+                style: TextStyle(color: Theme.of(_scaffoldKey.currentContext).textSelectionColor, fontSize: 18),
+              ),
+              onPressed: () {
+                Navigator.pop(_scaffoldKey.currentContext);
+              },
+              color: Theme.of(_scaffoldKey.currentContext).primaryColor,
+            ),
+          ],                            
+        ).show();
+      print(barcode);
+    } catch (e) {
+
+    }
+  }
 
   void _toProfile(String uID){
     Navigator.pushReplacementNamed(context, HomePageRoute , arguments: uID);

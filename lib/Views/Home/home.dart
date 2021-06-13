@@ -1,8 +1,15 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:lit_beta/Extensions/common_functions.dart';
 import 'package:lit_beta/Extensions/common_widgets.dart';
+import 'package:lit_beta/Models/Lituation.dart';
+import 'package:lit_beta/Providers/SearchProvider/search_provider.dart';
+import 'package:lit_beta/Strings/hint_texts.dart';
+import 'package:lit_beta/Styles/text_styles.dart';
 import 'package:lit_beta/Styles/theme_resolver.dart';
+import 'package:lit_beta/Utils/Common.dart';
 
 class FeedPage extends StatefulWidget {
   final String userID;
@@ -13,7 +20,7 @@ class FeedPage extends StatefulWidget {
 }
 
 class _FeedState extends State<FeedPage> {
-
+  SearchProvider sp;
   int _tabIndex = 0;
   @override
   void dispose(){
@@ -23,6 +30,7 @@ class _FeedState extends State<FeedPage> {
   @override
   void initState() {
     super.initState();
+    sp = new SearchProvider(widget.userID);
   }
   @override
   Widget build(BuildContext context) {
@@ -49,7 +57,8 @@ class _FeedState extends State<FeedPage> {
       child: IndexedStack(
         index: _tabIndex,
         children: [
-
+          lituationsTab(1), // Recommend Lituations
+          lituationsTab(1)  // Trending Lituations
         ],
       ),
         )
@@ -57,10 +66,32 @@ class _FeedState extends State<FeedPage> {
     );
   }
 
+  Widget lituationsTab(int type) {
+    return Container(
+      margin: EdgeInsets.only(top: 85),
+      child: FutureBuilder(
+        builder: (context, projectSnap) {
+          if (projectSnap.connectionState != ConnectionState.done ||
+              projectSnap.hasData == false) {
+            return Center(child: CircularProgressIndicator());
+          }
+          List<Lituation> data = projectSnap.data;
+          return ListView.builder(
+                itemCount: data.length,
+                itemBuilder: (context , idx){
+                  return  lituationCard(data[idx], context);
+                },
+            );
+        },
+        future: type == 1 ? sp.getRecommendLituations() : sp.getTrendingLituations(),
+      )
+    );
+  } 
+
   Widget feedTabs(){
     return Container(
       width: 250,
-      margin: EdgeInsets.only(top: 75),
+      margin: EdgeInsets.only(top: 45),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

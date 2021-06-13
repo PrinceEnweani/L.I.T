@@ -38,3 +38,5 @@ const String db_user_setting_vibe_notifications = 'vibe_notifications';
 const String db_user_setting_adult_lituations = 'adult_lituations';
 const String db_user_setting_theme = 'theme';
 String logo = 'assets/images/litlogo.png';
+// QR BEGIN
+const String QR_ID = "LITUATION";

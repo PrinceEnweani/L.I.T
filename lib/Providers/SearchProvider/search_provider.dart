@@ -20,15 +20,29 @@ class SearchProvider {
   getUserStreamByID(String id){
     return db.getUser(id);
   }
-  Future<dynamic> searchUser(String username) async {
+
+  bool filterCompare(String filter, String query, Lituation lit) {
+    if(filter == BY_TITLE && lit.title.toLowerCase().contains(query.toLowerCase()))
+      return true;
+    if(filter == BY_DATE && lit.date.toString().toLowerCase().contains(query.toLowerCase()))
+      return true;
+    if(filter == BY_HOST && lit.hostID.toLowerCase().contains(query.toLowerCase()))
+      return true;
+    if(filter == BY_THEME && lit.themes.toLowerCase().contains(query.toLowerCase()))
+      return true;
+    if(filter == BY_ADDRESS && lit.location.toLowerCase().contains(query.toLowerCase()))
+      return true;
+    return false;
+  }
+  Future<List<User>> searchUser(String username, String userID) async {
     List<String> results = [];
-    var users = [];
+    List<User> users = [];
     DocumentSnapshot meSnap = await db.getUserSnapShot(userID);
     User me = User.fromJson(meSnap.data());
     await db.getUsers().then((value){
       for(var d in value.docs){
         User u = User.fromJson(d.data());
-        if(u.username.toLowerCase().contains(username.toLowerCase())){
+        if(u.username.toLowerCase().contains(username.toLowerCase()) && u.userID != userID){
           if(!results.contains(u.userID)){
             results.add(u.userID);
             users.add(u);
@@ -48,51 +62,21 @@ class SearchProvider {
 
   //filters determine if the query is for title, date or other field.
   //Filter options:date , title, host.
-   searchLituation(String query , String filter) async {
+   Future<List<Lituation>> searchLituation(String query , String filter) async {
     List<String> resultIDs = [];
-    var lituationResults = [];
-    await db.getAllLituationsSnapShot().then((value){
+    List<Lituation> lituationResults = [];
+    await db.getAllLituationsSnapShot().then((value) async {
       var lituations = List.from(value.docs);
-      if(query != ''){
-        for(DocumentSnapshot l in lituations){
-        if(filter == BY_TITLE){
-            if(l.data()['title'].toString().toLowerCase().contains(query.toLowerCase()) && !resultIDs.contains(l.data()['eventID'])){
-              lituationResults.add(l);
-              resultIDs.add(l.data()['eventID']);
-            }
-          }
-        if(filter == BY_DATE){
-        //TODO Fix
-          if(l.data()['date'].toString().toLowerCase().contains(query.toLowerCase()) && !resultIDs.contains(l.data()['eventID'])){
-            lituationResults.add(l);
-            resultIDs.add(l.data()['eventID']);
-          }
+      for(DocumentSnapshot l in lituations){          
+        Lituation lit = Lituation.fromJson(l.data());
+        DocumentSnapshot snap = await db.getUserSnapShot(lit.hostID);
+        if (snap.exists == true) {
+          User host = User.fromJson(snap.data());
+          lit.host = host;
         }
-        if(filter == BY_HOST){
-          if(l.data()['hostID'].toString().toLowerCase().contains(query.toLowerCase()) && !resultIDs.contains(l.data()['eventID'])){
-            lituationResults.add(l);
-            resultIDs.add(l.data()['eventID']);
-          }
-        }
-        if(filter == BY_THEME){
-          if(l.data()['themes'].toString().toLowerCase().contains(query.toLowerCase()) && !resultIDs.contains(l.data()['eventID'])){
-            lituationResults.add(l);
-            resultIDs.add(l.data()['eventID']);
-          }
-        }
-        if(filter == BY_ADDRESS){
-          if((l.data()['address'].toString().toLowerCase().contains(query.toLowerCase()) || l.data()['title'].toString().toLowerCase().contains(query.toLowerCase()))&& !resultIDs.contains(l.data()['eventID'])){
-            lituationResults.add(l);
-            resultIDs.add(l.data()['eventID']);
-          }
-        }
-        }
-      }else{
-        for(DocumentSnapshot l in lituations){
-          if(!resultIDs.contains(l.data()['eventID'])){
-            resultIDs.add(l.data()['eventID']);
-            lituationResults.add(l);
-          }
+        if (query == '' || (filterCompare(filter, query, lit) && !resultIDs.contains(lit.eventID))) {
+          lituationResults.add(lit);
+          resultIDs.add(lit.eventID);
         }
       }
     });
@@ -130,4 +114,54 @@ class SearchProvider {
   getLituation(String id){
     return db.getLituationByID(id);
   }
+
+  Future<Lituation> getLituationById(String id) async {
+    DocumentSnapshot l = await db.getLituationSnapshotByID(id);
+    Lituation lit = Lituation.fromJson(l.data());
+    DocumentSnapshot snap = await db.getUserSnapShot(lit.hostID);
+    if(snap.exists == true) {
+      User host = User.fromJson(snap.data());
+      lit.host = host;
+    }
+    return lit;
+  }
+
+  Future<List<Lituation>> getRecommendLituations() async {
+    List<Lituation> lituationResults = [];
+    await db.getAllLituationsSnapShot().then((value)async {
+      var lituations = List.from(value.docs);
+      for(DocumentSnapshot l in lituations){
+        Lituation lit = Lituation.fromJson(l.data());
+        DocumentSnapshot snap = await db.getUserSnapShot(lit.hostID);
+        if (snap.exists == true) {
+          User host = User.fromJson(snap.data());
+          lit.host = host;
+        }
+        lituationResults.add(lit);
+        if (lituationResults.length >= 5)
+          break;
+      }
+    });
+    return lituationResults;
+  }  
+
+  Future<List<Lituation>> getTrendingLituations() async {    
+    DocumentSnapshot meSnap = await db.getUserSnapShot(userID);
+    User me = User.fromJson(meSnap.data());
+    List<Lituation> lituationResults = [];
+    await db.getAllLituationsSnapShot().then((value)async {
+      var lituations = List.from(value.docs);
+      for(DocumentSnapshot l in lituations){
+        Lituation lit = Lituation.fromJson(l.data());
+        DocumentSnapshot snap = await db.getUserSnapShot(lit.hostID);
+        User host = User.fromJson(snap.data());
+        lit.host = host;
+        lituationResults.add(lit);
+        if (lituationResults.length >= 5)
+          break;
+      }
+    });
+    return lituationResults;
+  }
+
 }
