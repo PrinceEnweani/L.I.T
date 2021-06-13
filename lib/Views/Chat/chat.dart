@@ -180,26 +180,7 @@ String parseRoomIDToUser(String roomID){
         ),],
     );
   }
-  Widget nullProfileUrl(){
-    return Container(
-      padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-      width: 125.0,
-      height: 125.0,
-      decoration: BoxDecoration(
-        border: Border.all(color: Theme.of(context).buttonColor),
-        borderRadius: BorderRadius.circular(75),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Opacity(
-            opacity: 0.8,
-            child: Image.asset('assets/images/litlogo.png'),
-          )
-        ],
-      ),
-    );
-  }
+
   String profileImage(String url){
     String litLogoUrl = 'https://firebasestorage.googleapis.com/v0/b/litt-a9ee1.appspot.com/o/userProfiles%2Flitlogo.png?alt=media&token=50f97adf-93d6-4087-8990-3278f6aa113b';
     if(url == null || url == ''){

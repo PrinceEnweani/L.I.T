@@ -15,13 +15,16 @@ class LituationProvider {
     return db.getLituationByID(lID);
   }
 
+  usersStream() {
+    return db.getAllUsers();
+  }
   Future<DocumentSnapshot> getCategories(){
     return db.getLituationCategories();
   }
   getUserStreamByID(String id){
     return db.getUser(id);
   }
-
+  
   Future<dynamic> queryUsers(String username) async {
     List<String> results = [];
    var users = [];
@@ -37,7 +40,20 @@ class LituationProvider {
       }
     });
     return users;
+}
+  
+  approveUser(String userID){
+    db.approveUser(userID, lID);
   }
+  cancelPendingRsvp(String userID){
+    db.cancelRSVP(userID, lID);
+    //TODO Notify user
+  }
+  removeFromGuestList(String userID){
+    db.removeUserFromLituation(userID, lID);
+    //TODO Notify user
+  }
+  
   Future<dynamic> searchUser(String username) async {
     List<String> results = [];
    var users = [];
