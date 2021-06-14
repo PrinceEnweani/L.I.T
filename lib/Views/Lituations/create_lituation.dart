@@ -85,7 +85,9 @@ class _CreateLituationPageState extends State<CreateLituationPage>{
   }
   void _onMapCreated(GoogleMapController controller) {
    if(!_controller.isCompleted) {
-     _controller.complete(controller);
+     setState(() {
+       _controller.complete(controller);
+     });
    }
   }
   @override

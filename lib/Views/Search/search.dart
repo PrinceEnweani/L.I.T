@@ -305,7 +305,7 @@ class _SearchState extends State<SearchPage> {
             },
           child: Card(
             color: Theme.of(context).backgroundColor,
-            elevation: 5,
+            elevation: 3,
             child: Container(
               padding: EdgeInsets.only(bottom: 10),
               height: 325,

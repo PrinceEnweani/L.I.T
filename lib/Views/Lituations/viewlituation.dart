@@ -1544,7 +1544,9 @@ class _ViewLituationState extends State<ViewLituation>{
   void _onMapCreated(GoogleMapController controller) {
     setState(() {
       if(!_controller.isCompleted)
-        _controller.complete(controller);
+        setState(() {
+          _controller.complete(controller);
+        });
     });
   }
   Widget nullProfileUrl(){

@@ -60,7 +60,9 @@ class _SurveyState extends State<SurveyPage> {
 
   void _onMapCreated(GoogleMapController controller) {
     if(!_controller.isCompleted){
-      _controller.complete(controller);
+     setState(() {
+       _controller.complete(controller);
+     });
     }
   }
 
