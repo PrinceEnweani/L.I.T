@@ -32,7 +32,7 @@ class ViewLituation extends StatefulWidget{
 }
 
 class _ViewLituationState extends State<ViewLituation>{
-
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
    TextEditingController titleController;
    TextEditingController capacityController;
    TextEditingController descriptionController;
@@ -55,6 +55,8 @@ class _ViewLituationState extends State<ViewLituation>{
    bool editMode;
    LituationProvider lp;
    Lituation updatedLituation;
+   Color likeColor = Colors.amber;
+   Color dislikeColor = Colors.red;
   @override
   void initState(){
     titleController = new TextEditingController();
@@ -81,14 +83,14 @@ class _ViewLituationState extends State<ViewLituation>{
 
   @override
   Widget build(BuildContext context) {
-      return lituationDetailPage();
+      return lituationDetailPage(context);
   }
 
-  Widget lituationDetailPage() {
+  Widget lituationDetailPage(BuildContext context) {
     return StreamBuilder(
       stream: lp.lituationStream(),
       builder: (context , lituation){
-        if(!lituation.hasData || lituation.connectionState == ConnectionState.waiting){
+        if(!lituation.hasData){
           return loadingWidget(context);
         }
         return lituationDetailsProvider(lituation);
@@ -97,27 +99,98 @@ class _ViewLituationState extends State<ViewLituation>{
   }
 
   Widget lituationDetailsProvider(AsyncSnapshot l){
+    Lituation lit = Lituation.fromJson(l.data.data());
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: topNav(backButton(), pageTitle(l.data['title'], Theme.of(context).textSelectionColor), [shareButton()], Theme.of(context).scaffoldBackgroundColor),
       bottomNavigationBar: bottomButtons(l),
-      body:  ListView(
-        padding: EdgeInsets.fromLTRB(0,0, 0, 50),
-        children: <Widget>[
-          lituationCarousel(l),
-          lituationAboutRowProvider(l),
-          pendingVibesWidgetProvider(l),
-          lituationTitleWidget(l),
-          attendeesWidgetProvider(l),
-          lituationTimeProvider(l),
-          lituationInfoCard("Entry" , l.data['entry'] , MaterialCommunityIcons.door),
-          lituationCapacityProvider(l),
-          lituationAddressInfo(l , Icons.location_on),
-          observersWidget(l),
-        ],
-      ),
+      body:  Builder(
+        builder: (context){
+          return ListView(
+            padding: EdgeInsets.fromLTRB(0,0, 0, 50),
+            children: <Widget>[
+              lituationCarousel(l),
+              lituationAboutRowProvider(l),
+              ratingRow(context , lit.likes, lit.dislikes),
+              pendingVibesWidgetProvider(l),
+              lituationTitleWidget(l),
+              attendeesWidgetProvider(l),
+              lituationTimeProvider(l),
+              lituationInfoCard("Entry" , l.data['entry'] , MaterialCommunityIcons.door),
+              lituationCapacityProvider(l),
+              lituationAddressInfo(l , Icons.location_on),
+              observersWidget(l),
+            ],
+          );
+        },
+      )
     );
   }
+  SnackBar sBar(String text){
+    return SnackBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        content: Text(text , style: infoValue(Theme.of(context).textSelectionColor),));
+  }
+
+   Widget ratingRow(BuildContext context , List<String> likes , List<String> dislikes){
+     String up = "${likes != null? likes.length : 0} voted lit";
+     String down = "${dislikes != null? dislikes.length : 0} voted nope";
+
+     return Card(
+       elevation: 5,
+       color: Theme.of(context).scaffoldBackgroundColor,
+       child: Row(
+         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+         children: [
+           Expanded( //lo
+             child: GestureDetector(
+                 onTap: (){
+                   if (likes.contains(widget.lituationVisit.userID)) {
+                     showSnackBar(context , sBar('You already voted!'));
+                   }
+                   if (dislikes.contains(widget.lituationVisit.userID)) {
+                     showSnackBar(context , sBar('You already voted!'));
+                   }
+                   lp.likeLituation();
+                 },
+                 child: Container(
+                     padding: EdgeInsets.all(10.0),
+                     child:  Column(
+                       children: [
+                         Icon(Icons.local_fire_department , color: likeColor,size: 35,),
+                         Text(up, style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 14)),
+                       ],
+                     )
+                 )
+             ),
+           ),
+           Expanded( //lo
+             child: GestureDetector(
+                 onTap: (){
+                   if (likes.contains(widget.lituationVisit.userID)) {
+                     return showSnackBar(context ,sBar('You already voted!'));
+                   }
+                   if (dislikes.contains(widget.lituationVisit.userID)) {
+                     return showSnackBar(context ,sBar('You already voted!'));
+                   }
+                   lp.dislikeLituation();
+                 },
+                 child: Container(
+                     padding: EdgeInsets.all(10.0),
+                     child:  Column(
+                       children: [
+                         Icon(Icons.fire_extinguisher , color: dislikeColor,size: 35,),
+                         Text(down, style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 14)),
+                       ],
+                     )
+                 )
+             ),
+           ),
+         ],
+       ),
+     );
+   }
+
    Widget bottomButtons(AsyncSnapshot l){
      List<String> vibingIDS = List.from(l.data['vibes']);
      bool already = false;
@@ -171,7 +244,7 @@ class _ViewLituationState extends State<ViewLituation>{
    }
    Widget visitorButtons(bool already, bool going,bool rsvp, String entry){
      return Container(
-       padding: EdgeInsets.fromLTRB(5, 15, 5, 15),
+       padding: EdgeInsets.fromLTRB(10, 15, 10, 15),
        child: Row(
          children: [
            Expanded(
@@ -193,10 +266,10 @@ class _ViewLituationState extends State<ViewLituation>{
      );
    }
    Widget observeButton(bool already){
-     String val = 'watch';
+     String val = 'observe';
      Color col = Colors.green;
      if(already){
-       val = 'stop watching';
+       val = 'stop observing';
        col = Colors.red;
      }
      return RaisedButton(
@@ -292,7 +365,7 @@ class _ViewLituationState extends State<ViewLituation>{
                  Container(
                    alignment:  Alignment.centerLeft,
                    margin: EdgeInsets.fromLTRB(15, 5, 0, 5),
-                   child: Text('observers (' + addedObservers.length.toString() + ')' , style: infoLabel(Theme.of(context).primaryColor),),),
+                   child: Text('(' + addedObservers.length.toString() + ') vibes are observing' , style: infoLabel(Theme.of(context).primaryColor),),),
                  Container(
                    margin: EdgeInsets.fromLTRB(0, 15, 15, 0) ,
                    height: 75,
@@ -596,10 +669,11 @@ class _ViewLituationState extends State<ViewLituation>{
      return places;
    }
    void _onMapCreated(GoogleMapController controller) {
-       if(!_controller.isCompleted)
+       if(!_controller.isCompleted) {
          setState(() {
-         _controller.complete(controller);
+           _controller.complete(controller);
          });
+       }
    }
    Widget showCap(AsyncSnapshot l){
      return Container( //login button
@@ -757,6 +831,7 @@ class _ViewLituationState extends State<ViewLituation>{
          if(!u.hasData){
            return CircularProgressIndicator();
          }
+
          for(var user in u.data.docs){
            if(attendeesIDs.contains(user.data()['userID'])){
              if(!addedIDs.contains(user.data()['userID'].toString())){
@@ -774,18 +849,24 @@ class _ViewLituationState extends State<ViewLituation>{
                  Container(
                    alignment:  Alignment.centerLeft,
                    margin: EdgeInsets.fromLTRB(15, 5, 0, 5),
-                   child: Text('vibes that are going (' + addedIDs.length.toString() + ')'  , style: infoLabel(Theme.of(context).primaryColor),),),
-                 Container(
-                   margin: EdgeInsets.fromLTRB(0, 15, 15, 0) ,
-                   height: 75,
-                   child: ListView.builder(
-                       scrollDirection: Axis.horizontal,
-                       itemCount: attendees.length,
-                       itemBuilder: (context , idx){
-                         return circularProfileWidget(attendees[idx].data()['profileURL'],attendees[idx].data()['userID'], attendees[idx].data()['username'], attendees[idx].data()['status']['status']);
-                       }
-                   ),
-                 ),
+                   child: Text(addedIDs.length == 1?'(' + addedIDs.length.toString() + ') is going':'(' + addedIDs.length.toString() + ') are going'  , style: infoLabel(Theme.of(context).primaryColor),),),
+                 Row(
+                   children: [
+                     circularProfileInviteWidget(),
+                     Expanded(flex: 8, child:
+                     Container(
+                       margin: EdgeInsets.fromLTRB(0, 15, 15, 0) ,
+                       height: 75,
+                       child: ListView.builder(
+                           scrollDirection: Axis.horizontal,
+                           itemCount: attendees.length,
+                           itemBuilder: (context , idx){
+                             return circularProfileWidget(attendees[idx].data()['profileURL'],attendees[idx].data()['userID'], attendees[idx].data()['username'], attendees[idx].data()['status']['status']);
+                           }
+                       ),
+                     ),)
+                   ],
+                 )
                ],
              ),
            );
@@ -993,6 +1074,35 @@ class _ViewLituationState extends State<ViewLituation>{
        ),
      );
    }
+  Widget circularProfileInviteWidget(){
+    return GestureDetector(
+      onTap: (){
+        //TODO GO TO INVITE PAGE
+
+        }
+      ,
+      child: Container(
+        height: 50,
+          width: 50 ,
+          margin: EdgeInsets.fromLTRB(15, 0, 0, 15) ,
+          child: Stack(
+            children: [
+              Align(
+                alignment: Alignment.center,
+                child: Container(
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                    child: Icon(Icons.add , color: Theme.of(context).textSelectionColor,)
+                ),
+              )
+            ],
+          ),
+          decoration: BoxDecoration(
+      border: Border.all(color: Colors.amber),
+      borderRadius: BorderRadius.circular(50),
+    )
+      ),
+    );
+  }
    Widget circularProfileWidget(String url ,String userID , String username , String status){
      bool online = getStatusAsBool(status);
      return GestureDetector(

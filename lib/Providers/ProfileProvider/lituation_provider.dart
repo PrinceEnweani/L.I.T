@@ -76,6 +76,12 @@ class LituationProvider {
     db.cancelRSVP(userID, lID);
     //TODO Notify user
   }
+  likeLituation(){
+    db.addLikeLituation(userID, lID);
+  }
+  dislikeLituation(){
+    db.addDislikeLituation(userID, lID);
+  }
   observeLituation(){
     db.watchLituation(userID, lID);
   }
