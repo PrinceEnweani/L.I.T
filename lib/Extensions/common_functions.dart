@@ -35,6 +35,38 @@ String parseThemes(Lituation l){
   themesStr = themes2.toString().replaceAll('[', '').replaceAll(']', '');
   return themesStr;
 }
+String parseDateToEndDate(Timestamp sd , Timestamp ed){
+  int c = 1000;
+  DateTime sdate = DateTime.fromMicrosecondsSinceEpoch(sd.millisecondsSinceEpoch * c);
+  DateTime edate = DateTime.fromMicrosecondsSinceEpoch(ed.millisecondsSinceEpoch * c);
+  return DateFormat.jm().format(sdate) + " - " + DateFormat.jm().format(edate);
+}
+String parseThemesFromSnapShot(AsyncSnapshot l){
+  List<String> themes = l.data['themes'].split(',');
+  List<String> themes2 = [];
+  String themesStr = "";
+  for(String t in themes){
+    if(!themes2.contains('@'+t)) {
+      t = '@' + t;
+      themes2.add(t);
+    }
+  }
+  themesStr = themes2.toString().replaceAll('[', '').replaceAll(']', '');
+  return themesStr;
+}
+String parseThemesFrom(Lituation l){
+  List<String> themes = l.themes.split(',');
+  List<String> themes2 = [];
+  String themesStr = "";
+  for(String t in themes){
+    if(!themes2.contains('@'+t)) {
+      t = '@' + t;
+      themes2.add(t);
+    }
+  }
+  themesStr = themes2.toString().replaceAll('[', '').replaceAll(']', '');
+  return themesStr;
+}
 String parseTime(Timestamp sd){
   int c = 1000;
   DateTime sdate = DateTime.fromMicrosecondsSinceEpoch(sd.millisecondsSinceEpoch * c);

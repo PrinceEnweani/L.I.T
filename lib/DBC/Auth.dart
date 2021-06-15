@@ -312,27 +312,26 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 
   //TODO add tumbnail update function
   Future<void> updateLituationTitle(String lID, String newTitle) async{
-    dbRef.collection("lituations").doc(lID).update({'title' : newTitle});
+    await dbRef.collection("lituations").doc(lID).update({'title' : newTitle});
   }
   Future<void> updateLituationDescription(String lID, String newDesc) async{
-    dbRef.collection("lituations").doc(lID).update({'description' : newDesc});
+    await dbRef.collection("lituations").doc(lID).update({'description' : newDesc});
   }
   Future<void> updateLituationDate(String lID, DateTime newDate) async{
-    dbRef.collection("lituations").doc(lID).update({'date' :  Timestamp.fromDate(newDate)});
+    await dbRef.collection("lituations").doc(lID).update({'date' :  Timestamp.fromDate(newDate)});
   }
   Future<void> updateLituationEndDate(String lID, DateTime newEndDate) async{
-    dbRef.collection("lituations").doc(lID).update({'end_date' :  Timestamp.fromDate(newEndDate)});
+    await dbRef.collection("lituations").doc(lID).update({'end_date' :  Timestamp.fromDate(newEndDate)});
   }
   Future<void> updateLituationCapacity(String lID, String newCapacity) async{
-    dbRef.collection("lituations").doc(lID).update({'capacity' : newCapacity});
+    await  dbRef.collection("lituations").doc(lID).update({'capacity' : newCapacity});
   }
   Future<void> updateLituationLocation(String lID, String newLocation) async{
-    dbRef.collection("lituations").doc(lID).update({'location' : newLocation});
+    await dbRef.collection("lituations").doc(lID).update({'location' : newLocation});
   }
   Future<void> updateLituationLocationLatLng(String lID, LatLng newLocationLatLng) async{
-    dbRef.collection("lituations").doc(lID).update({'locationLatLng' : GeoPoint(newLocationLatLng.latitude , newLocationLatLng.longitude)});
+    await dbRef.collection("lituations").doc(lID).update({'locationLatLng' : GeoPoint(newLocationLatLng.latitude , newLocationLatLng.longitude)});
   }
-
   Future<void> addLikeLituation(String userId, String lID) async {
     var data = [userId];
     await dbRef.collection('lituations').doc(lID).update({"likes": FieldValue.arrayUnion(data)});
@@ -342,8 +341,42 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     var data = [userId];
     await dbRef.collection('lituations').doc(lID).update({"dislikes": FieldValue.arrayUnion(data)});
     await dbRef.collection('lituations').doc(lID).update({"clout": FieldValue.increment(-3)});
+
+  }
+  Future<void> addLikeTest(String userId, String lID) async {
+    var data = [userId];
+   await dbRef.collection('lituations').doc(lID).get().then((value) async {
+     if(value.data()['dislikes'].contains(userId)){
+       await removeDislikeLituation(userId, lID);
+     }
+     if(!value.data()['likes'].contains(userId)){
+          await dbRef.collection('lituations').doc(lID).update({"likes": FieldValue.arrayUnion(data)});
+          await dbRef.collection('lituations').doc(lID).update({"clout": FieldValue.increment(5)});
+        }
+    });
   }
 
+  Future<void> removeLikeLituation(String userId, String lID) async {
+    var data = [userId];
+    await dbRef.collection('lituations').doc(lID).update({"likes": FieldValue.arrayRemove(data)});
+  }
+  Future<void> addDislikeTest(String userId, String lID) async {
+    var data = [userId];
+    await dbRef.collection('lituations').doc(lID).get().then((value) async {
+      if(value.data()['likes'].contains(userId)){
+        await removeLikeLituation(userId, lID);
+      }
+      if(!value.data()['dislikes'].contains(userId)){
+        await dbRef.collection('lituations').doc(lID).update({"dislikes": FieldValue.arrayUnion(data)});
+        await dbRef.collection('lituations').doc(lID).update({"clout": FieldValue.increment(-3)});
+      }
+    });
+
+  }
+  Future<void> removeDislikeLituation(String userId, String lID) async {
+    var data = [userId];
+    await dbRef.collection('lituations').doc(lID).update({"dislikes": FieldValue.arrayRemove(data)});
+  }
    Future<void> watchLituation(String userID , String lID){
     var u = [userID];
     var l = [lID];

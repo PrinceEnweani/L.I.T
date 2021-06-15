@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lit_beta/DBC/Auth.dart';
 import 'package:lit_beta/Models/Lituation.dart';
@@ -41,17 +42,56 @@ class LituationProvider {
     });
     return users;
 }
-  
+
+
   approveUser(String userID){
     db.approveUser(userID, lID);
+  }
+
+  updateLituationTitle(String newTitle){
+    db.updateLituationTitle(lID, newTitle);
+  }
+  updateLituationDate(DateTime newDate){
+    db.updateLituationDate(lID, newDate);
+  }
+  updateLituationDescription(String desc){
+    db.updateLituationDescription(lID, desc);
+  }
+  updateLituationEndDate(DateTime newEndDate){
+    db.updateLituationEndDate(lID, newEndDate);
+  }
+  updateLituationCapacity(String newCapacity){
+    db.updateLituationCapacity(lID, newCapacity);
+  }
+  updateLituationLocation(String location){
+    db.updateLituationLocation(lID, location);
+  }
+  updateLituationLocationLatLng(LatLng locLatLng){
+    db.updateLituationLocationLatLng(lID, locLatLng);
+  }
+  attendLituation(){
+    db.attendLituation(userID, lID);
   }
   cancelPendingRsvp(String userID){
     db.cancelRSVP(userID, lID);
     //TODO Notify user
   }
+  likeLituation(){
+    db.addLikeLituation(userID, lID);
+  }
+  dislikeLituation(){
+    db.addDislikeLituation(userID, lID);
+  }
+  observeLituation(){
+    db.watchLituation(userID, lID);
+  }
   removeFromGuestList(String userID){
     db.removeUserFromLituation(userID, lID);
     //TODO Notify user
+  }
+
+  sendRSVPToLituation(){
+    db.rsvpToLituation(userID, lID);
   }
   
   Future<dynamic> searchUser(String username) async {

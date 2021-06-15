@@ -508,7 +508,7 @@ class UserLituations {
   List<String> _pendingLituations;
   List<String> _observedLituations;
   List<String> _recommendedLituations;
-  List<String> _invitations;
+  List<Invitation> _invitations;
 
   //Invitations are indicated by the sender id and lituation id, seperated by a colon.
   //e.g user_id:lituation_id
@@ -524,7 +524,7 @@ class UserLituations {
         List<String> pendingLituations,
         List<String> observedLituations,
         List<String> recommendedLituations,
-        List<String> invitations,
+        List<Invitation> invitations,
       }) {
     this._userID = userID;
     this._drafts = drafts;
@@ -553,8 +553,8 @@ class UserLituations {
   set observedLituations(List<String> observedLituations) => _observedLituations = observedLituations;
   List<String> get recommendedLituations => _recommendedLituations;
   set recommendedLituations(List<String> recommendedLituations) => _recommendedLituations = recommendedLituations;
-  List<String> get invitations => _invitations;
-  set invitations(List<String> invitations) => _invitations = invitations;
+  List<Invitation> get invitations => _invitations;
+  set invitations(List<Invitation> invitations) => _invitations = invitations;
 
   UserLituations.fromJson(Map<String, dynamic> json) {
     _userID = json['userID'];
