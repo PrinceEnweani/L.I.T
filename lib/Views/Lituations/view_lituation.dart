@@ -31,6 +31,7 @@ class ViewLituation extends StatefulWidget{
 
 }
 
+
 class _ViewLituationState extends State<ViewLituation>{
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
    TextEditingController titleController;
@@ -57,6 +58,7 @@ class _ViewLituationState extends State<ViewLituation>{
    Lituation updatedLituation;
    Color likeColor = Colors.amber;
    Color dislikeColor = Colors.red;
+   bool popUpMenu;
   @override
   void initState(){
     titleController = new TextEditingController();
@@ -69,6 +71,7 @@ class _ViewLituationState extends State<ViewLituation>{
     tec2 = new TextEditingController();
     lp = LituationProvider(widget.lituationVisit.lituationID, widget.lituationVisit.userID);
     editMode = false;
+    popUpMenu = false;
     super.initState();
   }
 
@@ -103,23 +106,27 @@ class _ViewLituationState extends State<ViewLituation>{
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       appBar: topNav(backButton(), pageTitle(l.data['title'], Theme.of(context).textSelectionColor), [shareButton()], Theme.of(context).scaffoldBackgroundColor),
-      bottomNavigationBar: bottomButtons(l),
+      bottomNavigationBar: bottomButtonsProvider(l),
       body:  Builder(
         builder: (context){
-          return ListView(
-            padding: EdgeInsets.fromLTRB(0,0, 0, 50),
-            children: <Widget>[
-              lituationCarousel(l),
-              lituationAboutRowProvider(l),
-              ratingRow(context , lit.likes, lit.dislikes),
-              pendingVibesWidgetProvider(l),
-              lituationTitleWidget(l),
-              attendeesWidgetProvider(l),
-              lituationTimeProvider(l),
-              lituationInfoCard("Entry" , l.data['entry'] , MaterialCommunityIcons.door),
-              lituationCapacityProvider(l),
-              lituationAddressInfo(l , Icons.location_on),
-              observersWidget(l),
+          return Stack(
+            children: [
+              ListView(
+                padding: EdgeInsets.fromLTRB(0,0, 0, 50),
+                children: <Widget>[
+                  lituationCarousel(l),
+                  lituationAboutRowProvider(l),
+                  ratingRow(context , lit.likes, lit.dislikes),
+                  pendingVibesWidgetProvider(l),
+                  lituationTitleWidget(l),
+                  attendeesWidgetProvider(l),
+                  lituationTimeProvider(l),
+                  lituationInfoCard("Entry" , l.data['entry'] , MaterialCommunityIcons.door),
+                  lituationCapacityProvider(l),
+                  lituationAddressInfo(l , Icons.location_on),
+                  observersWidget(l),
+                ],
+              ),
             ],
           );
         },
@@ -190,7 +197,80 @@ class _ViewLituationState extends State<ViewLituation>{
        ),
      );
    }
+  Widget lituationPopUpMenu(){
+      return Container(
+        height: 200,
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            shareLituationButton(),
+            inviteToLituationButton(),
+          ],
+        ),
+      );
+  }
+  Widget shareLituationButton(){
+    return Container(
+        height: 50,
+        width: MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only(top: 5 , bottom: 5 , left: 75 , right: 75),
+        child: RaisedButton(
+          color: Colors.blueAccent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+               Expanded(flex: 7,child: Text("share lituation" ,style: infoValue(Theme.of(context).textSelectionColor) ,textAlign: TextAlign.center,),),
+                seperator(),
+               Expanded(flex: 2,child: Icon(Icons.share , color: Theme.of(context).textSelectionColor,)),
 
+              ],
+            ),
+            onPressed: (){
+              //TODO show share options
+            },
+            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
+        )
+    );
+  }
+  Widget inviteToLituationButton(){
+    return Container(
+        height: 50,
+        width: MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only(top: 5 , bottom: 5 , left: 75 , right: 75),
+        child: RaisedButton(
+          color: Theme.of(context).primaryColor,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Expanded(flex: 7,child: Text("send invite" ,style: infoValue(Theme.of(context).textSelectionColor) ,textAlign: TextAlign.center,),),
+                seperator(),
+                Expanded(flex: 2,child: Icon(Icons.add , color: Theme.of(context).textSelectionColor,)),
+
+              ],
+            ),
+            onPressed: (){
+              //TODO GO TO Guest List
+            },
+            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
+        )
+    );
+  }
+
+  Widget seperator(){
+    return Container(
+      color: Theme.of(context).dividerColor,
+      width: 1.5,
+      height: 35,
+      margin: EdgeInsets.only(left: 5 , right: 5),
+    );
+  }
+   Widget bottomButtonsProvider(AsyncSnapshot l){
+      if(popUpMenu){
+        return lituationPopUpMenu();
+      }
+      return bottomButtons(l);
+   }
    Widget bottomButtons(AsyncSnapshot l){
      List<String> vibingIDS = List.from(l.data['vibes']);
      bool already = false;
@@ -1756,11 +1836,18 @@ class _ViewLituationState extends State<ViewLituation>{
     return Container(
       padding: EdgeInsets.all(10),
       child:  IconButton(
-        icon: Icon(Icons.share,color: Theme.of(context).buttonColor,size: 25,
+        icon: Icon(popUpMenu?Icons.cancel:Icons.share,color: Theme.of(context).buttonColor,size: 25,
         ),
-        onPressed: (){},
+        onPressed: (){
+          showPopUpMenu();
+        },
       ),
     );
+  }
+  void showPopUpMenu(){
+    setState(() {
+      popUpMenu = !popUpMenu;
+    });
   }
   Widget backButton(){
    return Container(
