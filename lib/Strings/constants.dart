@@ -1,3 +1,5 @@
+const String fb_app_id = "367344998058010";
+const String fb_redirect_url="https://litt-a9ee1.firebaseapp.com/__/auth/handler";
 const int birthday_page_idx = 0;
 const int category_preference_page_idx = 1;
 const int gender_page_idx = 2;

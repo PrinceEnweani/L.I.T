@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dash_chat/dash_chat.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:lit_beta/Models/Chat.dart';
@@ -15,6 +16,7 @@ import 'package:lit_beta/Strings/settings.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'DBA.dart';
+import 'custom_web_view.dart';
 
 class Auth implements DBA {
   final FirebaseAuth dbAuth = FirebaseAuth.instance;
@@ -83,6 +85,49 @@ class Auth implements DBA {
     String userID = '';
     try {
       await this.googleAuth().then((value) async {
+          DocumentSnapshot userSnap = await this.getUserSnapShot(value.user.uid); // check user registered or not
+          if (userSnap.exists == false)
+            userID = auth_no_user_error_code;
+          else{
+            updateStatus('online');
+            userID = value.user.uid;
+          }
+      });      
+    } on FirebaseAuthException catch (e) {
+      print("Google Signin Error " + e.code);
+      userID = handleAuthException(e);
+    }
+    return userID;
+  }
+
+  Future<UserCredential> facebookAuth(context) async {
+    UserCredential user;
+    String result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => CustomWebView(
+                selectedUrl:
+                    'https://www.facebook.com/dialog/oauth?client_id=$fb_app_id&redirect_uri=$fb_redirect_url&response_type=token&scope=email,public_profile,',
+              ),
+          maintainState: true),
+    );
+    if (result != null) {
+      try {
+        final facebookAuthCred = FacebookAuthProvider.credential(result);
+        user = await FirebaseAuth.instance.signInWithCredential(facebookAuthCred);
+        print('user $user');
+      } catch (e) {
+        print('Error $e');
+        throw e;
+      }
+    }
+    return user;
+  }
+
+  Future<String> signInWithFacebook(context) async {
+    String userID = '';
+    try {
+      await this.facebookAuth(context).then((value) async {
           DocumentSnapshot userSnap = await this.getUserSnapShot(value.user.uid); // check user registered or not
           if (userSnap.exists == false)
             userID = auth_no_user_error_code;
