@@ -201,6 +201,9 @@ class Auth implements DBA {
     return  dbRef.collection("lituationCategories").doc("categories").get();
   }
 
+  Future<void> updateUserPushToken(String userID, String val) async {
+    dbRef.collection(db_users_collection).doc(userID).update({'pushToken': val});
+  }
   Future<void> updateUserBirthday(String userID , String val) async {
     dbRef.collection(db_users_collection).doc(userID).update({'userVibe.birthday': val});
   }
