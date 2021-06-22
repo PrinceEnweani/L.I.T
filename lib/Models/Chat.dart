@@ -4,17 +4,20 @@ class ChatRoomModel {
   String _room_id;
   DateTime _date_created;
   String _room_name;
+  String _creator_id;
   List<String> _party;
   List<String> _messages;
 
   ChatRoomModel(
       { String room_id,
+       String creator_id,
       DateTime date_created,
       String room_name,
       List<String> party,
       List<String> messages,
       }) {
    this._room_id = room_id;
+   this._creator_id = creator_id;
    this._date_created = _date_created;
    this._room_name = room_name;
    this._party = party;
@@ -23,6 +26,8 @@ class ChatRoomModel {
 
   String get room_id => _room_id;
   set room_id(String room_id) => _room_id = room_id;
+  String get creator_id => _creator_id;
+  set creator_id(String creator_id) => _creator_id = creator_id;
   DateTime get date_created => date_created = _date_created;
   set date_created(DateTime date_created) => _date_created = date_created;
   String get room_name => _room_name;
@@ -34,6 +39,7 @@ class ChatRoomModel {
 
   ChatRoomModel.fromJson(Map<String, dynamic> json) {
     _room_id = json['roomID'];
+    _creator_id = json['creatorID'];
     _date_created = json['date_created'];
     _room_name = json['room_name'];
     _party = json['party'];

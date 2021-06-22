@@ -284,6 +284,8 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 * handles send, cancel and remove
 * */
   Future<void> sendVibeRequest(String visitor , String visited) async {
+    //TODO Send notification to the visited user
+    //Notification should say something like -"user x has requested to vibe with you"
     var vd = [visited];
     var vo = [visitor];
     //we add them to the list of pending vibes
@@ -426,6 +428,8 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     await dbRef.collection('lituations').doc(lID).update({"dislikes": FieldValue.arrayRemove(data)});
   }
    Future<void> watchLituation(String userID , String lID){
+    //TODO send notification to host if Lituation_notifications are enabled.
+     //Notification should say something like "User_x is observing your Lituation_x"
     var u = [userID];
     var l = [lID];
     //we add them to the list of pending vibes
@@ -444,6 +448,8 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 
   //adds user to lituation
   Future<void> approveUser(String userID , String lID){
+    //TODO Send notification to approved user
+    //Notification should say something "You have been approved for Lituation_name"
     var u = [userID];
     var l = [lID];
     dbRef.collection('lituations').doc(lID).get().then((value){
@@ -463,6 +469,8 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 
   //Removes a user from a Lituation (view usages in : viewLituation.dart)
   Future<void> removeUserFromLituation(String userID , String lID){
+    //TODO Send Notification to removed user
+    //notigication should say something like You have been removed from this Lituation.
     var u = [userID];
     var l = [lID];
     dbRef.collection('lituations').doc(lID).get().then((value){
@@ -480,6 +488,8 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 
   //RSVP's user to a Lituation (view usages in : viewLituation.dart)
   Future<void> rsvpToLituation(String userID , String lID){
+    //TODO Send Notification to lituation host
+    //notification should say something like "user_x has rsvp'd for your lituation."
     var u = [userID];
     var l = [lID];
     //we add them to the list of pending vibes
@@ -497,6 +507,8 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
   }
 
   Future<void> attendLituation(String userID , String lID) async{
+    //TODO Send Notification to  lituation host
+    //notification should say something like "New user on the guest list".
     var n = [userID];
     var l = [lID];
     dbRef.collection('lituations').doc(lID).get().then((value){
@@ -547,6 +559,9 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
   //DB lITUATION FUNCTIONS ----------------------------------------------
   //TODO move to Preview lituation
   Future<String> createLituation(Lituation l) async {
+    //TODO Send notification to all invited users
+    //Notification should say something like: "You have been invited to  lituation_x by host_name"
+
     List imgs = [];
     for(String path in l.thumbnailURLs){
      imgs.add(File(path));
@@ -579,6 +594,9 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
   }
 
   Future<List> uploadLituationMedia(Lituation l , List imgs) async{
+    //TODO Send notification to host
+    //Notification should say something like: "Your media for lituation_name have been succesfully uploaded!"
+
     List urls = [];
     for(var img in imgs){
       await upload(img, l).then((url){
@@ -624,6 +642,9 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 
 //VIBE Queries
   Future<void> acceptPendingVibe(String userID , String vibeID) async {
+    //TODO Send notification to accepted user
+    //Notification should say something like: "user_x has accepted your vibe request"
+
     var u = [vibeID];
     var m = [userID];
     cancelPendingVibeRequest(vibeID , userID).then((value) =>{
@@ -636,6 +657,9 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 
   //Removes a user's RSVP from 'pending' list in a Lituation (view usages in : viewLituation.dart)
   Future<void> cancelRSVP(String userID , String lID){
+    //TODO Send notification to canceled user
+    //Notification should say something like: "Your RSVP to lituation_x was denied."
+
     var u = [userID];
     var l = [lID];
     dbRef.collection('lituations').doc(lID).get().then((value){
@@ -672,6 +696,8 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 
   //adds user to lituation
   Future<void> approveRSVP(String userID , String lID){
+    //TODO Send notification to added user
+    //Notification should say something like: "You have approved for and added to the guest list for lituation_x"
     var u = [userID];
     var l = [lID];
     dbRef.collection('lituations').doc(lID).get().then((value){
@@ -702,6 +728,9 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 
 
   Future<void> completeRegistration(UserModel.User u) async {
+    //TODO Send notification to new user
+    //Notification should say something like: "Welcome To LIT!"
+
     String id = u.userID;
     await dbRef.collection('users').doc(id).set(u.toJson()).then((value){
       dbRef.collection(db_vibed_collection).doc(id).set(initNewUserVibed(id).toJson()).then((value){
@@ -823,10 +852,14 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
   }
 
   createChatRoom(ChatRoomModel chatroom) async {
+    //TODO Send notifications to all users in room besides host/creator.
+    //If the room has 2 users, the notification should say something like "user x starting a chat with you"
+    //If the room has more than 2 users, the notification should say something like "you have been added to room_name"
     await dbRef.collection('chat').doc(chatroom.room_id).set(chatroom.toJson());
   }
 
   sendMessageToRoom(String roomID , ChatMessage m) async {
+    //TODO send notification to all users except sender in room who have notifications for chat enabled.
     return await dbRef.collection('chat').doc(roomID).collection('messages').add(m.toJson());
   }
 
