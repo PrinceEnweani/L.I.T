@@ -1,7 +1,7 @@
 const String fb_app_id = "367344998058010";
 const String fb_redirect_url="https://litt-a9ee1.firebaseapp.com/__/auth/handler";
-const String fcm_server_key="AAAAIIcvVLc:APA91bHhCJf1jm0bk5HBo_fW3vjCcz-gIJEOkLVkBzaKUsdL8NMOhIrjIrmrrCzn5gREy36FWX-cDXORqxBNNClBXTekOU0QtI5_P6Oac7vjKw1QM52KWEeRfppyBs19dwhx_tsOMViw";
-//const String fcm_server_key="AAAAbbILvUc:APA91bGH-NSgvJOkABjv0LaSaDp0cxnLxPk84oGGoLypO7kGqDrJc05HwOB2ugfBvZHHOLR_96XKeaXR73sS05vhfnpKTd_hwb7_oh4BmjEUDmprC4INLolLXrLaZHzIg5JoWNg6ok-S";
+//const String fcm_server_key="AAAAIIcvVLc:APA91bHhCJf1jm0bk5HBo_fW3vjCcz-gIJEOkLVkBzaKUsdL8NMOhIrjIrmrrCzn5gREy36FWX-cDXORqxBNNClBXTekOU0QtI5_P6Oac7vjKw1QM52KWEeRfppyBs19dwhx_tsOMViw";
+const String fcm_server_key="AAAAbbILvUc:APA91bGH-NSgvJOkABjv0LaSaDp0cxnLxPk84oGGoLypO7kGqDrJc05HwOB2ugfBvZHHOLR_96XKeaXR73sS05vhfnpKTd_hwb7_oh4BmjEUDmprC4INLolLXrLaZHzIg5JoWNg6ok-S";
 const int birthday_page_idx = 0;
 const int category_preference_page_idx = 1;
 const int gender_page_idx = 2;
