@@ -40,10 +40,10 @@ class ChatRoomModel {
   ChatRoomModel.fromJson(Map<String, dynamic> json) {
     _room_id = json['roomID'];
     _creator_id = json['creatorID'];
-    _date_created = json['date_created'];
+    _date_created = json['date_created'].toDate();
     _room_name = json['room_name'];
-    _party = json['party'];
-    _messages = json['messages'];
+    _party = List<String>.from(json['party']);
+    _messages = List<String>.from( json['messages']);
   }
 
   Map<String, dynamic> toJson() {
