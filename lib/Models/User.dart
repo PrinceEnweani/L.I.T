@@ -67,7 +67,7 @@ class User {
     _profileURL = json['profileURL'];
     _userImagesUrls = List<String>.from(json['userImagesUrls']);
     _userID = json['userID'];
-    _deviceToken = json['deviceToken'];
+    _deviceToken = json['deviceToken'] ?? "";
     _userLocation = json['userLocation'];
     _userLocLatLng = LatLng(json['userLocLatLng'].latitude, json['userLocLatLng'].longitude);
     _userVibe = json['userVibe'] != null

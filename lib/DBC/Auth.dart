@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dash_chat/dash_chat.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:lit_beta/Models/Chat.dart';
@@ -13,8 +15,10 @@ import 'package:lit_beta/Strings/constants.dart';
 import 'package:lit_beta/Models/User.dart' as UserModel;
 import 'package:lit_beta/Strings/settings.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
 
 import 'DBA.dart';
+import 'custom_web_view.dart';
 
 class Auth implements DBA {
   final FirebaseAuth dbAuth = FirebaseAuth.instance;
@@ -98,6 +102,72 @@ class Auth implements DBA {
     return userID;
   }
 
+  Future<UserCredential> facebookAuth(context) async {
+    UserCredential user;
+    String result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => CustomWebView(
+                selectedUrl:
+                    'https://www.facebook.com/dialog/oauth?client_id=$fb_app_id&redirect_uri=$fb_redirect_url&response_type=token&scope=email,public_profile,',
+              ),
+          maintainState: true),
+    );
+    if (result != null) {
+      try {
+        final facebookAuthCred = FacebookAuthProvider.credential(result);
+        user = await FirebaseAuth.instance.signInWithCredential(facebookAuthCred);
+        print('user $user');
+      } catch (e) {
+        print('Error $e');
+        throw e;
+      }
+    }
+    return user;
+  }
+
+  Future<String> signInWithFacebook(context) async {
+    String userID = '';
+    try {
+      await this.facebookAuth(context).then((value) async {
+          DocumentSnapshot userSnap = await this.getUserSnapShot(value.user.uid); // check user registered or not
+          if (userSnap.exists == false)
+            userID = auth_no_user_error_code;
+          else{
+            updateStatus('online');
+            userID = value.user.uid;
+          }
+      });      
+    } on FirebaseAuthException catch (e) {
+      print("Google Signin Error " + e.code);
+      userID = handleAuthException(e);
+    }
+    return userID;
+  }
+
+  Future<bool> sendPushNotification(String token, String title, String body, {var data, var tokens}) async {
+    http.Response response = await http.post(
+      'https://fcm.googleapis.com/fcm/send',
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'key=$fcm_server_key',
+      },
+      body: jsonEncode(
+        <String, dynamic>{
+          'notification': <String, dynamic>{
+            'body': body,
+            'title': title
+          },
+          'priority': 'high',
+          'data': data ?? {},
+          'registration_ids': token != "" ? [token] : tokens
+        },
+      ),
+    );
+    if (response.statusCode == 200)
+      return true;
+    return false;
+  }
   Future<TaskSnapshot> changeUserProfileImage(String userID , File image){
     dbMediaRef.ref().child('userProfiles').child(userID).putFile(image).then((taskSnapshot){
       //TODO Update to .error update check
@@ -156,6 +226,9 @@ class Auth implements DBA {
     return  dbRef.collection("lituationCategories").doc("categories").get();
   }
 
+  Future<void> updateUserPushToken(String userID, String val) async {
+    dbRef.collection(db_users_collection).doc(userID).update({'deviceToken': val});
+  }
   Future<void> updateUserBirthday(String userID , String val) async {
     dbRef.collection(db_users_collection).doc(userID).update({'userVibe.birthday': val});
   }
@@ -241,6 +314,8 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     var vd = [visited];
     var vo = [visitor];
     //we add them to the list of pending vibes
+    UserModel.User visitorObj = await getUserModel(visitor);
+    UserModel.User vistedObj = await getUserModel(visited);
     dbRef.collection('vibing').doc(visited).get().then((value){
       List pending = List.from(value.data()['pendingVibing']);
       List vibes = List.from(value.data()['vibing']);
@@ -250,17 +325,20 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
           dbRef.collection('vibed').doc(visitor).update(
               {"pendingVibes": FieldValue.arrayUnion(vd)});
         });
+        sendPushNotification(vistedObj.deviceToken, "Vibe Request", "${visitorObj.username} has requested to vibe with you");
       }else{
         if(pending.contains(visitor)){
           dbRef.collection('vibing').doc(visited).update({'pendingVibing': FieldValue.arrayRemove(vo)}).then((value){
             dbRef.collection('vibed').doc(visitor).update({"pendingVibes": FieldValue.arrayRemove(vd)});
           });
+          sendPushNotification(vistedObj.deviceToken, "Vibe Request Approve", "${visitorObj.username} vibe with you");
         }
         if(vibes.contains(visitor)){
           dbRef.collection('vibing').doc(visited).update({'vibing': FieldValue.arrayRemove(vo)}).then((value){
             dbRef.collection('vibed').doc(visitor).update({'vibed': FieldValue.arrayRemove(vd)});
             updateClout(visited, -3);
           });
+          sendPushNotification(vistedObj.deviceToken, "Vibe Remove", "${visitorObj.username} remove vibe with you");
         }
       }
     });
@@ -297,6 +375,13 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
   }
   getUserSnapShot(String userID) async {
     return await dbRef.collection("users").doc(userID).get();
+  }
+  
+  Future<UserModel.User> getUserModel(String userID) async {
+    var snapshot = await dbRef.collection("users").doc(userID).get();
+    print(snapshot.data());
+    UserModel.User user = UserModel.User.fromJson(snapshot.data());
+    return user;
   }
   Stream<dynamic> getAllLituations(){
     return dbRef.collection('lituations').snapshots();
@@ -379,21 +464,28 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     var data = [userId];
     await dbRef.collection('lituations').doc(lID).update({"dislikes": FieldValue.arrayRemove(data)});
   }
-   Future<void> watchLituation(String userID , String lID){
+   Future<void> watchLituation(String userID , String lID) async{
     //TODO send notification to host if Lituation_notifications are enabled.
      //Notification should say something like "User_x is observing your Lituation_x"
     var u = [userID];
     var l = [lID];
+    UserModel.User visitor = await getUserModel(userID);
     //we add them to the list of pending vibes
-    dbRef.collection('lituations').doc(lID).get().then((value){
-      if(!List.from(value.data()['observers']).contains(userID)){
+    dbRef.collection('lituations').doc(lID).get().then((value) async {        
+      UserModel.User hoster = await getUserModel(value.data()['hostID']);
+      Lituation lit = Lituation.fromJson(value.data());
+      if(!lit.observers.contains(userID)){
         dbRef.collection('lituations').doc(lID).update({'observers': FieldValue.arrayUnion(u)}).then((value){
           dbRef.collection('users_lituations').doc(userID).update({"observedLituations": FieldValue.arrayUnion(l)});
         });
+        if (hoster.deviceToken != "")
+          sendPushNotification(hoster.deviceToken, "New Overserver", "${visitor.username} has is observing your ${lit.title}");
       }else{
         dbRef.collection('lituations').doc(lID).update({'observers': FieldValue.arrayRemove(u)}).then((value){
           dbRef.collection('users_lituations').doc(userID).update({"observedLituations": FieldValue.arrayRemove(l)});
         });
+        if (hoster.deviceToken != "")
+          sendPushNotification(hoster.deviceToken, "Quit Overserver", "${visitor.username} has quitted your ${lit.title}");
       }
     });
   }
@@ -405,12 +497,16 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     var u = [userID];
     var l = [lID];
     dbRef.collection('lituations').doc(lID).get().then((value){
-      if(List.from(value.data()['pending']).contains(userID)){
+      Lituation lit = Lituation.fromJson(value.data());
+      if(lit.pending.contains(userID)){
         dbRef.collection('lituations').doc(lID).update({'pending': FieldValue.arrayRemove(u)}).then((value){
         dbRef.collection('lituations').doc(lID).update({'vibes': FieldValue.arrayUnion(u)}).then((value) {
           dbRef.collection('users_lituations').doc(userID).update({'pendingLituations': FieldValue.arrayRemove(l)}).then((value){
-            dbRef.collection('users_lituations').doc(userID).update({'upcomingLituations': FieldValue.arrayUnion(l)}).then((value){
+            dbRef.collection('users_lituations').doc(userID).update({'upcomingLituations': FieldValue.arrayUnion(l)}).then((value) async {
               //TODO send approval message
+              UserModel.User user = await getUserModel(userID);              
+              if (user.deviceToken != "")
+                sendPushNotification(user.deviceToken, "Approved for lituation", "You have been approved for ${lit.title}");
             });
           });
         });
@@ -426,12 +522,16 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     var u = [userID];
     var l = [lID];
     dbRef.collection('lituations').doc(lID).get().then((value){
-      if(List.from(value.data()['vibes']).contains(userID)){
+      Lituation lit = Lituation.fromJson(value.data());
+      if(lit.vibes.contains(userID)){
         dbRef.collection('lituations').doc(lID).update({'vibes': FieldValue.arrayRemove(u)}).then((value){
             dbRef.collection('users_lituations').doc(userID).update({'pendingLituations': FieldValue.arrayRemove(l)}).then((value){
-              dbRef.collection('users_lituations').doc(userID).update({'upcomingLituations': FieldValue.arrayRemove(l)}).then((value){
+              dbRef.collection('users_lituations').doc(userID).update({'upcomingLituations': FieldValue.arrayRemove(l)}).then((value) async{
                 //TODO send approval message
-              });
+                UserModel.User user = await getUserModel(userID);              
+                if (user.deviceToken != "")
+                  sendPushNotification(user.deviceToken, "Removed for lituation", "You have been removed for ${lit.title}");
+                });
             });
         });
       }
@@ -439,20 +539,29 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
   }
 
   //RSVP's user to a Lituation (view usages in : viewLituation.dart)
-  Future<void> rsvpToLituation(String userID , String lID){
+  Future<void> rsvpToLituation(String userID , String lID) async {
     //TODO Send Notification to lituation host
     //notification should say something like "user_x has rsvp'd for your lituation."
     var u = [userID];
     var l = [lID];
     //we add them to the list of pending vibes
-  dbRef.collection('lituations').doc(lID).get().then((value){
-    if(!List.from(value.data()['pending']).contains(userID)){
+    UserModel.User user = await getUserModel(userID);         
+    dbRef.collection('lituations').doc(lID).get().then((value) async {
+      Lituation lit = Lituation.fromJson(value.data());
+      UserModel.User hoster = await getUserModel(lit.hostID);
+    if(!lit.pending.contains(userID)){
       dbRef.collection('lituations').doc(lID).update({'pending': FieldValue.arrayUnion(u)}).then((value){
-        dbRef.collection('users_lituations').doc(userID).update({"pendingLituations": FieldValue.arrayUnion(l)});
+        dbRef.collection('users_lituations').doc(userID).update({"pendingLituations": FieldValue.arrayUnion(l)}).then((value){     
+          if (hoster.deviceToken != "")
+            sendPushNotification(hoster.deviceToken, "RSVP", "${user.username} has rsvp'd for your ${lit.title}");
+        });
       });
     }else{
       dbRef.collection('lituations').doc(lID).update({'pending': FieldValue.arrayRemove(u)}).then((value){
-        dbRef.collection('users_lituations').doc(userID).update({"pendingLituations": FieldValue.arrayRemove(l)});
+        dbRef.collection('users_lituations').doc(userID).update({"pendingLituations": FieldValue.arrayRemove(l)}).then((value){     
+          if (hoster.deviceToken != "")
+            sendPushNotification(hoster.deviceToken, "RSVP", "${user.username} withdraw rsvp'd for your ${lit.title}");
+        });
       });
     }
   });
@@ -463,14 +572,22 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     //notification should say something like "New user on the guest list".
     var n = [userID];
     var l = [lID];
-    dbRef.collection('lituations').doc(lID).get().then((value){
-      if(!List.from(value.data()['vibes']).contains(userID)){
+    dbRef.collection('lituations').doc(lID).get().then((value) async {
+      Lituation lit = Lituation.fromJson(value.data());
+      UserModel.User hoster = await getUserModel(lit.hostID);
+      if(!lit.vibes.contains(userID)){
         dbRef.collection('lituations').doc(lID).update({"vibes": FieldValue.arrayUnion(n)}).then((value){
-          dbRef.collection('users_lituations').doc(userID).update({"upcomingLituations": FieldValue.arrayUnion(l)});
+          dbRef.collection('users_lituations').doc(userID).update({"upcomingLituations": FieldValue.arrayUnion(l)}).then((value){
+            if (hoster.deviceToken != "")
+              sendPushNotification(hoster.deviceToken, "New guest", "New User on the guest list");
+          });
         });
       }else{
         dbRef.collection('lituations').doc(lID).update({"vibes": FieldValue.arrayRemove(n)}).then((value){
-          dbRef.collection('users_lituations').doc(userID).update({"upcomingLituations": FieldValue.arrayRemove(l)});
+          dbRef.collection('users_lituations').doc(userID).update({"upcomingLituations": FieldValue.arrayRemove(l)}).then((value){
+            if (hoster.deviceToken != "")
+              sendPushNotification(hoster.deviceToken, "Remove guest", "User removed on the guest list");
+          });
         });
       }
     });
@@ -519,10 +636,18 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
      imgs.add(File(path));
     }
     l.thumbnailURLs.clear();
-    String eventID = await postLituation(l);
-    await uploadLituationMedia(l, imgs);
+    String eventID = await postLituation(l);    
+    UserModel.User hoster = await getUserModel(l.hostID);
+    await uploadLituationMedia(l, imgs, hoster);
     await addToUserLituations(l.hostID, l.eventID);
     await addToUpcomingLituations(l.hostID, l.eventID);
+    List<String> tokens = [];
+    l.invited.forEach((element) async {      
+      UserModel.User hoster = await getUserModel(element);
+      if (hoster.deviceToken != "")
+        tokens.add(hoster.deviceToken);
+    });
+    sendPushNotification("", "Invitation", "You have been invited to  ${l.title} by ${hoster.username}", tokens: tokens);
     return eventID;
   }
   Future <String> addToDrafts(Lituation l) async {
@@ -530,9 +655,10 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     for(String path in l.thumbnailURLs){
       imgs.add(File(path));
     }
-    l.thumbnailURLs.clear();
+    l.thumbnailURLs.clear();    
+    UserModel.User hoster = await getUserModel(l.hostID);
     String eventID = await postLituation(l);
-    await uploadLituationMedia(l, imgs);
+    await uploadLituationMedia(l, imgs, hoster);
     await addToUserDrafts(l.hostID, l.eventID);
     return eventID;
   } 
@@ -545,7 +671,7 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     return l.eventID;
   }
 
-  Future<List> uploadLituationMedia(Lituation l , List imgs) async{
+  Future<List> uploadLituationMedia(Lituation l , List imgs, UserModel.User hoster) async{
     //TODO Send notification to host
     //Notification should say something like: "Your media for lituation_name have been succesfully uploaded!"
 
@@ -557,6 +683,7 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
         return err;
       });
     }
+    sendPushNotification(hoster.deviceToken, "Media upload", "Your media for ${l.title} have been succesfully uploaded!",);
     return urls;
   }
   Future<TaskSnapshot>  upload(File imageFile , Lituation l) async {
@@ -600,9 +727,12 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     var u = [vibeID];
     var m = [userID];
     cancelPendingVibeRequest(vibeID , userID).then((value) =>{
-      dbRef.collection('vibing').doc(userID).update({'vibing': FieldValue.arrayUnion(u)}).then((value){
+      dbRef.collection('vibing').doc(userID).update({'vibing': FieldValue.arrayUnion(u)}).then((value) async {
         dbRef.collection('vibed').doc(vibeID).update({'vibed': FieldValue.arrayUnion(m)});
         updateClout(userID, 5);
+        UserModel.User user = await getUserModel(userID);
+        UserModel.User vibe = await getUserModel(vibeID);
+        sendPushNotification(vibe.deviceToken, "Accept Vibe", "${user.username} has accepted your vibe request",);        
       })
     });
   }
@@ -615,10 +745,13 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     var u = [userID];
     var l = [lID];
     dbRef.collection('lituations').doc(lID).get().then((value){
-      if(List.from(value.data()['pending']).contains(userID)){
+      Lituation lit = Lituation.fromJson(value.data());
+      if(lit.pending.contains(userID)){
         dbRef.collection('lituations').doc(lID).update({'pending': FieldValue.arrayRemove(u)}).then((value){
-          dbRef.collection('users_lituations').doc(userID).update({'pendingLituations': FieldValue.arrayRemove(l)}).then((value){
+          dbRef.collection('users_lituations').doc(userID).update({'pendingLituations': FieldValue.arrayRemove(l)}).then((value) async {
             //TODO send disapproval message
+            UserModel.User user = await getUserModel(userID);
+            sendPushNotification(user.deviceToken, "Deny RSVP", "Your RSVP to ${lit.title} was denided.",);
           });
         });
       }
@@ -653,12 +786,15 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     var u = [userID];
     var l = [lID];
     dbRef.collection('lituations').doc(lID).get().then((value){
-      if(List.from(value.data()['pending']).contains(userID)){
+      Lituation lit = Lituation.fromJson(value.data());
+      if(lit.pending.contains(userID)){
         dbRef.collection('lituations').doc(lID).update({'pending': FieldValue.arrayRemove(u)}).then((value){
           dbRef.collection('lituations').doc(lID).update({'vibes': FieldValue.arrayUnion(u)}).then((value) {
             dbRef.collection('users_lituations').doc(userID).update({'pendingLituations': FieldValue.arrayRemove(l)}).then((value){
-              dbRef.collection('users_lituations').doc(userID).update({'upcomingLituations': FieldValue.arrayUnion(l)}).then((value){
+              dbRef.collection('users_lituations').doc(userID).update({'upcomingLituations': FieldValue.arrayUnion(l)}).then((value) async{
                 //TODO send approval message
+                UserModel.User user = await getUserModel(userID);
+                sendPushNotification(user.deviceToken, "Approve RSVP", "You have approved for and added to the guest list for ${lit.title}",);
               });
             });
           });
@@ -803,16 +939,41 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     return s;
   }
 
+  Future<ChatRoomModel> getChatRoomModel(String roomID) async {
+    var snapshot = await dbRef.collection('chat').doc(roomID).get();
+    var data = snapshot.data();
+    ChatRoomModel c = ChatRoomModel.fromJson(data);
+    return c;
+  }
+
   createChatRoom(ChatRoomModel chatroom) async {
     //TODO Send notifications to all users in room besides host/creator.
     //If the room has 2 users, the notification should say something like "user x starting a chat with you"
     //If the room has more than 2 users, the notification should say something like "you have been added to room_name"
     await dbRef.collection('chat').doc(chatroom.room_id).set(chatroom.toJson());
+    UserModel.User creator = await getUserModel(chatroom.party[0]);
+    for(int i = 1; i < chatroom.party.length; i ++) {
+      String element = chatroom.party[i];
+      UserModel.User p = await getUserModel(element); 
+      if (chatroom.party.length == 2) {
+        sendPushNotification(p.deviceToken, "Chat", "${creator.username} starting a chat with you");
+      } else {
+        sendPushNotification(p.deviceToken, "Chat", "You have been added to ${chatroom.room_name}");
+      }
+    }
   }
 
   sendMessageToRoom(String roomID , ChatMessage m) async {
     //TODO send notification to all users except sender in room who have notifications for chat enabled.
-    return await dbRef.collection('chat').doc(roomID).collection('messages').add(m.toJson());
+    await dbRef.collection('chat').doc(roomID).collection('messages').add(m.toJson());
+    ChatRoomModel chatroom = await getChatRoomModel(roomID);
+    for(int i = 0; i < chatroom.party.length; i ++) {
+      String element = chatroom.party[i];
+      if (m.user.uid == element)
+        continue;
+      UserModel.User p = await getUserModel(element); 
+      sendPushNotification(p.deviceToken, "Chat", m.video != null ? "Sent a video" :  m.image != null ? "Sent a image" : m.text);
+    };
   }
 
   getUserChatRooms(String userID) async {

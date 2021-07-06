@@ -262,7 +262,7 @@ class _LoginState extends State<LoginPage> {
             ),
             onPressed: (){
               //TODO Implement register
-              loginWithGoogle();
+              loginWithFacebook();
             },
             shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
         )
@@ -311,6 +311,32 @@ class _LoginState extends State<LoginPage> {
       loading = true;
     });
     await db.signInWithGoogle().then((value) {
+        if(value.contains('ERROR')){
+          setState(() {
+            error = value.split(':')[1];
+          });
+          return;
+        }
+      HelperExtension.saveSharedPreferenceUserID(value);
+      lp.currentUser().then((u){
+          HelperExtension.saveUserEmailSharedPrefs(u.email);
+          HelperExtension.saveUserNameSharedPrefs(u.displayName);
+      });
+      _toHome(value);
+    }).catchError((error) {      
+      setState(() {
+        loading = false;
+      });
+    });
+    setState(() {
+      loading = false;
+    });
+  }
+  void loginWithFacebook() async {
+    setState(() {
+      loading = true;
+    });
+    await db.signInWithFacebook(context).then((value) {
         if(value.contains('ERROR')){
           setState(() {
             error = value.split(':')[1];

@@ -421,10 +421,11 @@ class _VisitProfileState extends State<VisitProfilePage>{
                 textColor: Theme.of(context).textSelectionColor,
                 child: Text(val , style: infoValue(Theme.of(context).textSelectionColor),),                
                 onPressed: () {
-                  if(val == 'vibed')
-                 setState(() {
-                   provider.sendVibeRequest(widget.visit.visitorID);
-                 });
+                  if(val == 'vibe')
+                    provider.sendVibeRequest(widget.visit.visitorID);
+                  else if(val == 'cancel')
+                    provider.cancelVibeRequest(widget.visit.visitorID);
+
                 }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
             )
         );

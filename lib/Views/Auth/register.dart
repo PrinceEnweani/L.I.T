@@ -391,7 +391,26 @@ class _RegisterState extends State<RegisterPage> {
     });
   }
   void registerFBUser() async {
-
+    setState(() {
+      loading = true;
+    });
+    await rp.registerFBNewUser(context).then((value){
+      if(value.contains("ERROR")){
+        setState(() {
+          error = value.split(':')[1];
+          loading = false;
+        });
+        return;
+      }
+      beginSurvey(value);
+    }).catchError((error) {
+      setState(() {
+        loading = false;
+      });
+    });
+    setState(() {
+      loading = false;
+    });
   }
   Widget haveAnAccountText(){
     return Container(

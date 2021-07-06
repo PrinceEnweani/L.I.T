@@ -50,7 +50,24 @@ class RegisterProvider{
     return userID;
   }
 
-  Future<String> registerFBNewUser() async {
+  Future<String> registerFBNewUser(context) async {
+    String userID = '';
+    User u = new User();
+    await db.facebookAuth(context)
+      .then((value){
+        u.email = value.user.email;
+        u.pass = "";
+        u.profileURL = 'https://firebasestorage.googleapis.com/v0/b/litt-a9ee1.appspot.com/o/userProfiles%2Flitlogo.png?alt=media&token=cfbc6f00-eec7-46d6-9365-5783d7c8ef3f';
+        u.userImagesUrls = [];
+        u.userLocation = '';
+        u.userLocLatLng = LatLng(0, 0);
+        u.userVibe = initNewVibe();
+        u.username = value.user.displayName;
+        u.userID = value.user.uid;
+        userID = value.user.uid;
+        db.completeRegistration(u);
+      });
+    return userID;
 
   }
 

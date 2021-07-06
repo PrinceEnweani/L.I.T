@@ -1,5 +1,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lit_beta/Extensions/common_functions.dart';
@@ -11,6 +12,12 @@ import 'package:lit_beta/Styles/text_styles.dart';
 import 'package:lit_beta/Styles/theme_resolver.dart';
 import 'package:lit_beta/Utils/Common.dart';
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  print('Handling a background message ${message.messageId}');
+}
+
 class FeedPage extends StatefulWidget {
   final String userID;
   FeedPage({Key key , this.userID}) : super(key: key);
@@ -21,6 +28,7 @@ class FeedPage extends StatefulWidget {
 
 class _FeedState extends State<FeedPage> {
   SearchProvider sp;
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   int _tabIndex = 0;
   @override
   void dispose(){
@@ -31,6 +39,7 @@ class _FeedState extends State<FeedPage> {
   void initState() {
     super.initState();
     sp = new SearchProvider(widget.userID);
+    configurePushNotification();
   }
   @override
   Widget build(BuildContext context) {
@@ -38,7 +47,21 @@ class _FeedState extends State<FeedPage> {
         backgroundColor: Theme.of(context).backgroundColor,
         body: feedWidget()
     );
+  }
 
+  configurePushNotification() {
+    _firebaseMessaging.requestPermission();
+
+    _firebaseMessaging.getToken().then((token) {
+      sp.db.updateUserPushToken(widget.userID, token);
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen((event) {
+      print('onMessageOpenedApp: from:${event.from} ${event.data}');
+    });
+    FirebaseMessaging.onMessage.listen((event) {
+      print('onMessage: from:${event.from} ${event.data}');
+    });
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
 
   Widget feedWidget(){
