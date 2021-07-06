@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "471138549063-u6rfevkqdvaitjco6j1ghg7umooqddm8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lit.lit_beta",
+            "certificate_hash": "1ba9c94513d078f7c32b89a578ee0ad811008e1e"
+          }
+        },
+        {
           "client_id": "471138549063-3tqvda8f086kurm83uqmumcv4eilkdlt.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -40,10 +48,10 @@
               "client_type": 3
             },
             {
-              "client_id": "471138549063-4k9qu83kbgoah4l123eromlbna25tu8u.apps.googleusercontent.com",
+              "client_id": "471138549063-4gc0u7lsqjlfjf347f4q32cl0gb3p52e.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.lit.litSocial"
+                "bundle_id": "com.lit.litBeta"
               }
             }
           ]
@@ -84,10 +92,10 @@
               "client_type": 3
             },
             {
-              "client_id": "471138549063-4k9qu83kbgoah4l123eromlbna25tu8u.apps.googleusercontent.com",
+              "client_id": "471138549063-4gc0u7lsqjlfjf347f4q32cl0gb3p52e.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.lit.litSocial"
+                "bundle_id": "com.lit.litBeta"
               }
             }
           ]

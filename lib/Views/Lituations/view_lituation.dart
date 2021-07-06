@@ -1233,18 +1233,18 @@ class _ViewLituationState extends State<ViewLituation>{
          child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Theme.of(context).splashColor)),);
      }
      List<String> attendeesIDs = List.from(l.data['vibes']);
-     List attendees = [];
+     List<User> attendees = [];
      return StreamBuilder<QuerySnapshot>(
        stream: lp.usersStream(),
        builder: (context , u){
          if(!u.hasData){
            return CircularProgressIndicator();
          }
+         attendees.clear();
          for(var user in u.data.docs){
-           if(attendeesIDs.contains(user.data()['userID'])){
-             if(!attendees.contains(user)){
-               attendees.add(user);
-             }
+           User _u = User.fromJson(user.data());
+           if(attendeesIDs.contains(_u.userID)){
+              attendees.add(_u);
            }
          }
          if(attendees.length > 0){
@@ -1256,15 +1256,19 @@ class _ViewLituationState extends State<ViewLituation>{
                  Container(
                    alignment:  Alignment.centerLeft,
                    margin: EdgeInsets.fromLTRB(15, 5, 0, 5),
-                   child: Text('attending vibes (' + attendeesIDs.length.toString() + ')' , style: infoLabelMedium(Theme.of(context).textSelectionColor),),),
+                   child: Text('attending vibes (' + attendees.length.toString() + ')' , style: infoLabelMedium(Theme.of(context).textSelectionColor),),),
                  Container(
                    margin: EdgeInsets.fromLTRB(0, 15, 15, 0) ,
                    height: 75,
                    child: ListView.builder(
                        scrollDirection: Axis.horizontal,
-                       itemCount: attendeesIDs.length,
+                       itemCount: attendees.length,
                        itemBuilder: (context , idx){
-                         return cancelableCircularProfileWidget(attendees[idx].data()['profileURL'],attendees[idx].data()['userID'], attendees[idx].data()['username'], attendees[idx].data()['status']['status']);
+                         return cancelableCircularProfileWidget(
+                           attendees[idx].profileURL,
+                           attendees[idx].userID,
+                           attendees[idx].username,
+                           attendees[idx].status.status);
                        }
                    ),
                  ),
@@ -1354,9 +1358,15 @@ class _ViewLituationState extends State<ViewLituation>{
      return  StreamBuilder(
        stream:lp.getUserStreamByID(hostID),
        builder: (ctx, u){
-         return !u.hasData
-             ?new Text("loading" , style: TextStyle(color: Theme.of(context).buttonColor),)
-             : hostInfo(u.data['userID'], u.data['username'], u.data['profileURL'], ctx);
+         if (u.hasData == false 
+          || u.connectionState != ConnectionState.done)
+         return new Text(
+           "loading" ,
+           style: TextStyle(color: Theme.of(context).buttonColor),
+          );
+        User _u = User.fromJson(u.data.data());
+         return hostInfo(
+           u.data['userID'], u.data['username'], u.data['profileURL'], ctx);
        },
      );
    }
