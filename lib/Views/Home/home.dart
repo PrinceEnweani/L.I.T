@@ -130,7 +130,7 @@ class _FeedState extends State<FeedPage> {
           return ListView.builder(
                 itemCount: data.length,
                 itemBuilder: (context , idx){
-                  return  lituationCard(data[idx], context);
+                  return  lituationCard(data[idx], context, widget.userID);
                 },
             );
         },

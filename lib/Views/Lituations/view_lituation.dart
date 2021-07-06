@@ -276,6 +276,7 @@ class _ViewLituationState extends State<ViewLituation>{
      bool already = false;
      bool going = false;
      bool rsvpd = false;
+     var data = l.data.data();
      if(l.data['hostID'] == widget.lituationVisit.userID){
        return hostBottomButtons(l);
      }

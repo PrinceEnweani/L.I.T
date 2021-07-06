@@ -598,12 +598,12 @@ Widget lituationDetailCard(BuildContext ctx , String lID , String thumbnail , St
     ),
   );
 }
-Widget lituationCard(Lituation l, BuildContext context) {    
+Widget lituationCard(Lituation l, BuildContext context, String visitorID) {    
   return Container(
       child: GestureDetector(
         onTap: () async {          
             LituationVisit lv = LituationVisit();
-            lv.userID = l.hostID;
+            lv.userID = visitorID;
             lv.lituationID = l.eventID;
             lv.lituationName = l.title;
             Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);

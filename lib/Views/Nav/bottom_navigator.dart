@@ -1,6 +1,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:lit_beta/Styles/theme_resolver.dart';
 import 'package:lit_beta/Views/Chat/chat.dart';
@@ -46,13 +47,38 @@ class _BottomNavigationControllerState extends State<BottomNavigationController>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () {
+        return showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Exit'),
+              content: Text('Do you want to exit the app?'),
+              actions: <Widget>[
+                FlatButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text('No'),
+                ),
+                FlatButton(
+                  onPressed: () => SystemChannels.platform
+                      .invokeMethod('SystemNavigator.pop'),
+                  child: Text('Yes'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      child:
+    Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       bottomNavigationBar: _bottomNavigationProvider(_currentPage),
       body: PageStorage(
         child: initBottomNavControllerTabs(_currentPage),
         bucket: bucket,
       ),
+    )
     );
 
   }
