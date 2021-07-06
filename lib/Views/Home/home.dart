@@ -11,6 +11,7 @@ import 'package:lit_beta/Strings/hint_texts.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
 import 'package:lit_beta/Styles/theme_resolver.dart';
 import 'package:lit_beta/Utils/Common.dart';
+import 'package:location/location.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // If you're going to use other Firebase services in the background, such as Firestore,
@@ -40,6 +41,7 @@ class _FeedState extends State<FeedPage> {
     super.initState();
     sp = new SearchProvider(widget.userID);
     configurePushNotification();
+    requestMapPermission();
   }
   @override
   Widget build(BuildContext context) {
@@ -47,6 +49,32 @@ class _FeedState extends State<FeedPage> {
         backgroundColor: Theme.of(context).backgroundColor,
         body: feedWidget()
     );
+  }
+
+  void requestMapPermission() async {
+    Location location = new Location();
+
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+    LocationData _locationData;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _locationData = await location.getLocation();
   }
 
   configurePushNotification() {
