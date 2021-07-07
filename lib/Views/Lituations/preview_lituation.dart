@@ -34,6 +34,8 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
   final Auth db = Auth();
   List<String> lituationMediaFiles = List();
   List lituationMediaWidgets = List();
+  bool isSaving = true;
+
   @override
   void dispose(){
     super.dispose();
@@ -249,8 +251,8 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
         child: RaisedButton(
             color: Theme.of(context).buttonColor,
             textColor: Theme.of(context).primaryColor,
-            child: Text('Post'),
-            onPressed: (){
+            child: isSaving ? CircularProgressIndicator() : Text('Post'),
+            onPressed: isSaving ? null : (){
               _createNewLituation(widget.newLituation , ctx);
             }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
         ));
@@ -325,6 +327,9 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
   }
 
   _createNewLituation(Lituation l , BuildContext ctx) async{
+    setState(() {
+      isSaving = true;
+    });
     l.thumbnailURLs = lituationMediaFiles;
     l.observers = [l.hostID];
     l.pending = [];
@@ -336,7 +341,10 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
       l.fee = '';
     }
     db.createLituation(l).then((value){
-     //_toProfile(l.hostID);
+      //_toProfile(l.hostID);
+      setState(() {
+        isSaving = false;
+      });
       if(value != null) {
         _viewLituation(value, l.title);
       }
