@@ -442,6 +442,8 @@ class UserLituationVisit {
     data['verifications'] = this.verifications;
     data['interactedVibes'] = this.interactedVibes;
     data['rating'] = this.rating;
+
+
     return data;
   }
 
@@ -451,31 +453,68 @@ class Invitation {
   String senderID;
   String recipient;
   String lituationID;
+  String invitationID;
   String message;
-
-
-  AddressModel(
+  DateTime dateSent;
+  Invitation(
       {
         String senderID,
         String recipient,
         String lituationID,
+        String invitationID,
         String message,
+        DateTime dateSent,
       }) {
     this.senderID = senderID;
     this.recipient = recipient;
     this.lituationID = lituationID;
+    this.invitationID = invitationID;
+    this.dateSent = dateSent;
     this.message = message;
   }
 
   String get _senderID => senderID;
   set _senderID(String senderID) => senderID = senderID;
+  String get _lituationID => lituationID;
+  set _lituationID(String lituationID) => lituationID = lituationID;
   String get _recipient => recipient;
   set _recipient(String recipient) => recipient = recipient;
-  String get _lituationID => lituationID;
-  set _address(String lituationID) => lituationID = lituationID;
   String get _message => message;
   set _message(String message) => message = message;
+  String get _invitationID => invitationID;
+  set _invitationID(String invitationID) => invitationID = invitationID;
+  DateTime get _dateSent => dateSent;
+  set _dateSent(DateTime dateSent) => dateSent = dateSent;
 
+  Invitation.fromJson(Map<String, dynamic> json) {
+    _senderID = json['senderID'];
+    _recipient = json['recipient'];
+    _lituationID = json['lituationID'];
+    _invitationID = json['invitationID'];
+    _dateSent = json['dateSent'];
+    _message = json['message'];
+  }
+
+  Invitation.fromId(String id) {
+    if (!id.contains(':')){
+      throw Exception("Invalid invitation id");
+    }
+    senderID = id.split(':')[0];
+    lituationID = id.split(':')[1];
+    recipient = id.split(':')[2];
+    invitationID = id;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['senderID'] = this._senderID;
+    data['recipient'] = this._recipient;
+    data['lituationID'] = this._lituationID;
+    data['invitationID'] = this._invitationID;
+    data['dateSent'] = this._dateSent;
+    data['message'] = this._message;
+    return data;
+  }
 }
 
 class AddressModel {

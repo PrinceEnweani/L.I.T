@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:lit_beta/Models/Lituation.dart';
+import 'package:lit_beta/Models/User.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
 
 String parseVibes(String vibes){
@@ -41,6 +42,16 @@ String parseDateToEndDate(Timestamp sd , Timestamp ed){
   DateTime edate = DateTime.fromMicrosecondsSinceEpoch(ed.millisecondsSinceEpoch * c);
   return DateFormat.jm().format(sdate) + " - " + DateFormat.jm().format(edate);
 }
+String getSenderIdFromInvitation(String id){
+  return id.split(':')[0];
+}
+String getLituationIdFromInvitation(String id){
+  return id.split(':')[1];
+}
+String getRecipientIdFromInvitation(String id){
+  return id.split(':')[2];
+}
+
 String parseThemesFromSnapShot(AsyncSnapshot l){
   List<String> themes = l.data['themes'].split(',');
   List<String> themes2 = [];

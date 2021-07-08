@@ -1,6 +1,9 @@
 
 
 import 'package:lit_beta/DBC/Auth.dart';
+import 'package:lit_beta/Models/Chat.dart';
+import 'package:lit_beta/Models/Lituation.dart';
+import 'package:lit_beta/Models/User.dart';
 
 class VibeProvider {
 
@@ -12,9 +15,25 @@ class VibeProvider {
   vibingStream(){
     return db.getVibing(userID);
   }
-
+  lituationStream(String lID){
+    return db.getLituationByID(lID);
+  }
   vibedStream(){
     return db.getVibed(userID);
+  }
+  friendsStream(){
+    return db.getVibedAndVibing(userID).asStream();
+  }
+  sendInvitation(String recipientID , String message , String lID){
+    Invitation i = Invitation();
+    i.lituationID = lID;
+    i.senderID = userID;
+    i.recipient = recipientID;
+    i.message = message;
+    i.senderID = userID;
+    i.invitationID = userID + ":" + lID + ":" + recipientID;
+    i.dateSent = DateTime.now();
+    db.sendInvite(i);
   }
 
   userStream(){

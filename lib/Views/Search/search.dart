@@ -109,16 +109,7 @@ class _SearchState extends State<SearchPage> {
   }
   Widget lituationResultList(){
     if(query_lit == ''){
-      return Container(
-        margin: EdgeInsets.all(15),
-        child: Card(
-          elevation: 3,
-          color: Theme.of(context).backgroundColor,
-          child: ListTile(
-            leading: Text("" , style: infoLabel(Theme.of(context).textSelectionColor),),
-          ),
-        ),
-      );
+      return Container();
     }
     return Expanded(
         child: FutureBuilder(
@@ -136,7 +127,7 @@ class _SearchState extends State<SearchPage> {
                   elevation: 3,
                   color: Theme.of(context).backgroundColor,
                   child: ListTile(
-                    leading: Text("No lituations found...Try someone else." , style: infoLabel(Theme.of(context).textSelectionColor),),
+                    leading: Text("No lituations found..." , style: infoLabel(Theme.of(context).textSelectionColor),),
                   ),
                 ),
               );
@@ -152,16 +143,7 @@ class _SearchState extends State<SearchPage> {
   }
   Widget vibeResultList(){    
     if(query_vibe == ''){
-      return Container(
-        margin: EdgeInsets.all(15),
-        child: Card(
-          elevation: 3,
-          color: Theme.of(context).backgroundColor,
-          child: ListTile(
-            leading: Text("" , style: infoLabel(Theme.of(context).textSelectionColor),),
-          ),
-        ),
-      );
+      return Container();
     }
     return Expanded(
         child: FutureBuilder(

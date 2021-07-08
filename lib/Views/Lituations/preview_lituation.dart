@@ -34,11 +34,14 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
   final Auth db = Auth();
   List<String> lituationMediaFiles = List();
   List lituationMediaWidgets = List();
+  LituationProvider lp;
+  bool uploading  = false;
   @override
   void dispose(){
     super.dispose();
   }
   void initState(){
+    lp = LituationProvider("preview" , widget.newLituation.hostID);
     initLituationMedia();
     super.initState();
   }
@@ -242,20 +245,31 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
  }
 
   Widget postLituation(BuildContext ctx){
-    return Container( //login button
-        height: 45,
-        margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-        padding: EdgeInsets.fromLTRB(75, 0, 75, 0),
-        child: RaisedButton(
-            color: Theme.of(context).buttonColor,
-            textColor: Theme.of(context).primaryColor,
-            child: Text('Post'),
-            onPressed: (){
-              _createNewLituation(widget.newLituation , ctx);
-            }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
-        ));
+   if (uploading) {
+     //TODO replace with Animated spinner
+     return Container(padding: EdgeInsets.all(25), child: Text("creating your lituation..." , style: infoLabel(Theme.of(context).textSelectionColor), textAlign: TextAlign.center,),);
+   }
+   return Container( //login button
+       height: 45,
+       margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+       padding: EdgeInsets.fromLTRB(75, 0, 75, 0),
+       child: RaisedButton(
+           color: Theme.of(context).buttonColor,
+           textColor: Theme.of(context).primaryColor,
+           child: Text(uploading?'Creating...':'Post' , style: infoValue(Theme.of(context).textSelectionColor),),
+           onPressed: () {
+             setState(() {
+               uploading = true;
+             });
+             _createNewLituation(widget.newLituation , ctx);
+           }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
+       ));
   }
   Widget saveLituation(BuildContext ctx){
+    if (uploading) {
+      //TODO replace with Animated spinner
+      return Container(padding: EdgeInsets.all(0), child: Text("please wait..." , style: infoLabel(Theme.of(context).textSelectionColor), textAlign: TextAlign.center,),);
+    }
     return Container( //login button
         height: 45,
         margin: EdgeInsets.fromLTRB(0, 25, 0, 0),
@@ -263,9 +277,12 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
         child: RaisedButton(
             color: Theme.of(context).buttonColor,
             textColor: Theme.of(context).primaryColor,
-            child: Text('Save as draft'),
+            child: Text('Save as draft' , style: infoValue(Theme.of(context).textSelectionColor)),
             onPressed: (){
-              //nextPage(ctx);
+              setState(() {
+                uploading = true;
+              });
+
             }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
         ));
   }
@@ -324,7 +341,7 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     );
   }
 
-  _createNewLituation(Lituation l , BuildContext ctx) async{
+  _createNewLituation(Lituation l , BuildContext ctx) async {
     l.thumbnailURLs = lituationMediaFiles;
     l.observers = [l.hostID];
     l.pending = [];
@@ -335,11 +352,9 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     if(l.fee == null || l.fee != '0'){
       l.fee = '';
     }
-    db.createLituation(l).then((value){
-     //_toProfile(l.hostID);
-      if(value != null) {
-        _viewLituation(value, l.title);
-      }
+    await lp.createNewLituation(l).then((value) => _viewLituation(value, l.title));
+    setState(() {
+      uploading = false;
     });
 }
 
@@ -363,9 +378,7 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     if(l.fee != null && l.fee != 0){
 
     }
-    db.addToDrafts(l).then((value){
-      _toProfile(l.hostID);
-    });
+    await lp.createNewDraft(l).then((value) => _viewLituation(value, l.title));
   }
   void _toProfile(String uID){
     Navigator.pushReplacementNamed(context, VisitProfilePageRoute , arguments: uID);

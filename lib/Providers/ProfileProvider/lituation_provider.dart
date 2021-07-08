@@ -72,6 +72,20 @@ class LituationProvider {
   attendLituation(){
     db.attendLituation(userID, lID);
   }
+  acceptInvitation(Invitation i){
+    db.acceptInvitation(i);
+  }
+  Future<dynamic> getInvitations() async {
+    List invitations = [];
+    await db.getUserInvitations(userID, lID).then((value) => {
+      for(var id in value.docs){
+        invitations.add(invitations)
+      }
+    });
+  }
+  userLituationsStream() {
+    return db.getUserLituations(userID);
+  }
   cancelPendingRsvp(String userID){
     db.cancelRSVP(userID, lID);
     //TODO Notify user
@@ -148,6 +162,12 @@ class LituationProvider {
     l.thumbnailURLs = [];
 
     return l;
+  }
+  Future<String> createNewLituation(Lituation l) async {
+    return await db.createLituation(l);
+  }
+  Future<String> createNewDraft(Lituation l) async {
+    return await db.addToDrafts(l);
   }
   String validateLituation(Lituation l){
     if(l.title == '' || l.title == null){

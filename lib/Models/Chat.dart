@@ -103,57 +103,6 @@ class MessageModel {
   }
 
 }
-class Invitation {
-  String _sender_id;
-  DateTime _date_sent;
-  String _recipient_id;
-  String  _invitation_id;
-  String  _message;
-
-  Invitation(
-      {String sender_id,
-        DateTime date_sent,
-        String recipient_id,
-        String invitation_id,
-        String  message,
-      }) {
-    this._sender_id;
-    this._date_sent;
-    this._recipient_id;
-    this._invitation_id;
-    this._message;
-  }
-
-  String get sender_id => _sender_id;
-  set sender_id(String sender_id) => _sender_id = sender_id;
-  DateTime get date_sent => _date_sent;
-  set date_sent(DateTime date_sent) => _date_sent = date_sent;
-  String get recipient_id => _recipient_id;
-  set recipient_id(String recipient_id) => _recipient_id = recipient_id;
-  String get invitation_id => _invitation_id;
-  set invitation_id(String invitation_id) => _invitation_id = invitation_id;
-  String get message => _message;
-  set message(String message) => _message = message;
-
-  Invitation.fromJson(Map<String, dynamic> json) {
-    _sender_id = json['senderID'];
-    _date_sent = json['date_sent'];
-    _invitation_id = json['invitationID'];
-    _recipient_id = json['recipientID'];
-    _message = json['message'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['senderID'] = this._sender_id;
-    data['date_sent'] = Timestamp.fromDate(this._date_sent);
-    data['senderID'] = this._sender_id;
-    data['recipientID'] = this._recipient_id;
-    data['message'] = this._message;
-    return data;
-  }
-
-}
 
 class ChatVisit{
   String visitorID;

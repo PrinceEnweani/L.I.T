@@ -317,7 +317,61 @@ Widget lituationCardHint(String hint , Color c){
   );
 }
 
-Widget viewList(BuildContext context, List data, List<Widget> removeButtons , String listname , Color labelCol){
+Widget viewList(BuildContext context, String viewer, List data, List<Widget> removeButtons , String listname , Color labelCol){
+  if(data.length != null && data.length > 0) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 35,
+                width: double.infinity,
+                child: Text(listname,
+                  style: infoValue(labelCol),
+                  textAlign: TextAlign.left,),
+                padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
+              ),
+            ),
+            Expanded(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
+                )
+            ),
+          ],
+        )
+        ,
+        Expanded(
+          //padding: EdgeInsets.all(0),
+          // height: 185,
+          child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: data.length,
+              itemBuilder: (ctx, idx) {
+                return Container(
+                    margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
+                    width: 150,
+                    child: Stack(
+                      children: [
+                        lituationDetailCard(context ,viewer, data[idx]['eventID'],
+                            data[idx]['thumbnail'][0], data[idx]['title'],
+                            parseDate(data[idx]['date']),
+                            data[idx]['entry']),
+                        Positioned(child: removeButtons[idx],
+                          top: 10,
+                          right: 10,
+                        )
+                      ],
+                    )
+                );
+              }
+          ),
+        )
+      ],
+    );
+  }
+}
+Widget viewListVisitor(BuildContext context, String viewer, List data, List<Widget> removeButtons , String listname , Color labelCol){
   if(data.length != null || data.length > 0) {
     return Column(
       children: [
@@ -353,14 +407,10 @@ Widget viewList(BuildContext context, List data, List<Widget> removeButtons , St
                     width: 150,
                     child: Stack(
                       children: [
-                        lituationDetailCard(context , data[idx]['eventID'],
+                        lituationDetailCard(context , viewer , data[idx]['eventID'],
                             data[idx]['thumbnail'][0], data[idx]['title'],
                             parseDate(data[idx]['date']),
                             data[idx]['entry']),
-                        Positioned(child: removeButtons[idx],
-                          top: 10,
-                          right: 10,
-                        )
                       ],
                     )
                 );
@@ -550,53 +600,65 @@ Widget lituationThumbnailWidget(Lituation l){
     errorWidget: (context, url, error) => nullLituationUrl(),
   );
 }
-Widget lituationDetailCard(BuildContext ctx , String lID , String thumbnail , String title , String date , String entry){
-  return Card(
-    elevation: 3,
-    child:  Stack(
-      children: [
-        Opacity(
-          opacity: 1,
-          child:  CachedNetworkImage(
-            imageUrl: thumbnail,
-            imageBuilder: (context, imageProvider) => Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                image: DecorationImage(
-                  image: imageProvider,
-                  fit: BoxFit.cover,
+Widget lituationDetailCard(BuildContext ctx ,String visitorID , String lID , String thumbnail , String title , String date , String entry){
+  return GestureDetector(
+    onTap: (){
+     _viewLituation(ctx, visitorID, lID, title);
+    },
+    child: Card(
+      elevation: 3,
+      child:  Stack(
+        children: [
+          Opacity(
+            opacity: 1,
+            child:  CachedNetworkImage(
+              imageUrl: thumbnail,
+              imageBuilder: (context, imageProvider) => Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
+              placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).buttonColor),),
+              errorWidget: (context, url, error) => nullUrl(),
             ),
-            placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).buttonColor),),
-            errorWidget: (context, url, error) => nullUrl(),
           ),
-        ),
-        Positioned(
-            left: 0,
-            right: 0,
-            bottom: 5,
-            child: Container(
-              color: Colors.black26,
-              height: 75,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Text(title , style: TextStyle(color: Colors.white , fontSize: 14 ,fontWeight: FontWeight.w900),textAlign: TextAlign.center,),
-                  ),
-                  Expanded(
-                    child: Text(entry , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
-                  ),
-                  Expanded(
-                    child: Text(date , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
-                  ),
-                ],
-              ),
-            )
-        )
-      ],
+          Positioned(
+              left: 0,
+              right: 0,
+              bottom: 5,
+              child: Container(
+                color: Colors.black26,
+                height: 75,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Text(title , style: TextStyle(color: Colors.white , fontSize: 14 ,fontWeight: FontWeight.w900),textAlign: TextAlign.center,),
+                    ),
+                    Expanded(
+                      child: Text(entry , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
+                    ),
+                    Expanded(
+                      child: Text(date , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
+                    ),
+                  ],
+                ),
+              )
+          )
+        ],
+      ),
     ),
   );
+}
+void _viewLituation(BuildContext context,String userID , String lID , String lName){
+  LituationVisit lv = LituationVisit();
+  lv.userID = userID;
+  lv.lituationID = lID;
+  lv.lituationName = lName;
+  Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);
 }
 Widget lituationCard(Lituation l, BuildContext context) {    
   return Container(

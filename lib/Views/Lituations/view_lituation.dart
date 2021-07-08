@@ -59,6 +59,9 @@ class _ViewLituationState extends State<ViewLituation>{
    Color likeColor = Colors.amber;
    Color dislikeColor = Colors.red;
    bool popUpMenu;
+   bool invited = false;
+  String PRIVATE_ENTRY = 'private';
+  String INVITE_ONLY = 'invite';
   @override
   void initState(){
     titleController = new TextEditingController();
@@ -73,6 +76,7 @@ class _ViewLituationState extends State<ViewLituation>{
     editMode = false;
     popUpMenu = false;
     super.initState();
+
   }
 
   @override
@@ -234,27 +238,41 @@ class _ViewLituationState extends State<ViewLituation>{
     );
   }
   Widget inviteToLituationButton(){
-    return Container(
-        height: 50,
-        width: MediaQuery.of(context).size.width,
-        margin: EdgeInsets.only(top: 5 , bottom: 5 , left: 75 , right: 75),
-        child: RaisedButton(
-          color: Theme.of(context).primaryColor,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Expanded(flex: 7,child: Text("send invite" ,style: infoValue(Theme.of(context).textSelectionColor) ,textAlign: TextAlign.center,),),
-                seperator(),
-                Expanded(flex: 2,child: Icon(Icons.add , color: Theme.of(context).textSelectionColor,)),
+    return StreamBuilder(
+      stream: lp.lituationStream(),
+      builder: (context , l){
+       if(!l.hasData){
+         return Container();
+       }
+       bool attending = l.data['vibes'].contains(widget.lituationVisit.userID);
+       return Container(
+            height: 50,
+            width: MediaQuery.of(context).size.width,
+            margin: EdgeInsets.only(top: 5 , bottom: 5 , left: 75 , right: 75),
+            child: RaisedButton(
+                color: Theme.of(context).primaryColor,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Expanded(flex: 7,child: Text("send invite" ,style: infoValue(Theme.of(context).textSelectionColor) ,textAlign: TextAlign.center,),),
+                    seperator(),
+                    Expanded(flex: 2,child: Icon(Icons.add , color: Theme.of(context).textSelectionColor,)),
 
-              ],
-            ),
-            onPressed: (){
-              //TODO GO TO Guest List
-            },
-            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
-        )
+                  ],
+                ),
+                onPressed: (){
+                  sendInvite(l.data['entry'], attending);
+                },
+                shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
+            )
+        );
+      },
     );
+  }
+
+  void _viewVibes(String note){
+    UserVisit v = UserVisit(visitedID: widget.lituationVisit.userID ,visitorID:widget.lituationVisit.userID, visitNote: note);
+    Navigator.of(context).pushNamed(VibesPageRoute , arguments: v);
   }
 
   Widget seperator(){
@@ -269,31 +287,79 @@ class _ViewLituationState extends State<ViewLituation>{
       if(popUpMenu){
         return lituationPopUpMenu();
       }
-      return bottomButtons(l);
+     return Container(
+       height: invited?120:100,
+       child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+         children: [
+           invitedNotifier(l),
+           bottomButtons(l)
+         ],
+       ),
+     );
    }
+   Widget invitedNotifier(AsyncSnapshot l){
+          return StreamBuilder(
+            stream: lp.userLituationsStream(),
+            builder: (context , ul){
+              if(!ul.hasData){
+                return Container(height: 0,);
+              }
+              for(String id in ul.data['invitations']){
+                if(id.contains(":${widget.lituationVisit.lituationID}:${widget.lituationVisit.userID}")){
+                  invited = true;
+                  return  youWereInvitedProvider(id);
+                }
+              }
+              return Container(height: 0,);
+            },
+          );
+   }
+   Widget youWereInvitedProvider(String id){
+      return StreamBuilder(
+        stream: lp.getUserStreamByID(getSenderIdFromInvitation(id)),
+        builder: (context , u){
+          if(!u.hasData){
+            return Container(height: 0,);
+          }
+          return  Container(
+            height: 50,
+            padding: EdgeInsets.all(15),
+            child: RichText(
+                text: TextSpan(
+                    text: parseVibes('You were invited by '),style: infoValue(Theme.of(context).textSelectionColor),
+                    children: [
+                      TextSpan(text: u.data['username'] , style: infoValue(Theme.of(context).primaryColor))
+                    ]
+                )
+            ),
+          );
+        },
+      );
+   }
+
+
    Widget bottomButtons(AsyncSnapshot l){
      List<String> vibingIDS = List.from(l.data['vibes']);
      bool already = false;
      bool going = false;
      bool rsvpd = false;
+     bool invited = false;
      if(l.data['hostID'] == widget.lituationVisit.userID){
        return hostBottomButtons(l);
      }
-     if(vibingIDS.contains(widget.lituationVisit.userID))
-     {
-       going = true;
-     }
-     if(List.from(l.data['observers']).contains(widget.lituationVisit.userID)){
-       already = true;
-     }
-     if(List.from(l.data['pending']).contains(widget.lituationVisit.userID)){
-       rsvpd = true;
-     }
-     return visitorButtons(already ,going,rsvpd, l.data['entry']);
+     going = vibingIDS.contains(widget.lituationVisit.userID);
+     already = l.data['observers'].contains(widget.lituationVisit.userID);
+     rsvpd = l.data['pending'].contains(widget.lituationVisit.userID);
+     invited = l.data['invited'].contains(widget.lituationVisit.userID);
+     return visitorButtons(already ,going,rsvpd, l.data['entry'] , invited);
    }
-   Widget attendButton(bool going ,bool rsvpd, String entry){
+   Widget attendButton(bool going ,bool rsvpd, String entry , bool invited){
      print(entry);
-     if(entry.toLowerCase().contains('invite')){
+     String val = 'attend';
+     Color col = Colors.green;
+     if(entry.toLowerCase().contains(INVITE_ONLY) || entry.toLowerCase().contains(PRIVATE_ENTRY)){
        String val = 'RSVP';
        Color col = Colors.green;
        if(rsvpd){
@@ -308,12 +374,15 @@ class _ViewLituationState extends State<ViewLituation>{
            }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
        );
      }
-     String val = 'attend';
-     Color col = Colors.green;
+     if (invited)
+     {
+       return acceptInviteButtonProvider();
+     }
      if(going){
        col = Colors.red;
        val = 'attending';
      }
+
      return RaisedButton(
          color: col,
          child: Text(val , style: infoValue(Theme.of(context).textSelectionColor),),
@@ -322,16 +391,55 @@ class _ViewLituationState extends State<ViewLituation>{
          }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
      );
    }
-   Widget visitorButtons(bool already, bool going,bool rsvp, String entry){
+
+  Widget acceptInviteButtonProvider(){
+    return StreamBuilder(
+      stream: lp.userLituationsStream(),
+      builder: (context , ul){
+        if(!ul.hasData){
+          return Container();
+        }
+        String inviteID;
+        for(String id in ul.data['invitations']){
+          if(id.contains(":${widget.lituationVisit.lituationID}:${widget.lituationVisit.userID}")){
+            return acceptInviteButton(id);
+          }
+        }
+        return Container();
+      },
+    );
+  }
+  Widget acceptInviteButton(String id){
+    return StreamBuilder(
+      stream: lp.getUserStreamByID(getSenderIdFromInvitation(id)),
+      builder: (context , u){
+        if(!u.hasData){
+          return Container(height: 0,);
+        }
+        return Container(
+          height: 45,
+          child:  RaisedButton(
+              color: Colors.red,
+              child: Text('accept invitation' , style: infoValue(Theme.of(context).textSelectionColor),),
+              onPressed: (){
+                lp.acceptInvitation(Invitation.fromId(id));
+              }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
+          ),
+        );
+      },
+    );
+  }
+  
+   Widget visitorButtons(bool already, bool going,bool rsvp, String entry , bool invited){
      return Container(
-       padding: EdgeInsets.fromLTRB(10, 15, 10, 15),
+       padding: EdgeInsets.fromLTRB(10, 5, 10, 15),
        child: Row(
          children: [
            Expanded(
                child: Container(
                  height: 45,
                  margin: EdgeInsets.fromLTRB(5, 0, 5, 0),
-                 child: attendButton(going ,rsvp, entry),
+                 child: attendButton(going ,rsvp, entry, invited),
                )
            ),
            Expanded(
@@ -1155,32 +1263,64 @@ class _ViewLituationState extends State<ViewLituation>{
      );
    }
   Widget circularProfileInviteWidget(){
-    return GestureDetector(
-      onTap: (){
-        //TODO GO TO INVITE PAGE
-
+    return StreamBuilder(
+      stream: lp.lituationStream(),
+      builder:(context , l){
+        if(!l.hasData){
+          return Container();
         }
-      ,
-      child: Container(
+        bool attending = l.data['vibes'].contains(widget.lituationVisit.userID);
+        return GestureDetector(
+          onTap: (){
+            sendInvite(l.data['entry'] , attending);
+          }
+          ,
+          child: roundInviteButton()
+        );
+      },
+    );
+  }
+
+
+  void sendInvite(String entry , bool attending){
+    if(entry.contains(PRIVATE_ENTRY)){
+      showSnackBar(context , sBar('This lituation is private, reach out to the host.'));
+      return;
+    }
+    if(entry.contains(INVITE_ONLY)){
+      if(attending){
+        String visit_note = "invite:"+widget.lituationVisit.lituationID;
+        _viewVibes(visit_note);
+        return;
+      } else {
+        showSnackBar(context , sBar('You must be attending to send an invite.'));
+        return;
+      }
+    }
+    String visit_note = "invite:"+widget.lituationVisit.lituationID;
+    _viewVibes(visit_note);
+  }
+
+  Widget roundInviteButton(){
+    return Container(
         height: 50,
-          width: 50 ,
-          margin: EdgeInsets.fromLTRB(15, 0, 0, 15) ,
-          child: Stack(
-            children: [
-              Align(
-                alignment: Alignment.center,
-                child: Container(
-                    margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                    child: Icon(Icons.add , color: Theme.of(context).textSelectionColor,)
-                ),
-              )
-            ],
-          ),
-          decoration: BoxDecoration(
-      border: Border.all(color: Colors.amber),
-      borderRadius: BorderRadius.circular(50),
-    )
-      ),
+        width: 50 ,
+        margin: EdgeInsets.fromLTRB(15, 0, 0, 15) ,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Container(
+                  margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  child: Icon(Icons.add , color: Theme.of(context).textSelectionColor,)
+              ),
+            )
+          ],
+        ),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.amber),
+          borderRadius: BorderRadius.circular(50),
+        )
     );
   }
    Widget circularProfileWidget(String url ,String userID , String username , String status){
@@ -1299,7 +1439,8 @@ class _ViewLituationState extends State<ViewLituation>{
          child: RaisedButton(
              child: Text("invite friends +" ,style: infoValue(Theme.of(context).textSelectionColor)),
              onPressed: (){
-              //TODO GO TO Guest List
+               String visit_note = "invite:"+widget.lituationVisit.lituationID;
+               _viewVibes(visit_note);
              },
              shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
          )
@@ -1309,7 +1450,7 @@ class _ViewLituationState extends State<ViewLituation>{
      bool online = getStatusAsBool(status);
      return GestureDetector(
        onTap: (){if(userID != widget.lituationVisit.userID){
-         _viewProfile(widget.lituationVisit.userID, userID);
+         _viewProfile(userID , username);
        }
        },
        child: Container(
@@ -1361,6 +1502,7 @@ class _ViewLituationState extends State<ViewLituation>{
      );
    }
 
+
    Widget hostInfo(String hostID, String username, String url , BuildContext ctx){
      if(hostID == widget.lituationVisit.userID){
        return Container();
@@ -1411,7 +1553,11 @@ class _ViewLituationState extends State<ViewLituation>{
                          height: 35,
                          width: 75,
                          child: RaisedButton(
-                           onPressed: (){_viewProfile(widget.lituationVisit.userID , hostID);},
+                           onPressed: (){
+                             if(hostID != widget.lituationVisit.userID){
+                               _viewProfile(hostID, username);
+                             }
+                           },
                            color: Theme.of(context).buttonColor,
                            child: Text('visit' , style: infoValue(Theme.of(context).textSelectionColor),),
                          ),)
@@ -1704,7 +1850,7 @@ class _ViewLituationState extends State<ViewLituation>{
      bool online = getStatusAsBool(status);
      return GestureDetector(
        onTap: (){if(userID != widget.lituationVisit.userID){
-         _viewProfile(widget.lituationVisit.userID, userID);
+         _viewProfile(userID , username);
        }
        },
        child: Container(
