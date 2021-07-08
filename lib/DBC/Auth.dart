@@ -606,7 +606,6 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     //notification should say something like "New user on the guest list".
     var n = [userID];
     var l = [lID];
-    await removeInvitedUser(userID, lID);
     dbRef.collection('lituations').doc(lID).get().then((value) async {
       Lituation lit = Lituation.fromJson(value.data());
       UserModel.User hoster = await getUserModel(lit.hostID);

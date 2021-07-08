@@ -288,13 +288,14 @@ class _ViewLituationState extends State<ViewLituation>{
         return lituationPopUpMenu();
       }
      return Container(
-       height: invited?120:100,
+       height: invited?125:70,
        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.end,
          children: [
            invitedNotifier(l),
            bottomButtons(l)
+
          ],
        ),
      );
@@ -353,6 +354,7 @@ class _ViewLituationState extends State<ViewLituation>{
      already = l.data['observers'].contains(widget.lituationVisit.userID);
      rsvpd = l.data['pending'].contains(widget.lituationVisit.userID);
      invited = l.data['invited'].contains(widget.lituationVisit.userID);
+     this.invited = invited;
      return visitorButtons(already ,going,rsvpd, l.data['entry'] , invited);
    }
    Widget attendButton(bool going ,bool rsvpd, String entry , bool invited){

@@ -899,7 +899,7 @@ class _ProfileState extends State<ProfilePage>{
             }
           }
           return Column(
-              children: cards
+            children: cards,
           );
         }
           }
@@ -907,17 +907,6 @@ class _ProfileState extends State<ProfilePage>{
     );
   }
 
-
-  Invitation getInvitationFromID(String id){
-    Invitation i =Invitation();
-    String lID = id.split(':')[1];
-    String userID = id.split(':')[0];
-    String recipient = id.split(':')[2];
-    i.recipient = recipient;
-    i.senderID = userID;
-    i.lituationID = lID;
-    return i;
-  }
   Widget lituationInvitationCard(String id){
     //userid:lid:recipientid
     String lID = id.split(':')[1];
@@ -925,10 +914,19 @@ class _ProfileState extends State<ProfilePage>{
     String recipient = id.split(':')[2];
     String message = 'is inviting you';
     List<Widget> acceptOrDecline;
+    String idToPass = userID;
     if(userID == widget.userID){
-      acceptOrDecline = [Expanded(flex: 3,child: invitationAcceptButton(getInvitationFromID(id))),Expanded(flex: 1,child: invitationDeclineButton(getInvitationFromID(id))) ];
+      message = "invited ";
+     // idToPass = recipient;
+      acceptOrDecline = [Expanded(flex: 1,child: invitationCancelButton(Invitation.fromId(id)))];
+    }else {
+      acceptOrDecline = [
+        Expanded(
+            flex: 3, child: invitationAcceptButton(Invitation.fromId(id))),
+        Expanded(
+            flex: 1, child: invitationDeclineButton(Invitation.fromId(id)))
+      ];
     }
-    acceptOrDecline = [Expanded(flex: 3,child: invitationAcceptButton(getInvitationFromID(id))),Expanded(flex: 1,child: invitationDeclineButton(getInvitationFromID(id))) ];
     return Card(
       color: Theme.of(context).scaffoldBackgroundColor,
       elevation: 5,
@@ -937,7 +935,7 @@ class _ProfileState extends State<ProfilePage>{
         child: Column(
           children: [
             Expanded(flex: 2,child: lituationThumbnailWidget(lID),),
-            Expanded(flex: 1,child: customLitutationCard(userID, lID, message, acceptOrDecline))
+            Expanded(flex: 1,child: customInvitationCard(userID, recipient, lID, message, acceptOrDecline))
           ],
         ),
       ),
@@ -1090,19 +1088,17 @@ class _ProfileState extends State<ProfilePage>{
       },
     );
   }
-  Widget customLitutationCard(String userID , String lID , String message , List<Widget> buttons) {
+  Widget customSendInvitationCard(String recipientUserID  , String message , String senderProfile, List<Widget> buttons) {
     return StreamBuilder(
-      stream: provider.getUserStreamByID(userID),
+      stream: provider.getUserStreamByID(recipientUserID),
       builder: (ctx , user){
         if(!user.hasData){
           return CircularProgressIndicator();
         }
-        if (user.data.exists == false)
-          return Container();
         return GestureDetector(
             onTap: (){
-              if(userID != widget.userID){
-                _viewProfile(userID , user.data['username']);
+              if(recipientUserID != widget.userID){
+                _viewProfile(recipientUserID , user.data['username']);
               }
             },
             child:
@@ -1111,12 +1107,90 @@ class _ProfileState extends State<ProfilePage>{
               child: Container(
                   padding: EdgeInsets.only(top: 5 , bottom: 5 , right: 15),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
                         margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
                         child: CachedNetworkImage(
-                          height: 45,
-                          width: 45,
+                          height: 50,
+                          width: 50,
+                          imageUrl: senderProfile,
+                          imageBuilder: (context, imageProvider) => Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: status(user.data['status']['status'])),
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).splashColor),),
+                          errorWidget: (context, url, error) => nullUrl(),
+                        ),
+                      ),   // approveButton(userID),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                                margin: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                                child: new Text("you",
+                                  style: infoValue(Theme.of(context).textSelectionColor),textAlign: TextAlign.center,textScaleFactor: 1,)
+                            ),
+                            Container(
+                                margin: EdgeInsets.fromLTRB(5, 5, 0, 0),
+                                child: new Text(message + ' ' + user.data['username'],
+                                  style: infoValue(Theme.of(context).primaryColor),textAlign: TextAlign.center,textScaleFactor: 0.8,)
+                            ),
+                          ],),
+
+                      ),
+                      Expanded(
+                        child: Row(
+                            children: buttons
+                        ),
+                      ),
+                    ],
+                  )
+              ),
+            )
+        );
+      },
+    );
+  }
+  Widget customInvitationCard(String sender , String recipient, String lID , String message , List<Widget> buttons) {
+    return StreamBuilder(
+      stream: provider.getUserStreamByID(sender),
+      builder: (ctx , user){
+        if(!user.hasData){
+          return CircularProgressIndicator();
+        }
+        if (user.data.exists == false)
+          return Container();
+        if(sender == widget.userID) {
+          return customSendInvitationCard(recipient , "invited" , user.data['profileURL'] , buttons);
+        }
+        return GestureDetector(
+            onTap: (){
+              if(sender != widget.userID){
+                _viewProfile(sender , user.data['username']);
+              }
+            },
+            child:
+            Card(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Container(
+                  padding: EdgeInsets.only(top: 5 , bottom: 5 , right: 15),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                        child: CachedNetworkImage(
+                          height: 50,
+                          width: 50,
                           imageUrl: user.data['profileURL'],
                           imageBuilder: (context, imageProvider) => Container(
                             decoration: BoxDecoration(
@@ -1135,9 +1209,10 @@ class _ProfileState extends State<ProfilePage>{
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
-                                margin: EdgeInsets.fromLTRB(5, 25, 0, 0),
+                                margin: EdgeInsets.fromLTRB(5, 0, 0, 0),
                                 child: new Text(user.data['username'],
                                   style: infoValue(Theme.of(context).textSelectionColor),textAlign: TextAlign.center,textScaleFactor: 1,)
                             ),
@@ -1162,6 +1237,7 @@ class _ProfileState extends State<ProfilePage>{
       },
     );
   }
+
   Widget pendingUsersRsvpCard(String lID){
     return StreamBuilder(
         stream: provider.getLituationStream(lID),
@@ -1308,6 +1384,24 @@ class _ProfileState extends State<ProfilePage>{
         )
     );
   }
+  Widget invitationCancelButton(Invitation i){
+    return Container( //lo
+        height: 35, // in button
+        margin: EdgeInsets.fromLTRB(5, 0, 0, 0),
+        child: RaisedButton(
+            color: Colors.red,
+            textColor: Colors.white,
+            child: Text('cancel',style: TextStyle(color: Colors.white) ,textScaleFactor: 0.8,maxLines: 1,),
+            onPressed: (){
+              //TODO ACCEPT INVITATION
+              setState(() {
+                showConfirmationDialog(context , 'cancel this invitation?' , 'you\'ll miss out, \n are you sure?' , [confirmCancelInvitation(i) , cancelDialogButton()]);
+              });
+              showSnackBar(context, sBar(i.lituationID));
+            }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
+        )
+    );
+  }
   //TODO notify user
   Widget invitationDeclineButton(Invitation invite){
     return  GestureDetector(
@@ -1318,14 +1412,6 @@ class _ProfileState extends State<ProfilePage>{
     );
   }
 
-  Widget closeInvitationNotification(Invitation invite){
-    return  GestureDetector(
-      child: Icon(Icons.cancel_outlined, color: Colors.red,),
-      onTap: (){
-        showConfirmationDialog(context , 'Revoke this invitation?' , 'Do you want to cancel this invite?' , [confirmCancelInvitation(invite) , cancelDialogButton()]);
-      },
-    );
-  }
   Widget confirmCancelRSVP(String userID , String lID){
     return FlatButton(
       child: Text('yes'),
@@ -1341,7 +1427,7 @@ class _ProfileState extends State<ProfilePage>{
       onPressed: (){
         //TODO CANCEL INVITATION
         provider.declineInvitation(i);
-        Navigator.pop(context);
+        Navigator.of(context).pop();
       },
     );
   }

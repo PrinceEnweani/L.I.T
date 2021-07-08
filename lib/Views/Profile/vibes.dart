@@ -504,7 +504,7 @@ class _VibesState extends State<VibesPage>{
                       Expanded(
                         child: Row(
                           children: [
-                            Expanded(flex: 3,child: vibingOptionsButton(userID , user.data['username']),),
+                            Expanded(flex: 3,child: vibingOptionsButton(ctx ,userID , user.data['username']),),
                             //Expanded(flex: 1,child:  interactionOptions(userID),),
                           ],
                         ),
@@ -587,7 +587,7 @@ class _VibesState extends State<VibesPage>{
                       Expanded(
                         child: Row(
                           children: [
-                            Expanded(flex: 3,child: vibedOptionsButton(userID , user.data['username']),),
+                            Expanded(flex: 3,child: vibedOptionsButton(ctx , userID , user.data['username']),),
                             //Expanded(flex: 1,child:  interactionOptions(userID),),
                           ],
                         ),
@@ -624,12 +624,12 @@ class _VibesState extends State<VibesPage>{
     );
   }
 
-  Widget vibingOptionsButton(String userID, String username){
+  Widget vibingOptionsButton(BuildContext context, String userID, String username){
     //if we havent vibed back show vibe
     //if they are pending show accept or decline row
     //else show ~vibed~
     if(widget.visit.visitNote.contains(INVITE_TAG)){
-      return inviteButtonProvider(userID, username);
+      return inviteButtonProvider(context ,userID, username);
     }
     if(widget.visit.visitorID != widget.visit.visitedID){
       return visitButton(userID, username);
@@ -691,7 +691,7 @@ class _VibesState extends State<VibesPage>{
         )
     );
   }
-  Widget inviteButton(String userID , bool attending){
+  Widget inviteButton(BuildContext cotnext , String userID , bool attending){
     return Container( //lo
         height: 35,
         child: RaisedButton(
@@ -699,6 +699,7 @@ class _VibesState extends State<VibesPage>{
             textColor: Colors.white,
             child: Text('invite' ,textScaleFactor: 0.7,),
             onPressed: (){
+              print('send');
               //TODO Send invitation
               if(attending) {
                 vp.sendInvitation(userID, 'Come join us at', parseLId());
@@ -724,7 +725,7 @@ class _VibesState extends State<VibesPage>{
         )
     );
   }
-  Widget inviteButtonProvider(String userID , String username){
+  Widget inviteButtonProvider(BuildContext context, String userID , String username){
     String PRIVATE = 'private';
     String INVITE = 'invite';
     return StreamBuilder(
@@ -750,15 +751,15 @@ class _VibesState extends State<VibesPage>{
           return invitedButton(userID, username);
         }
         bool attending = l.data['vibes'].contains(widget.visit.visitorID);
-        return inviteButton(userID , attending);
+        return inviteButton(context , userID , attending);
     });
   }
-  Widget vibedOptionsButton(String userID, String username){
+  Widget vibedOptionsButton(BuildContext context ,String userID, String username){
     //if we havent vibed back show vibe
     //if they are pending show accept or decline row
     //else show ~vibed~
     if(widget.visit.visitNote.contains(INVITE_TAG)){
-      return inviteButtonProvider(userID, username);
+      return inviteButtonProvider(context ,userID, username);
     }
     if(widget.visit.visitorID != widget.visit.visitedID){
       return Container( //lo
