@@ -1000,8 +1000,8 @@ class _ViewLituationState extends State<ViewLituation>{
                            scrollDirection: Axis.horizontal,
                            itemCount: attendees.length,
                            itemBuilder: (context , idx){
-                             print(attendees[idx].data());
-                             return circularProfileWidget(attendees[idx].data()['profileURL'],attendees[idx].data()['userID'], attendees[idx].data()['username'], attendees[idx].data()['status']['status']??"offline");
+                             User _u = User.fromJson(attendees[idx].data());
+                             return circularProfileWidget(_u.profileURL, _u.userID, _u.username, _u.status?.status??"offline");
                            }
                        ),
                      ),)
@@ -1695,10 +1695,9 @@ class _ViewLituationState extends State<ViewLituation>{
                      child: ListView.builder(
                          scrollDirection: Axis.horizontal,
                          itemCount: pendingIDs.length,
-                         itemBuilder: (context, idx) {
-                           return pendingCircularProfileWidget(pending[idx]
-                               .data()['profileURL'], pending[idx].data()['userID'],
-                               pending[idx].data()['username'], pending[idx].data()['status']['status']);
+                         itemBuilder: (context, idx) {                           
+                            User _u = User.fromJson(pending[idx].data());
+                            return pendingCircularProfileWidget(_u.profileURL, _u.userID, _u.username, _u.status?.status??"offline");;
                          }
                      ),
                    ), minimizeRSVPS)
