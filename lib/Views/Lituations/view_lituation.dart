@@ -111,7 +111,7 @@ class _ViewLituationState extends State<ViewLituation>{
     Lituation lit = Lituation.fromJson(l.data.data());
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
-      appBar: topNav(backButton(), pageTitle(l.data['title'], Theme.of(context).textSelectionColor), [shareButton()], Theme.of(context).scaffoldBackgroundColor),
+      appBar: topNav(backButton(), pageTitle(lit.title, Theme.of(context).textSelectionColor), [shareButton()], Theme.of(context).scaffoldBackgroundColor),
       bottomNavigationBar: bottomButtonsProvider(l),
       body:  Builder(
         builder: (context){
@@ -127,7 +127,7 @@ class _ViewLituationState extends State<ViewLituation>{
                   lituationTitleWidget(l),
                   attendeesWidgetProvider(l),
                   lituationTimeProvider(l),
-                  lituationInfoCard("Entry" , l.data['entry'] , MaterialCommunityIcons.door),
+                  lituationInfoCard("Entry" , '${lit.entry}${lit.entry == 'Fee' ? ' (\$' + lit.fee + ')' : ''}' , MaterialCommunityIcons.door),
                   lituationCapacityProvider(l),
                   lituationAddressInfo(l , Icons.location_on),
                   observersWidget(l),

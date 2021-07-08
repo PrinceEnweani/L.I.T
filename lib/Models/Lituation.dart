@@ -240,7 +240,7 @@ class Lituation {
 
   String get fee {
     if (_fee == "")
-      return "1";
+      return "0";
     return _fee;
   }
 

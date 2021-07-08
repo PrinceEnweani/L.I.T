@@ -1254,7 +1254,7 @@ Widget titleTextField(String u){
             if (input
                 .trim()
                 .isEmpty) {
-              return 'please enter a valid amound';
+              return 'please enter a valid amount';
             }
             if (input == '0') {
               return 'change your entry to \'Open\'';
@@ -1297,7 +1297,7 @@ Widget titleTextField(String u){
     l.entry = 'Open';
     l.hostID = widget.lv.userID;
     l.eventID = widget.lv.lituationID;
-    l.fee = 'free';
+    l.fee = '';
     l.location = '';
     l.locationLatLng = new LatLng(0, 0);
     l.musicGenres = [];

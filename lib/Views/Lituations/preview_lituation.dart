@@ -34,7 +34,7 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
   final Auth db = Auth();
   List<String> lituationMediaFiles = List();
   List lituationMediaWidgets = List();
-  bool isSaving = true;
+  bool isSaving = false;
 
   @override
   void dispose(){
@@ -265,8 +265,9 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
         child: RaisedButton(
             color: Theme.of(context).buttonColor,
             textColor: Theme.of(context).primaryColor,
-            child: Text('Save as draft'),
-            onPressed: (){
+            child: isSaving ? CircularProgressIndicator() : Text('Save as draft'),
+            onPressed: isSaving ? null : (){
+              _saveAsDraft(widget.newLituation, ctx);
               //nextPage(ctx);
             }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
         ));
@@ -337,7 +338,7 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     l.requirements = [];
     l.specialGuests = [];
     l.status = 'pending';
-    if(l.fee == null || l.fee != '0'){
+    if(l.entry != 'Fee' && (l.fee == null || l.fee != '0')){
       l.fee = '';
     }
     db.createLituation(l).then((value){
@@ -357,10 +358,13 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     lv.lituationID = lID;
     lv.lituationName = lName;
     lv.action = "edit";
-    Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);
+    Navigator.pushReplacementNamed(context, ViewLituationRoute , arguments: lv);
   }
 
   _saveAsDraft(Lituation l , BuildContext ctx) async{
+    setState(() {
+      isSaving = true;
+    });
     l.thumbnailURLs = lituationMediaFiles;
     l.observers = [l.hostID];
     l.pending = [];
@@ -372,6 +376,9 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
 
     }
     db.addToDrafts(l).then((value){
+      setState(() {
+        isSaving = false;
+      });
       _toProfile(l.hostID);
     });
   }
