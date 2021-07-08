@@ -968,7 +968,7 @@ class _ProfileState extends State<ProfilePage>{
     return StreamBuilder(
       stream: provider.getLituationStream(id),
       builder: (ctx , l){
-        if(!l.hasData){
+        if(!l.hasData || l.connectionState != ConnectionState.done){
           return Container();
         }else{
           if(List.from(l.data['pending']).length < 1){

@@ -358,6 +358,7 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     lv.lituationID = lID;
     lv.lituationName = lName;
     lv.action = "edit";
+    Navigator.pop(context);
     Navigator.pushReplacementNamed(context, ViewLituationRoute , arguments: lv);
   }
 
@@ -383,7 +384,8 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     });
   }
   void _toProfile(String uID){
-    Navigator.pushReplacementNamed(context, VisitProfilePageRoute , arguments: uID);
+    Navigator.pop(context);
+    Navigator.pop(context);
   }
 
   Widget lituationDescription(BuildContext ctx){
