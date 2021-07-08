@@ -7,6 +7,8 @@ const int category_preference_page_idx = 1;
 const int gender_page_idx = 2;
 const int preference_page_idx = 3;
 const int location_page_idx = 4;
+const String stripe_public_key = "pk_test_51JAYx1DQIZSnlOxktXaMmcre94MbqgmK0o8dkITRPLFmlWRZ6r8321OCUYEpbpeywnKTlI4KzO7zQVQC3aJyoC2l00Lf8BFAlm";
+const String stripe_secrete_key = "sk_test_51JAYx1DQIZSnlOxkK0WzXs83DQPNJzLMfysYNJzIjSYRdmzTp0KtK7WD2WPCvYxmJdtfjDSXb2EZQOcPlTmYOnzK00vK8fdIXB";
 
 //Auth error codes
 const String auth_invalid_email_error_code = "ERROR : Your email is invalid, check and try again.";

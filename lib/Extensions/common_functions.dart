@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:lit_beta/Models/Lituation.dart';
+import 'package:lit_beta/Strings/constants.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
+import 'package:http/http.dart' as http;
 
 String parseVibes(String vibes){
   if(vibes == null){
@@ -91,7 +93,7 @@ DateTime dateTimeToTimeStamp(Timestamp d){
 }
 bool getStatusAsBool(String status){
   //Online , Live , etc
-  if(status.contains('online') || status.contains('live')){
+  if(status!= null && (status.contains('online') || status.contains('live'))){
     return true;
   }
   return false;
@@ -111,3 +113,21 @@ showConfirmationDialog(BuildContext context ,String title , String message , Lis
         actions: actions
       ));
 }
+
+Future<String> getStripeIntent(String paymentID, String amount, String currency) async {
+    http.Response response = await http.post(
+      'https://api.stripe.com/v1/payment_intents',
+      headers: <String, String>{
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Bearer ${stripe_secrete_key}',
+      },
+      body: <String, dynamic>{
+          "amount": amount,
+          "currency": currency,
+          "payment_method_types[]": "card"
+        },
+    );
+    if (response.statusCode == 200)
+      return response.body;
+    return "";
+  }

@@ -238,7 +238,11 @@ class Lituation {
     _themes = value;
   }
 
-  String get fee => _fee;
+  String get fee {
+    if (_fee == "")
+      return "1";
+    return _fee;
+  }
 
   set fee(String value) {
     _fee = value;

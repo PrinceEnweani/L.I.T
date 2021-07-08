@@ -69,8 +69,8 @@ class LituationProvider {
   updateLituationLocationLatLng(LatLng locLatLng){
     db.updateLituationLocationLatLng(lID, locLatLng);
   }
-  attendLituation(){
-    db.attendLituation(userID, lID);
+  attendLituation () async {
+    await db.attendLituation(userID, lID);
   }
   cancelPendingRsvp(String userID){
     db.cancelRSVP(userID, lID);
