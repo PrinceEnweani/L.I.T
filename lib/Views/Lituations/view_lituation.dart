@@ -294,7 +294,7 @@ class _ViewLituationState extends State<ViewLituation>{
         return lituationPopUpMenu();
       }
      return Container(
-       height: invited?125:70,
+       height: invited?125:75,
        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.end,
@@ -352,7 +352,7 @@ class _ViewLituationState extends State<ViewLituation>{
      bool going = false;
      bool rsvpd = false;
      bool invited = false;
-     Lituation _lit =  Lituation.fromJson(l.data());
+     Lituation _lit =  Lituation.fromJson(l.data.data());
      List<String> vibingIDS = _lit.vibes;
      if(l.data['hostID'] == widget.lituationVisit.userID){
        return hostBottomButtons(l);
