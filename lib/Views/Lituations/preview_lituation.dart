@@ -35,12 +35,14 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
   List<String> lituationMediaFiles = List();
   List lituationMediaWidgets = List();
   bool isSaving = false;
+  LituationProvider lp;
 
   @override
   void dispose(){
     super.dispose();
   }
   void initState(){
+    lp = LituationProvider("preview" , widget.newLituation.hostID);
     initLituationMedia();
     super.initState();
   }
@@ -258,6 +260,10 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
         ));
   }
   Widget saveLituation(BuildContext ctx){
+    if (isSaving) {
+      //TODO replace with Animated spinner
+      return Container(padding: EdgeInsets.all(0), child: Text("please wait..." , style: infoLabel(Theme.of(context).textSelectionColor), textAlign: TextAlign.center,),);
+    }
     return Container( //login button
         height: 45,
         margin: EdgeInsets.fromLTRB(0, 25, 0, 0),
@@ -265,7 +271,7 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
         child: RaisedButton(
             color: Theme.of(context).buttonColor,
             textColor: Theme.of(context).primaryColor,
-            child: isSaving ? CircularProgressIndicator() : Text('Save as draft'),
+            child: isSaving ? CircularProgressIndicator() : Text('Save as draft' , style: infoValue(Theme.of(context).textSelectionColor)),
             onPressed: isSaving ? null : (){
               _saveAsDraft(widget.newLituation, ctx);
               //nextPage(ctx);
@@ -341,7 +347,7 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     if(l.entry != 'Fee' && (l.fee == null || l.fee != '0')){
       l.fee = '';
     }
-    db.createLituation(l).then((value){
+    lp.createNewLituation(l).then((value){
       //_toProfile(l.hostID);
       setState(() {
         isSaving = false;
@@ -376,7 +382,7 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     if(l.fee != null && l.fee != 0){
 
     }
-    db.addToDrafts(l).then((value){
+    lp.createNewDraft(l).then((value){
       setState(() {
         isSaving = false;
       });

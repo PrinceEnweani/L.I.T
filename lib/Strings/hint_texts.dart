@@ -66,7 +66,7 @@ String info_litations_visibilty_hint ='Lituations Visibility:';
 String info_activity_visibilty_hint ='Activity visibility:';
 String info_location_visibilty_hint ='Where I turn up:';
 
-String select_lituation_media_hint =  "Select any pictures or videsos for promo\n(Posters, trailer etc)";
+String select_lituation_media_hint =  "Select any pictures or videos for promo\n(Posters, trailer etc)";
 String fee_hint = "fee amount";
 String capacity_hint = "Capacity.";
 String remove_lituation_media_tip = "tap to add item\nhold down to remove item";

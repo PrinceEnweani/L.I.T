@@ -76,7 +76,6 @@ class ProfileProvider{
     db.setUserTheme(userID, newVal);
   }
 
-
   userLituationsStream(){
     return db.getUserLituations(userID);
   }
@@ -93,7 +92,12 @@ class ProfileProvider{
   getUserStreamByID(String id){
     return db.getUser(id);
   }
-
+  declineInvitation(Invitation i){
+    db.declineInvitation(i);
+  }
+  acceptInvitation(Invitation i){
+    db.acceptInvitation(i);
+  }
   cancelVibeRequest(String id){
     return db.cancelPendingVibeRequest(userID, id);
   }

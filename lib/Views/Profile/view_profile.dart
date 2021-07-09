@@ -226,7 +226,7 @@ class _VisitProfileState extends State<VisitProfilePage>{
                   }
                 }
                 if(data.length > 0) {
-                  return viewList(c , data , [Container()],listname , bg);
+                  return viewListVisitor(c , widget.visit.visitorID, data , [Container()],listname , bg);
                 }
                 return nullList(username, listname , bg);
               }

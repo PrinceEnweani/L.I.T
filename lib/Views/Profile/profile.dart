@@ -376,6 +376,7 @@ class _ProfileState extends State<ProfilePage>{
                   if(!lituations.hasData){
                     return CircularProgressIndicator();
                   }
+                 // print(l.data['hostID'] + 'is host');
                   List lList = List.from(lituations.data.docs);
                   List data = List();
                   List<Widget> removeButtons = [];
@@ -386,7 +387,7 @@ class _ProfileState extends State<ProfilePage>{
                     }
                   }
                   if(data.length > 0) {
-                    return viewList(c , data , removeButtons,listname , bg);
+                    return viewList(c ,widget.userID , data , removeButtons,listname , bg);
                   }
                   return nullList(username, listname , bg);
                 }
@@ -838,48 +839,94 @@ class _ProfileState extends State<ProfilePage>{
   Widget activityLituationInvitationProvider(){
     return StreamBuilder(
       stream: provider.userLituationsStream(),
-      builder: (context , ul){
-        if(!ul.hasData){
+      builder: (context , ul) {
+        if (!ul.hasData) {
           return Container();
         }
-        if(ul.connectionState == ConnectionState.waiting){
+        if (ul.connectionState == ConnectionState.waiting) {
           return CircularProgressIndicator();
         }
-        List<String> invitationIds = List.from(ul.data['invitations']);
-        if(invitationIds.isEmpty){
+        if(ul.data['invitations'].length < 1){
           return Column(
             children: [
-              horizontalDivider(Theme.of(context).dividerColor, 250),
+              horizontalDivider(Theme
+                  .of(context)
+                  .dividerColor, 250),
               Container(
                 margin: EdgeInsets.only(top: 25, bottom: 25),
-                child: Text('there are no invitations' , textAlign: TextAlign.center, style: infoLabel(Theme.of(context).textSelectionColor)),
+                child: Text(
+                    'there are no invitations', textAlign: TextAlign.center,
+                    style: infoLabel(Theme
+                        .of(context)
+                        .textSelectionColor)),
               ),
-              horizontalDivider(Theme.of(context).dividerColor, 250),
+              horizontalDivider(Theme
+                  .of(context)
+                  .dividerColor, 250),
             ],
           );
         }
-        List<Widget> cards = [];
-        List<String> added = [];
-        var split;
-        for(String id in invitationIds){
-          if(!added.contains(id)) {
-            invitationNotificationCount++;
-            split = id.split(':');
-            added.add(id);
-            cards.add(lituationInvitationCard(split[0], split[1]));
+        List<String> invitationIds = List.from(ul.data['invitations']);
+        print("len" + invitationIds.length.toString());
+        if (invitationIds.isEmpty) {
+          return Column(
+            children: [
+              horizontalDivider(Theme
+                  .of(context)
+                  .dividerColor, 250),
+              Container(
+                margin: EdgeInsets.only(top: 25, bottom: 25),
+                child: Text(
+                    'there are no invitations', textAlign: TextAlign.center,
+                    style: infoLabel(Theme
+                        .of(context)
+                        .textSelectionColor)),
+              ),
+              horizontalDivider(Theme
+                  .of(context)
+                  .dividerColor, 250),
+            ],
+          );
+        } else {
+          print(widget.userID);
+          List<Widget> cards = [];
+          List<String> added = [];
+          for (String id in invitationIds) {
+            if (!added.contains(id)) {
+              invitationNotificationCount++;
+              added.add(id);
+              cards.add(lituationInvitationCard(id));
+            }
           }
+          return Column(
+            children: cards,
+          );
         }
-        return Column(
-          children: cards
-        );
-      },
+          }
+        ,
     );
   }
 
-
-  Widget lituationInvitationCard(String userID , String lID){
+  Widget lituationInvitationCard(String id){
+    //userid:lid:recipientid
+    String lID = id.split(':')[1];
+    String userID = id.split(':')[0];
+    String recipient = id.split(':')[2];
     String message = 'is inviting you';
-    List<Widget> acceptOrDecline = [Expanded(flex: 3,child: invitationAcceptButton(userID, lID)),Expanded(flex: 1,child: invitationDeclineButton(userID, lID)) ];
+    List<Widget> acceptOrDecline;
+    String idToPass = userID;
+    if(userID == widget.userID){
+      message = "invited ";
+     // idToPass = recipient;
+      acceptOrDecline = [Expanded(flex: 1,child: invitationCancelButton(Invitation.fromId(id)))];
+    }else {
+      acceptOrDecline = [
+        Expanded(
+            flex: 3, child: invitationAcceptButton(Invitation.fromId(id))),
+        Expanded(
+            flex: 1, child: invitationDeclineButton(Invitation.fromId(id)))
+      ];
+    }
     return Card(
       color: Theme.of(context).scaffoldBackgroundColor,
       elevation: 5,
@@ -888,12 +935,13 @@ class _ProfileState extends State<ProfilePage>{
         child: Column(
           children: [
             Expanded(flex: 2,child: lituationThumbnailWidget(lID),),
-            Expanded(flex: 1,child: customLitutationCard(userID, lID, message, acceptOrDecline))
+            Expanded(flex: 1,child: customInvitationCard(userID, recipient, lID, message, acceptOrDecline))
           ],
         ),
       ),
     );
   }
+
   Widget lituationThumbnailWidget(String lID){
     return StreamBuilder(
       stream: provider.getLituationStream(lID),
@@ -923,13 +971,14 @@ class _ProfileState extends State<ProfilePage>{
      placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).buttonColor),),
      errorWidget: (context, url, error) => nullUrl(), //TODO make custom nulllist for lituations
    ),
-       Container(child: Text(l.data['title'] , style: infoLabel(Theme.of(context).buttonColor),), margin: EdgeInsets.only(top: 15 , left: 15),)
+       Container(child: Text(l.data['title'] , style: infoLabel(Theme.of(context).textSelectionColor),), margin: EdgeInsets.only(top: 15 , left: 15),)
      ],
    );
-
       },
     );
   }
+
+
 
   Widget lituationNotificationsWidget(){
     print(widget.userID);
@@ -1039,19 +1088,17 @@ class _ProfileState extends State<ProfilePage>{
       },
     );
   }
-  Widget customLitutationCard(String userID , String lID , String message , List<Widget> buttons) {
+  Widget customSendInvitationCard(String recipientUserID  , String message , String senderProfile, List<Widget> buttons) {
     return StreamBuilder(
-      stream: provider.getUserStreamByID(userID),
+      stream: provider.getUserStreamByID(recipientUserID),
       builder: (ctx , user){
         if(!user.hasData){
           return CircularProgressIndicator();
         }
-        if (user.data.exists == false)
-          return Container();
         return GestureDetector(
             onTap: (){
-              if(userID != widget.userID){
-                _viewProfile(userID , user.data['username']);
+              if(recipientUserID != widget.userID){
+                _viewProfile(recipientUserID , user.data['username']);
               }
             },
             child:
@@ -1060,12 +1107,90 @@ class _ProfileState extends State<ProfilePage>{
               child: Container(
                   padding: EdgeInsets.only(top: 5 , bottom: 5 , right: 15),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
                         margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
                         child: CachedNetworkImage(
-                          height: 45,
-                          width: 45,
+                          height: 50,
+                          width: 50,
+                          imageUrl: senderProfile,
+                          imageBuilder: (context, imageProvider) => Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: status(user.data['status']['status'])),
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).splashColor),),
+                          errorWidget: (context, url, error) => nullUrl(),
+                        ),
+                      ),   // approveButton(userID),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                                margin: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                                child: new Text("you",
+                                  style: infoValue(Theme.of(context).textSelectionColor),textAlign: TextAlign.center,textScaleFactor: 1,)
+                            ),
+                            Container(
+                                margin: EdgeInsets.fromLTRB(5, 5, 0, 0),
+                                child: new Text(message + ' ' + user.data['username'],
+                                  style: infoValue(Theme.of(context).primaryColor),textAlign: TextAlign.center,textScaleFactor: 0.8,)
+                            ),
+                          ],),
+
+                      ),
+                      Expanded(
+                        child: Row(
+                            children: buttons
+                        ),
+                      ),
+                    ],
+                  )
+              ),
+            )
+        );
+      },
+    );
+  }
+  Widget customInvitationCard(String sender , String recipient, String lID , String message , List<Widget> buttons) {
+    return StreamBuilder(
+      stream: provider.getUserStreamByID(sender),
+      builder: (ctx , user){
+        if(!user.hasData){
+          return CircularProgressIndicator();
+        }
+        if (user.data.exists == false)
+          return Container();
+        if(sender == widget.userID) {
+          return customSendInvitationCard(recipient , "invited" , user.data['profileURL'] , buttons);
+        }
+        return GestureDetector(
+            onTap: (){
+              if(sender != widget.userID){
+                _viewProfile(sender , user.data['username']);
+              }
+            },
+            child:
+            Card(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Container(
+                  padding: EdgeInsets.only(top: 5 , bottom: 5 , right: 15),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                        child: CachedNetworkImage(
+                          height: 50,
+                          width: 50,
                           imageUrl: user.data['profileURL'],
                           imageBuilder: (context, imageProvider) => Container(
                             decoration: BoxDecoration(
@@ -1084,16 +1209,17 @@ class _ProfileState extends State<ProfilePage>{
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
-                                margin: EdgeInsets.fromLTRB(5, 25, 0, 0),
+                                margin: EdgeInsets.fromLTRB(5, 0, 0, 0),
                                 child: new Text(user.data['username'],
-                                  style: infoValue(Theme.of(context).buttonColor),textAlign: TextAlign.center,textScaleFactor: 1,)
+                                  style: infoValue(Theme.of(context).textSelectionColor),textAlign: TextAlign.center,textScaleFactor: 1,)
                             ),
                             Container(
                                 margin: EdgeInsets.fromLTRB(5, 5, 0, 0),
                                 child: new Text(message,
-                                  style: infoValue(Theme.of(context).textSelectionColor),textAlign: TextAlign.center,textScaleFactor: 0.8,)
+                                  style: infoValue(Theme.of(context).primaryColor),textAlign: TextAlign.center,textScaleFactor: 0.8,)
                             ),
                           ],),
 
@@ -1111,6 +1237,7 @@ class _ProfileState extends State<ProfilePage>{
       },
     );
   }
+
   Widget pendingUsersRsvpCard(String lID){
     return StreamBuilder(
         stream: provider.getLituationStream(lID),
@@ -1239,7 +1366,7 @@ class _ProfileState extends State<ProfilePage>{
     );
   }
   //TODO Notify user
-  Widget invitationAcceptButton(String userID , String lID){
+  Widget invitationAcceptButton(Invitation i){
     return Container( //lo
         height: 35, // in button
         margin: EdgeInsets.fromLTRB(5, 0, 0, 0),
@@ -1249,21 +1376,42 @@ class _ProfileState extends State<ProfilePage>{
             child: Text('accept',style: TextStyle(color: Colors.white) ,textScaleFactor: 0.8,maxLines: 1,),
             onPressed: (){
               //TODO ACCEPT INVITATION
-              //provider.acceptInvitation(userID , lID);
-              showSnackBar(context, sBar('Time to get LIT!'));
+            setState(() {
+              provider.acceptInvitation(i);
+            });
+              showSnackBar(context, sBar(i.lituationID));
+            }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
+        )
+    );
+  }
+  Widget invitationCancelButton(Invitation i){
+    return Container( //lo
+        height: 35, // in button
+        margin: EdgeInsets.fromLTRB(5, 0, 0, 0),
+        child: RaisedButton(
+            color: Colors.red,
+            textColor: Colors.white,
+            child: Text('cancel',style: TextStyle(color: Colors.white) ,textScaleFactor: 0.8,maxLines: 1,),
+            onPressed: (){
+              //TODO ACCEPT INVITATION
+              setState(() {
+                showConfirmationDialog(context , 'cancel this invitation?' , 'you\'ll miss out, \n are you sure?' , [confirmCancelInvitation(i) , cancelDialogButton()]);
+              });
+              showSnackBar(context, sBar(i.lituationID));
             }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
         )
     );
   }
   //TODO notify user
-  Widget invitationDeclineButton(String userID , String lID){
+  Widget invitationDeclineButton(Invitation invite){
     return  GestureDetector(
             child: Icon(Icons.cancel_outlined, color: Colors.red,),
             onTap: (){
-              showConfirmationDialog(context , 'Decline this invitation?' , 'you\'ll miss out, \n are you sure?' , [confirmCancelInvitation(userID , lID) , cancelDialogButton()]);
+              showConfirmationDialog(context , 'Decline this invitation?' , 'you\'ll miss out, \n are you sure?' , [confirmCancelInvitation(invite) , cancelDialogButton()]);
             },
     );
   }
+
   Widget confirmCancelRSVP(String userID , String lID){
     return FlatButton(
       child: Text('yes'),
@@ -1273,13 +1421,13 @@ class _ProfileState extends State<ProfilePage>{
       },
     );
   }
-  Widget confirmCancelInvitation(String userID , String lID){
+  Widget confirmCancelInvitation(Invitation i){
     return FlatButton(
       child: Text('yes'),
       onPressed: (){
         //TODO CANCEL INVITATION
-        //provider.cancelInvitation(userID , lID);
-        Navigator.pop(context);
+        provider.declineInvitation(i);
+        Navigator.of(context).pop();
       },
     );
   }

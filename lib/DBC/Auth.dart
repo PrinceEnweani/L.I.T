@@ -8,8 +8,10 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:lit_beta/Extensions/common_functions.dart';
 import 'package:lit_beta/Models/Chat.dart';
 import 'package:lit_beta/Models/Lituation.dart';
+import 'package:lit_beta/Models/User.dart' as m;
 import 'package:lit_beta/Models/Vibes.dart';
 import 'package:lit_beta/Strings/constants.dart';
 import 'package:lit_beta/Models/User.dart' as UserModel;
@@ -204,6 +206,21 @@ class Auth implements DBA {
     return dbRef.collection('users').doc(userID).snapshots();
   }
 
+  Future<List> getVibedAndVibing(String userID) async {
+    List users;
+    await dbRef.collection('vibed').doc(userID).get().then((vibed) => {
+      dbRef.collection('vibing').doc(userID).get().then((vibing) => {
+         users = [],
+        users.addAll(vibed.data()['vibed']),
+        for(var u in vibing.data()['vibing']){
+          if(!users.contains(u)){
+            users.add(u)
+          }
+        }
+      })
+    });
+    return users;
+  }
   Stream<DocumentSnapshot> getVibing(String userID){
     return dbRef.collection('vibing').doc(userID).snapshots();
   }
@@ -301,8 +318,25 @@ class Auth implements DBA {
     dbRef.collection("users").doc(userID).update({'userVibe.preference' : newAttendancePreference});
   }
 
-/*
+  Future<void> sendInvite(m.Invitation invite) async {
+    await dbRef.collection("users_lituations").doc(invite.recipient).update({"invitations": FieldValue.arrayUnion([invite.invitationID])});
+    await dbRef.collection("users_lituations").doc(invite.senderID).update({"invitations": FieldValue.arrayUnion([invite.invitationID])});
+    await dbRef.collection("lituations").doc(invite.lituationID).update({"invited": FieldValue.arrayUnion([invite.recipient])});
+  }
 
+  Future<void> acceptInvitation(m.Invitation invite) async {
+    await dbRef.collection("users_lituations").doc(invite.recipient).update({"invitations": FieldValue.arrayRemove([invite.invitationID])});
+    await dbRef.collection("users_lituations").doc(invite.senderID).update({"invitations": FieldValue.arrayRemove([invite.invitationID])});
+    await dbRef.collection("lituations").doc(invite.lituationID).update({"invited" : FieldValue.arrayRemove([invite.recipient])});
+    await dbRef.collection("lituations").doc(invite.lituationID).update({"vibes" : FieldValue.arrayUnion([invite.recipient])});
+    await addToUpcomingLituations(invite.recipient, invite.lituationID);
+  }
+  Future<void> declineInvitation(m.Invitation invite) async {
+    await dbRef.collection("users_lituations").doc(invite.recipient).update({"invitations": FieldValue.arrayRemove([invite.invitationID])});
+    await dbRef.collection("users_lituations").doc(invite.senderID).update({"invitations": FieldValue.arrayRemove([invite.invitationID])});
+    await dbRef.collection("lituations").doc(invite.lituationID).update({"invited" : FieldValue.arrayRemove([invite.recipient])});
+  }
+/*
 if user is not in vibing and user is not pending: add user to pending vibing of visited, and add visited to pending vibes
 * if pending vibe: remove user from visited pendingVibing and removed visited from user pendingVibed
 * if already vibed: remove user from visited pending vibing and remove visited from user vibed
@@ -586,11 +620,15 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
         dbRef.collection('lituations').doc(lID).update({"vibes": FieldValue.arrayRemove(n)}).then((value){
           dbRef.collection('users_lituations').doc(userID).update({"upcomingLituations": FieldValue.arrayRemove(l)}).then((value){
             if (hoster.deviceToken != "")
-              sendPushNotification(hoster.deviceToken, "Remove guest", "User removed on the guest list");
+              sendPushNotification(hoster.deviceToken, "Remove guest", "User removed from the guest list");
           });
         });
       }
     });
+  }
+  Future<void> removeInvitedUser(String userId , String lID) async {
+    var data = [lID];
+    dbRef.collection('lituations').doc(userId).update({"invited": FieldValue.arrayRemove((data))});
   }
 
   //USER LITUATIONS FUNCTIONS
@@ -713,7 +751,7 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     dbRef.collection('users_lituations').doc(userId).update({"upcomingLituations": FieldValue.arrayUnion(data)});
   }
   Future<void> addToUserInvitation(String userId , String lID, String fromId) async {
-    var data = ["${fromId}:${lID}"];
+    var data = ["${fromId}:${lID}:${fromId}"];
     var invites = [userId];
     await dbRef.collection('users_lituations').doc(userId).update({"invitations": FieldValue.arrayUnion(data)});
     await dbRef.collection('lituations').doc(lID).update({"invited": FieldValue.arrayUnion(invites)});
@@ -763,6 +801,14 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     var v = [visited];
     dbRef.collection('vibed').doc(visitor).update({"vibed": FieldValue.arrayRemove(v)}).then((value){
       dbRef.collection('vibing').doc(visitor).update({"vibing": FieldValue.arrayRemove(u)}).then((value){
+        return;
+      });
+    });
+  }
+
+  Future<void> removeInvited(String id) async{
+    dbRef.collection('lituations').doc(getLituationIdFromInvitation(id)).update({"invited": FieldValue.arrayRemove([getRecipientIdFromInvitation(id)])}).then((value){
+      dbRef.collection('users_lituations').doc(getRecipientIdFromInvitation(id)).update({"invitations": FieldValue.arrayRemove([id])}).then((value){
         return;
       });
     });
@@ -978,6 +1024,10 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 
   getUserChatRooms(String userID) async {
     return await dbRef.collection('chat').where("party", arrayContains: userID).get();
+  }
+
+  Future<QuerySnapshot> getUserInvitations(String userID, String lID) async {
+    return await dbRef.collection('users_lituations').where("invitations", arrayContains: lID+":"+userID).get();
   }
 
   Stream<DocumentSnapshot> getChatRoomParty(String roomID){

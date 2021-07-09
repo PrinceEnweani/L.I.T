@@ -26,7 +26,7 @@ class _VibesState extends State<VibesPage>{
   int _tabIndex = 0;
   List<String> vibed = [];
   List<String> vibing = [];
-
+  String INVITE_TAG = 'invite';
   @override
   void initState() {
     if(widget.visit.visitNote.isNotEmpty && widget.visit.visitNote.contains('vibed')){
@@ -48,7 +48,7 @@ class _VibesState extends State<VibesPage>{
         body: Column(
           children: [
             Expanded(flex: 1,child: indexTabBar(),),
-            Expanded(flex: 8,child: vibesIndexedStackProvider(),)
+            Expanded(flex: 9,child: vibesIndexedStackProvider(),)
           ],
         )
     );
@@ -68,7 +68,7 @@ class _VibesState extends State<VibesPage>{
     );
   }
 
-  Widget vibesIndexedStackProvider(){
+  Widget vibedAndVibingListProvider(){
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       body: Padding(
@@ -88,6 +88,10 @@ class _VibesState extends State<VibesPage>{
       ),
     );
   }
+
+  Widget vibesIndexedStackProvider(){
+    return vibedAndVibingListProvider();
+  }
   Widget vibingList(){
     return StreamBuilder(
       stream: vp.vibingStream(),
@@ -102,27 +106,31 @@ class _VibesState extends State<VibesPage>{
         Widget pending = Container();
 
         if(v.data['pendingVibing'].length > 0){
-          pending = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                margin: EdgeInsets.fromLTRB(10, 15, 10, 0),
-                child:  Text('you have ( ' + v.data['pendingVibing'].length.toString() + ' ) pending vibes' ,style: infoValue(Theme.of(context).textSelectionColor),),
-              ),
-              Container(
-                margin: EdgeInsets.fromLTRB(10, 15, 10, 0),
-                height: 75,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: v.data['pendingVibing'].length,
-                  itemBuilder: (ctx, idx) {
-                    return pendingCircularProfileWidget(
-                        v.data['pendingVibing'][idx]);
-                  },
+          if(widget.visit.visitorID != widget.visit.visitedID){
+            pending = Container();
+          }else{
+            pending = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  margin: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                  child:  Text('you have ( ' + v.data['pendingVibing'].length.toString() + ' ) pending vibes' ,style: infoValue(Theme.of(context).textSelectionColor),),
                 ),
-              ),
-            ],
-          );
+                Container(
+                  margin: EdgeInsets.fromLTRB(10, 15, 10, 0),
+                  height: 75,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: v.data['pendingVibing'].length,
+                    itemBuilder: (ctx, idx) {
+                      return pendingCircularProfileWidget(
+                          v.data['pendingVibing'][idx]);
+                    },
+                  ),
+                ),
+              ],
+            );
+          }
         }
         Widget vibes = ListView.builder(
           itemCount: v.data['vibing'].length,
@@ -140,6 +148,7 @@ class _VibesState extends State<VibesPage>{
       },
     );
   }
+
   Widget vibedList(){
     return StreamBuilder(
       stream: vp.vibedStream(),
@@ -482,12 +491,12 @@ class _VibesState extends State<VibesPage>{
                             Container(
                                 margin: EdgeInsets.fromLTRB(5, 5, 0, 0),
                                 child: new Text(user.data['username'],
-                                  style: infoValue(Theme.of(context).buttonColor),textAlign: TextAlign.center,textScaleFactor: 1,)
+                                  style: infoValue(Theme.of(context).textSelectionColor),textAlign: TextAlign.center,textScaleFactor: 1,)
                             ),
                             Container(
                                 margin: EdgeInsets.fromLTRB(5, 5, 0, 0),
                                 child: new Text('vibing',
-                                  style: infoValue(Theme.of(context).textSelectionColor),textAlign: TextAlign.center,textScaleFactor: 0.8,)
+                                  style: infoValue(Theme.of(context).primaryColor),textAlign: TextAlign.center,textScaleFactor: 0.8,)
                             ),
                           ],),
 
@@ -495,7 +504,7 @@ class _VibesState extends State<VibesPage>{
                       Expanded(
                         child: Row(
                           children: [
-                            Expanded(flex: 3,child: vibingOptionsButton(userID , user.data['username']),),
+                            Expanded(flex: 3,child: vibingOptionsButton(ctx ,userID , user.data['username']),),
                             //Expanded(flex: 1,child:  interactionOptions(userID),),
                           ],
                         ),
@@ -565,12 +574,12 @@ class _VibesState extends State<VibesPage>{
                             Container(
                                 margin: EdgeInsets.fromLTRB(5, 5, 0, 0),
                                 child: new Text(user.data['username'],
-                                  style: infoValue(Theme.of(context).primaryColor),textAlign: TextAlign.center,textScaleFactor: 1,)
+                                  style: infoValue(Theme.of(context).textSelectionColor),textAlign: TextAlign.center,textScaleFactor: 1,)
                             ),
                             Container(
                                 margin: EdgeInsets.fromLTRB(5, 5, 0, 0),
                                 child: new Text('vibed',
-                                  style: infoValue(Theme.of(context).textSelectionColor),textAlign: TextAlign.center,textScaleFactor: 0.8,)
+                                  style: infoValue(Theme.of(context).primaryColor),textAlign: TextAlign.center,textScaleFactor: 0.8,)
                             ),
                           ],),
 
@@ -578,8 +587,8 @@ class _VibesState extends State<VibesPage>{
                       Expanded(
                         child: Row(
                           children: [
-                            Expanded(flex: 3,child: vibedOptionsButton(userID , user.data['username']),),
-                            Expanded(flex: 1,child:  interactionOptions(userID),),
+                            Expanded(flex: 3,child: vibedOptionsButton(ctx , userID , user.data['username']),),
+                            //Expanded(flex: 1,child:  interactionOptions(userID),),
                           ],
                         ),
                       )
@@ -601,22 +610,29 @@ class _VibesState extends State<VibesPage>{
     );
   }
 
-  Widget vibingOptionsButton(String userID, String username){
+  Widget visitButton(String userID , String username){
+    return Container( //lo
+        height: 35,
+        child: RaisedButton(
+            color: Theme.of(context).buttonColor,
+            textColor: Colors.white,
+            child: Text('visit' ,textScaleFactor: 0.7,),
+            onPressed: (){
+              _viewProfile(userID , username);
+            }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
+        )
+    );
+  }
+
+  Widget vibingOptionsButton(BuildContext context, String userID, String username){
     //if we havent vibed back show vibe
     //if they are pending show accept or decline row
     //else show ~vibed~
+    if(widget.visit.visitNote.contains(INVITE_TAG)){
+      return inviteButtonProvider(context ,userID, username);
+    }
     if(widget.visit.visitorID != widget.visit.visitedID){
-      return Container( //lo
-          height: 35,
-          child: RaisedButton(
-              color: Theme.of(context).buttonColor,
-              textColor: Colors.white,
-              child: Text('visit' ,textScaleFactor: 0.7,),
-              onPressed: (){
-                _viewProfile(userID , username);
-              }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
-          )
-      );
+      return visitButton(userID, username);
     }
     return StreamBuilder(
       stream: vp.vibedStream(),
@@ -625,17 +641,7 @@ class _VibesState extends State<VibesPage>{
           return CircularProgressIndicator();
         }
         if(v.data['vibed'].contains(userID)){
-          return Container( //lo
-              height: 35,
-              child: RaisedButton(
-                  color: Theme.of(context).buttonColor,
-                  textColor: Colors.white,
-                  child: Text('visit' ,textScaleFactor: 0.7,),
-                  onPressed: (){
-                    _viewProfile(userID , username);
-                  }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
-              )
-          );
+          return visitButton(userID, username);
         }
         if(v.data['pendingVibes'].contains(userID)){
           return Container( //lo
@@ -650,24 +656,111 @@ class _VibesState extends State<VibesPage>{
               )
           );
         }
-        return Container( //lo
-            height: 35,
-            child: RaisedButton(
-                color: Theme.of(context).buttonColor,
-                textColor: Colors.white,
-                child: Text('vibe' ,textScaleFactor: 0.7,),
-                onPressed: (){
-                  vp.sendVibeRequest(widget.visit.visitorID , userID);
-                }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
-            )
-        );
+        return vibeButton(userID);
       },
     );
   }
-  Widget vibedOptionsButton(String userID, String username){
+
+  Widget vibeButton(String userID){
+    return Container( //lo
+        height: 35,
+        child: RaisedButton(
+            color: Theme.of(context).buttonColor,
+            textColor: Colors.white,
+            child: Text('vibe' ,textScaleFactor: 0.7,),
+            onPressed: (){
+              vp.sendVibeRequest(widget.visit.visitorID , userID);
+            }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
+        )
+    );
+  }
+  String parseLId(){
+    return widget.visit.visitNote.split(':')[1];
+  }
+  Widget goingButton(String userID , String username){
+    return Container( //lo
+        color: Colors.green,
+        height: 35,
+        child: RaisedButton(
+            color: Colors.green,
+            textColor: Colors.white,
+            child: Text('going' ,textScaleFactor: 0.7,),
+            onPressed: (){
+              _viewProfile(userID , username);
+            }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
+        )
+    );
+  }
+  Widget inviteButton(BuildContext cotnext , String userID , bool attending){
+    return Container( //lo
+        height: 35,
+        child: RaisedButton(
+            color: Theme.of(context).buttonColor,
+            textColor: Colors.white,
+            child: Text('invite' ,textScaleFactor: 0.7,),
+            onPressed: (){
+              print('send');
+              //TODO Send invitation
+              if(attending) {
+                vp.sendInvitation(userID, 'Come join us at', parseLId());
+              } else{
+                showSnackBar(context, sBar('You must be attending to invite people'));
+              }
+            }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
+        )
+    );
+  }
+  Widget invitedButton(String userID , String username){
+    return Container( //lo
+        color: Colors.green,
+        height: 35,
+        child: RaisedButton(
+            color: Colors.green,
+            textColor: Colors.white,
+            child: Text('invited' ,textScaleFactor: 0.7,),
+            onPressed: (){
+              //TODO sEND Invitation
+              _viewProfile(userID , username);
+            }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
+        )
+    );
+  }
+  Widget inviteButtonProvider(BuildContext context, String userID , String username){
+    String PRIVATE = 'private';
+    String INVITE = 'invite';
+    return StreamBuilder(
+      stream: vp.lituationStream(parseLId()),
+      builder: (context ,  l){
+        if (!l.hasData) {
+          return Container();
+        }
+
+        if(userID == l.data['hostID']){
+          return goingButton(userID, username);
+        }
+        if(l.data['entry'].contains(PRIVATE) || l.data['entry'].contains(INVITE)){
+          if(List.from(l.data['vibes']).contains(userID)){
+            return goingButton(userID, username);
+          }
+          return visitButton(userID, username);
+        }
+        if(List.from(l.data['vibes']).contains(userID)){
+          return goingButton(userID, username);
+        }
+        if (List.from(l.data['invited']).contains(userID)){
+          return invitedButton(userID, username);
+        }
+        bool attending = l.data['vibes'].contains(widget.visit.visitorID);
+        return inviteButton(context , userID , attending);
+    });
+  }
+  Widget vibedOptionsButton(BuildContext context ,String userID, String username){
     //if we havent vibed back show vibe
     //if they are pending show accept or decline row
     //else show ~vibed~
+    if(widget.visit.visitNote.contains(INVITE_TAG)){
+      return inviteButtonProvider(context ,userID, username);
+    }
     if(widget.visit.visitorID != widget.visit.visitedID){
       return Container( //lo
           height: 35,
