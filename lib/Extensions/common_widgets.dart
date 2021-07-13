@@ -586,7 +586,7 @@ Widget lituationDateDocumentSnapshotWidget(BuildContext context , DocumentSnapsh
 }
 Widget lituationThumbnailWidget(Lituation l){
   return CachedNetworkImage(
-    imageUrl: l.thumbnailURLs != null && l.thumbnailURLs.length > 0 ? l.thumbnailURLs[0] : "https://via.placeholder.com/150/FF0000/FFFFFF?text=Loading",
+    imageUrl: l.thumbnailURLs != null && l.thumbnailURLs.length > 0 ? l.thumbnailURLs[0] : litPlaceHolder,
     imageBuilder: (context, imageProvider) => Container(
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,

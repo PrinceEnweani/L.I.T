@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lit_beta/Extensions/common_functions.dart';
+import 'package:lit_beta/Models/Lituation.dart';
 import 'package:lit_beta/Strings/constants.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:stripe_payment/stripe_payment.dart';
@@ -28,16 +29,16 @@ class PaymentService {
 
   final HttpsCallable INTENT3 = FirebaseFunctions.instance
       .httpsCallable('createCustomerWithoutCharge');
-
+  Lituation lit;
   int paymentAmount;
   String customerId;
   String cardToken;
   //I really don't like adding context's to services and maybe i'll fix it in the future but i need the user to compulsory restart the app
   BuildContext context;
 
-  PaymentService.pay(this.paymentAmount, this.context, Function afterPayment) {
+  PaymentService.pay(this.paymentAmount, this.lit, this.context, Function afterPayment) {
     createCardandPay().then((res) {
-      afterPayment(res);
+      afterPayment(res, lit);
     });
   }
 

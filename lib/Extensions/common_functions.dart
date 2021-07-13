@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialog_context/dialog_context.dart';
 import 'package:flutter/cupertino.dart';
@@ -141,4 +143,26 @@ Future<String> getStripeIntent(String paymentID, String amount, String currency)
     if (response.statusCode == 200)
       return response.body;
     return "";
+  }
+
+Future<String> sendTicketEmail(String subject, String email, String userid, Lituation lit) async {
+    try {
+      http.Response response = await http.post(
+        '${emailServiceUrl}',
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({        
+          "dest": email,
+          "subject": subject,
+          "content": "<p>Thanks for your particiate.</p><img src='${ticketImageUrl}?userid=${userid}&eventid=${lit.eventID}' alt='invite'/><p>Period: ${DateFormat.yMEd().format(lit.date)} ${DateFormat.Hm().format(lit.date)} ~ ${DateFormat.yMEd().format(lit.end_date)} ${DateFormat.Hm().format(lit.end_date)}</p>"
+        })
+      );      
+      if (response.statusCode == 200)
+        return response.body;
+      return response.body;
+    } catch (e) {
+      print(e.toString());
+      return "";
+    }
   }
