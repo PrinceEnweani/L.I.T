@@ -235,7 +235,7 @@ class _ViewLituationState extends State<ViewLituation>{
       String barcode = await scanner.scan();
       List<String> codes = barcode.split(":");
       if (codes[0] == QR_ID && codes.length >= 3) {
-        if(codes[1] == lit.eventID /*&& lit.invited.contains(codes[2])*/) {
+        if(codes[1] == lit.eventID && lit.vibes.contains(codes[2])) {
           return Alert(
             context:_scaffoldKey.currentContext, 
             title: "Success",
@@ -294,7 +294,7 @@ class _ViewLituationState extends State<ViewLituation>{
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-               Expanded(flex: 7,child: Text("Show Ticket" ,style: infoValue(Theme.of(context).textSelectionColor) ,textAlign: TextAlign.center,),),
+               Expanded(flex: 7,child: Text(isHoster ? "Check Ticket" : "Show Ticket" ,style: infoValue(Theme.of(context).textSelectionColor) ,textAlign: TextAlign.center,),),
                 seperator(),
                Expanded(flex: 2,child: Icon(Icons.museum , color: Theme.of(context).textSelectionColor,)),
 
