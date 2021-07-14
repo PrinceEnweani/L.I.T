@@ -7,6 +7,7 @@ import 'package:lit_beta/Views/Auth/survey.dart';
 import 'package:lit_beta/Views/Chat/chatV2.dart';
 import 'package:lit_beta/Views/Home/home.dart';
 import 'package:lit_beta/Views/Lituations/create_lituation.dart';
+import 'package:lit_beta/Views/Lituations/lituation_survey.dart';
 import 'package:lit_beta/Views/Lituations/preview_lituation.dart';
 import 'package:lit_beta/Views/Lituations/view_lituation.dart';
 import 'package:lit_beta/Views/Nav/bottom_navigator.dart';
@@ -52,5 +53,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case ViewLituationRoute:
       var lv = settings.arguments;
       return PageTransition(child:  ViewLituation(lituationVisit: lv), type: PageTransitionType.fade);
+    case LituationSurveyRoute:
+      var lv = settings.arguments;
+      return PageTransition(child:  LituationSurveyPage(lv), type: PageTransitionType.fade);
   }
 }
