@@ -7,7 +7,11 @@ const int category_preference_page_idx = 1;
 const int gender_page_idx = 2;
 const int preference_page_idx = 3;
 const int location_page_idx = 4;
-
+const String stripe_public_key = "pk_test_51JAYx1DQIZSnlOxktXaMmcre94MbqgmK0o8dkITRPLFmlWRZ6r8321OCUYEpbpeywnKTlI4KzO7zQVQC3aJyoC2l00Lf8BFAlm";
+const String stripe_secrete_key = "sk_test_51JAYx1DQIZSnlOxkK0WzXs83DQPNJzLMfysYNJzIjSYRdmzTp0KtK7WD2WPCvYxmJdtfjDSXb2EZQOcPlTmYOnzK00vK8fdIXB";
+const String emailServiceUrl = "https://us-central1-litt-a9ee1.cloudfunctions.net/sendMail";
+const String ticketImageUrl = "https://us-central1-litt-a9ee1.cloudfunctions.net/viewTicket";
+const String litPlaceHolder = "https://images.unsplash.com/photo-1607827448387-a67db1383b59?ixid=MnwxMjA3fDB8MHxzZWFyY2h8N3x8cGxhY2Vob2xkZXJ8ZW58MHx8MHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60";
 //Auth error codes
 const String auth_invalid_email_error_code = "ERROR : Your email is invalid, check and try again.";
 const String auth_wrong_password_error_code = "ERROR : Your email or password is incorrect.";

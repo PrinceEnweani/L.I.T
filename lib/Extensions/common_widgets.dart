@@ -586,7 +586,7 @@ Widget lituationDateDocumentSnapshotWidget(BuildContext context , DocumentSnapsh
 }
 Widget lituationThumbnailWidget(Lituation l){
   return CachedNetworkImage(
-    imageUrl: l.thumbnailURLs != null && l.thumbnailURLs.length > 0 ? l.thumbnailURLs[0] : "https://via.placeholder.com/150/FF0000/FFFFFF?text=Loading",
+    imageUrl: l.thumbnailURLs != null && l.thumbnailURLs.length > 0 ? l.thumbnailURLs[0] : litPlaceHolder,
     imageBuilder: (context, imageProvider) => Container(
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
@@ -660,12 +660,12 @@ void _viewLituation(BuildContext context,String userID , String lID , String lNa
   lv.lituationName = lName;
   Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);
 }
-Widget lituationCard(Lituation l, BuildContext context) {    
+Widget lituationCard(Lituation l, BuildContext context, String visitorID) {    
   return Container(
       child: GestureDetector(
         onTap: () async {          
             LituationVisit lv = LituationVisit();
-            lv.userID = l.hostID;
+            lv.userID = visitorID;
             lv.lituationID = l.eventID;
             lv.lituationName = l.title;
             Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);

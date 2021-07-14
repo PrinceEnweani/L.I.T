@@ -69,8 +69,8 @@ class LituationProvider {
   updateLituationLocationLatLng(LatLng locLatLng){
     db.updateLituationLocationLatLng(lID, locLatLng);
   }
-  attendLituation(){
-    db.attendLituation(userID, lID);
+  attendLituation () async {
+    await db.attendLituation(userID, lID);
   }
   acceptInvitation(Invitation i){
     db.acceptInvitation(i);
@@ -187,6 +187,9 @@ class LituationProvider {
     }
     if(l.entry == '' || l.entry == null){
       return 'You must select an Entry type for your Lituation.';
+    }
+    if(l.entry == 'Fee' && (l.fee == null || l.fee == '' || l.fee == '0')){
+      return 'You must set the fee.';
     }
     if(l.location == '' && l.locationLatLng == LatLng(0,0)){
       return 'Enter a valid address for your Lituation.';

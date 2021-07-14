@@ -15,13 +15,21 @@ import 'package:google_maps_webservice/places.dart';
 import 'package:intl/intl.dart';
 import 'package:lit_beta/Extensions/common_functions.dart';
 import 'package:lit_beta/Extensions/common_widgets.dart';
+import 'package:lit_beta/Extensions/payment_service.dart';
+import 'package:lit_beta/Extensions/payment_dialogs.dart';
 import 'package:lit_beta/Models/Lituation.dart';
 import 'package:lit_beta/Models/User.dart';
 import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Providers/ProfileProvider/lituation_provider.dart';
 import 'package:lit_beta/Strings/constants.dart';
 import 'package:lit_beta/Styles/text_styles.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:ui' as ui;
+import 'package:qrscan/qrscan.dart' as scanner;
+
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+import 'qr_viewer.dart';
 class ViewLituation extends StatefulWidget{
   final LituationVisit lituationVisit;
   ViewLituation({Key key, this.lituationVisit}) : super(key: key);
@@ -59,6 +67,8 @@ class _ViewLituationState extends State<ViewLituation>{
    Color likeColor = Colors.amber;
    Color dislikeColor = Colors.red;
    bool popUpMenu;
+  bool isLoading = false;
+
    bool invited = false;
   String PRIVATE_ENTRY = 'private';
   String INVITE_ONLY = 'invite';
@@ -108,9 +118,10 @@ class _ViewLituationState extends State<ViewLituation>{
   Widget lituationDetailsProvider(AsyncSnapshot l){
     Lituation lit = Lituation.fromJson(l.data.data());
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Theme.of(context).backgroundColor,
-      appBar: topNav(backButton(), pageTitle(l.data['title'], Theme.of(context).textSelectionColor), [shareButton()], Theme.of(context).scaffoldBackgroundColor),
-      bottomNavigationBar: bottomButtonsProvider(l),
+      appBar: topNav(backButton(), pageTitle(lit.title, Theme.of(context).textSelectionColor), [shareButton()], Theme.of(context).scaffoldBackgroundColor),
+      bottomNavigationBar: bottomButtonsProvider(lit),
       body:  Builder(
         builder: (context){
           return Stack(
@@ -125,7 +136,7 @@ class _ViewLituationState extends State<ViewLituation>{
                   lituationTitleWidget(l),
                   attendeesWidgetProvider(l),
                   lituationTimeProvider(l),
-                  lituationInfoCard("Entry" , l.data['entry'] , MaterialCommunityIcons.door),
+                  lituationInfoCard("Entry" , '${lit.entry}${lit.entry == 'Fee' ? ' (\$' + lit.fee + ')' : ''}' , MaterialCommunityIcons.door),
                   lituationCapacityProvider(l),
                   lituationAddressInfo(l , Icons.location_on),
                   observersWidget(l),
@@ -137,9 +148,9 @@ class _ViewLituationState extends State<ViewLituation>{
       )
     );
   }
-  SnackBar sBar(String text){
+  SnackBar sBar(String text, {Color c}){
     return SnackBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: c??Theme.of(context).scaffoldBackgroundColor,
         content: Text(text , style: infoValue(Theme.of(context).textSelectionColor),));
   }
 
@@ -201,18 +212,112 @@ class _ViewLituationState extends State<ViewLituation>{
        ),
      );
    }
-  Widget lituationPopUpMenu(){
+  Widget lituationPopUpMenu(Lituation lit){
       return Container(
         height: 200,
         color: Theme.of(context).scaffoldBackgroundColor,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            ticketLituationButton(lit),
             shareLituationButton(),
             inviteToLituationButton(),
           ],
         ),
       );
+  }
+
+  
+
+  checkTicket(Lituation lit) async {    
+    try {
+      await Permission.camera.request();
+      String barcode = await scanner.scan();
+      List<String> codes = barcode.split(":");
+      if (codes[0] == QR_ID && codes.length >= 3) {
+        if(codes[1] == lit.eventID && lit.vibes.contains(codes[2])) {
+          return Alert(
+            context:_scaffoldKey.currentContext, 
+            title: "Success",
+            desc: "This user can attend.",
+            type: AlertType.success,
+            buttons: [
+              DialogButton(
+                child: Text(
+                  "OK",
+                  style: TextStyle(color: Theme.of(_scaffoldKey.currentContext).textSelectionColor, fontSize: 18),
+                ),
+                onPressed: () {
+                  Navigator.pop(_scaffoldKey.currentContext);
+                },
+                color: Theme.of(_scaffoldKey.currentContext).primaryColor,
+              ),
+            ],                            
+          ).show();
+        }
+      }     
+      Alert(
+          context:_scaffoldKey.currentContext, 
+          title: "Failed",
+          desc: "This user can't attend.",
+          type: AlertType.error,
+          buttons: [
+            DialogButton(
+              child: Text(
+                "OK",
+                style: TextStyle(color: Theme.of(_scaffoldKey.currentContext).textSelectionColor, fontSize: 18),
+              ),
+              onPressed: () {
+                Navigator.pop(_scaffoldKey.currentContext);
+              },
+              color: Theme.of(_scaffoldKey.currentContext).primaryColor,
+            ),
+          ],                            
+        ).show();
+      print(barcode);
+    } catch (e) {
+
+    }
+  }
+  Widget ticketLituationButton(Lituation lit){
+    bool isHoster = lit.hostID == widget.lituationVisit.userID;    
+    List<String> vibingIDS = lit.vibes;
+    bool isPaid = vibingIDS.contains(widget.lituationVisit.userID);
+    if (isPaid == false && isHoster == false)
+      return Container();
+    return Container(
+        height: 50,
+        width: MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only(top: 5 , bottom: 5 , left: 75 , right: 75),
+        child: RaisedButton(
+          color: Colors.green,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+               Expanded(flex: 7,child: Text(isHoster ? "Check Ticket" : "Show Ticket" ,style: infoValue(Theme.of(context).textSelectionColor) ,textAlign: TextAlign.center,),),
+                seperator(),
+               Expanded(flex: 2,child: Icon(Icons.museum , color: Theme.of(context).textSelectionColor,)),
+
+              ],
+            ),
+            onPressed: () async {
+              //TODO show ticket
+              if (isHoster) {                
+                await checkTicket(lit);
+              } else {
+                showDialog(context: context,
+                  builder: (BuildContext context){
+                  return QRViewer(
+                    lit: lit,
+                    userID: widget.lituationVisit.userID
+                  );
+                  }
+                );
+              }
+            },
+            shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
+        )
+    );
   }
   Widget shareLituationButton(){
     return Container(
@@ -283,12 +388,12 @@ class _ViewLituationState extends State<ViewLituation>{
       margin: EdgeInsets.only(left: 5 , right: 5),
     );
   }
-   Widget bottomButtonsProvider(AsyncSnapshot l){
+   Widget bottomButtonsProvider(Lituation l){
       if(popUpMenu){
-        return lituationPopUpMenu();
+        return lituationPopUpMenu(l);
       }
      return Container(
-       height: invited?125:70,
+       height: invited?125:75,
        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.end,
@@ -300,7 +405,7 @@ class _ViewLituationState extends State<ViewLituation>{
        ),
      );
    }
-   Widget invitedNotifier(AsyncSnapshot l){
+   Widget invitedNotifier(Lituation l){
           return StreamBuilder(
             stream: lp.userLituationsStream(),
             builder: (context , ul){
@@ -341,23 +446,49 @@ class _ViewLituationState extends State<ViewLituation>{
    }
 
 
-   Widget bottomButtons(AsyncSnapshot l){
-     List<String> vibingIDS = List.from(l.data['vibes']);
+   Widget bottomButtons(Lituation _lit){
      bool already = false;
      bool going = false;
      bool rsvpd = false;
      bool invited = false;
-     if(l.data['hostID'] == widget.lituationVisit.userID){
-       return hostBottomButtons(l);
+     List<String> vibingIDS = _lit.vibes;
+     if(_lit.hostID== widget.lituationVisit.userID){
+       return hostBottomButtons(_lit);
      }
      going = vibingIDS.contains(widget.lituationVisit.userID);
-     already = l.data['observers'].contains(widget.lituationVisit.userID);
-     rsvpd = l.data['pending'].contains(widget.lituationVisit.userID);
-     invited = l.data['invited'].contains(widget.lituationVisit.userID);
+     already = _lit.observers.contains(widget.lituationVisit.userID);
+     rsvpd = _lit.pending.contains(widget.lituationVisit.userID);
+     invited = _lit.invited.contains(widget.lituationVisit.userID);
      this.invited = invited;
-     return visitorButtons(already ,going,rsvpd, l.data['entry'] , invited);
+     return visitorButtons(already ,going,rsvpd, _lit.entry, invited, _lit);
    }
-   Widget attendButton(bool going ,bool rsvpd, String entry , bool invited){
+
+   
+  onPaymentFinish(res, Lituation _lit) async {
+    if (res == true) {
+      await showDialog(context: context, builder: (_) => PaymentSuccessDialog());
+      await lp.attendLituation();
+      User _user = await lp.db.getUserModel(widget.lituationVisit.userID);
+      String res = await sendTicketEmail("Ticket for ${_lit.title}", _user.email, _user.userID, _lit);
+      if (res == "Sended") {
+        _scaffoldKey.currentState.showSnackBar(sBar('A ticket has been sent to your email.', c: Colors.green));
+      } else {
+        _scaffoldKey.currentState.showSnackBar(sBar('An error while sending ticket to your email.', c: Colors.redAccent));
+      }
+      setState((){
+        isLoading = false;
+      });
+    } else {
+      //failed payment
+      setState((){
+        isLoading = false;
+      });
+      showDialog(context: context, builder: (_) => PaymentFailedDialog());
+    }
+  }
+
+
+   Widget attendButton(bool going ,bool rsvpd, String entry, Lituation _lit){
      print(entry);
      String val = 'attend';
      Color col = Colors.green;
@@ -370,8 +501,8 @@ class _ViewLituationState extends State<ViewLituation>{
        }
        return RaisedButton(
            color: col,
-           child: Text(val , style: infoValue(Theme.of(context).textSelectionColor),),
-           onPressed: (){
+           child: isLoading ? CircularProgressIndicator() : Text(val , style: infoValue(Theme.of(context).textSelectionColor),),
+           onPressed: isLoading ? null : (){
              lp.sendRSVPToLituation();
            }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
        );
@@ -387,9 +518,41 @@ class _ViewLituationState extends State<ViewLituation>{
 
      return RaisedButton(
          color: col,
-         child: Text(val , style: infoValue(Theme.of(context).textSelectionColor),),
-         onPressed: (){
-           lp.attendLituation();
+         child: isLoading ? CircularProgressIndicator() : Text(val , style: infoValue(Theme.of(context).textSelectionColor),),
+         onPressed: isLoading ? null : (){
+           if(going == false && entry == "Fee") {
+              setState((){
+                isLoading = true;
+              });
+              PaymentService.pay(int.parse(_lit.fee??"1"), _lit,
+                context, onPaymentFinish);
+           } else {
+             Alert(
+                context: context,
+                type: AlertType.success,
+                title: "Confirmation",
+                desc: "Do you really cancel attending the lituation?",
+                buttons: [
+                  DialogButton(
+                    child: Text(
+                      "Ok",
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    ),
+                    onPressed: () async { 
+                      Navigator.pop(context);
+                      setState((){
+                        isLoading = true;
+                      });
+                      await lp.attendLituation();
+                      setState((){
+                        isLoading = false;
+                      });
+                    },
+                    width: 120,
+                  )
+                ],
+              ).show();
+           }
          }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
      );
    }
@@ -432,7 +595,7 @@ class _ViewLituationState extends State<ViewLituation>{
     );
   }
   
-   Widget visitorButtons(bool already, bool going,bool rsvp, String entry , bool invited){
+   Widget visitorButtons(bool already, bool going,bool rsvp, String entry , bool invited, Lituation _lit){
      return Container(
        padding: EdgeInsets.fromLTRB(10, 5, 10, 15),
        child: Row(
@@ -441,7 +604,7 @@ class _ViewLituationState extends State<ViewLituation>{
                child: Container(
                  height: 45,
                  margin: EdgeInsets.fromLTRB(5, 0, 5, 0),
-                 child: attendButton(going ,rsvp, entry, invited),
+                 child: attendButton(going ,rsvp, entry, _lit),
                )
            ),
            Expanded(
@@ -464,17 +627,17 @@ class _ViewLituationState extends State<ViewLituation>{
      }
      return RaisedButton(
          color: col,
-         child: Text(val , style: infoValue(Theme.of(context).textSelectionColor),),
-         onPressed: (){
+         child: isLoading ? CircularProgressIndicator() : Text(val , style: infoValue(Theme.of(context).textSelectionColor),),
+         onPressed: isLoading ? null : (){
            lp.observeLituation();
          }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
      );
    }
-   Widget updateButton(AsyncSnapshot l){
+   Widget updateButton(Lituation l){
      return RaisedButton(
          color: editMode==true?Colors.green:Theme.of(context).buttonColor,
-         child: Text(editMode == true?'save':'update' , style: infoValue(Theme.of(context).textSelectionColor),),
-         onPressed: (){
+         child: isLoading ? CircularProgressIndicator() : Text(editMode == true?'save':'update' , style: infoValue(Theme.of(context).textSelectionColor),),
+         onPressed: isLoading ? null : (){
            editMode?_updateLituation(l, updatedLituation):update();
          }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
      );
@@ -484,7 +647,7 @@ class _ViewLituationState extends State<ViewLituation>{
        editMode = !editMode;
      });
    }
-   Widget hostBottomButtons(AsyncSnapshot l){
+   Widget hostBottomButtons(Lituation l){
      return Container(
        padding: EdgeInsets.fromLTRB(5, 15, 5, 15),
        child: Row(
@@ -576,28 +739,28 @@ class _ViewLituationState extends State<ViewLituation>{
        },
      );
    }
-   Future<void> _updateLituation(AsyncSnapshot l , Lituation update) async {
+   Future<void> _updateLituation(Lituation l , Lituation update) async {
 
-       if(update.title != null && update.title != l.data['title']){
+       if(update.title != null && update.title != l.title){
          print(update.title);
          lp.updateLituationTitle(update.title);
        }
-       if(update.description != null && update.description != l.data['description']){
+       if(update.description != null && update.description != l.description){
          lp.updateLituationDescription(update.description);
        }
-       if(update.date != null && update.date != dateTimeToTimeStamp(l.data['date'])){
+       if(update.date != null && update.date != l.date){
          lp.updateLituationDate(update.date);
        }
-       if(update.end_date != null && update.end_date != dateTimeToTimeStamp(l.data['end_date'])){
+       if(update.end_date != null && update.end_date != l.end_date){
          lp.updateLituationEndDate(update.end_date);
        }
-       if(update.capacity != null && update.capacity != l.data['capacity']){
+       if(update.capacity != null && update.capacity != l.capacity){
          lp.updateLituationCapacity(update.capacity);
        }
-       if(update.location != null && update.location != l.data['location']){
+       if(update.location != null && update.location != l.location){
          lp.updateLituationLocation(update.location);
        }
-       if(update.locationLatLng != null && update.locationLatLng != l.data['locationLatLng']){
+       if(update.locationLatLng != null && update.locationLatLng != l.locationLatLng){
          lp.updateLituationLocationLatLng(update.locationLatLng);
        }
        setState(() {
@@ -1051,7 +1214,8 @@ class _ViewLituationState extends State<ViewLituation>{
                            scrollDirection: Axis.horizontal,
                            itemCount: attendees.length,
                            itemBuilder: (context , idx){
-                             return circularProfileWidget(attendees[idx].data()['profileURL'],attendees[idx].data()['userID'], attendees[idx].data()['username'], attendees[idx].data()['status']['status']);
+                             User _u = User.fromJson(attendees[idx].data());
+                             return circularProfileWidget(_u.profileURL, _u.userID, _u.username, _u.status?.status??"offline");
                            }
                        ),
                      ),)
@@ -1375,18 +1539,18 @@ class _ViewLituationState extends State<ViewLituation>{
          child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Theme.of(context).splashColor)),);
      }
      List<String> attendeesIDs = List.from(l.data['vibes']);
-     List attendees = [];
+     List<User> attendees = [];
      return StreamBuilder<QuerySnapshot>(
        stream: lp.usersStream(),
        builder: (context , u){
          if(!u.hasData){
            return CircularProgressIndicator();
          }
+         attendees.clear();
          for(var user in u.data.docs){
-           if(attendeesIDs.contains(user.data()['userID'])){
-             if(!attendees.contains(user)){
-               attendees.add(user);
-             }
+           User _u = User.fromJson(user.data());
+           if(attendeesIDs.contains(_u.userID)){
+              attendees.add(_u);
            }
          }
          if(attendees.length > 0){
@@ -1398,15 +1562,19 @@ class _ViewLituationState extends State<ViewLituation>{
                  Container(
                    alignment:  Alignment.centerLeft,
                    margin: EdgeInsets.fromLTRB(15, 5, 0, 5),
-                   child: Text('attending vibes (' + attendeesIDs.length.toString() + ')' , style: infoLabelMedium(Theme.of(context).textSelectionColor),),),
+                   child: Text('attending vibes (' + attendees.length.toString() + ')' , style: infoLabelMedium(Theme.of(context).textSelectionColor),),),
                  Container(
                    margin: EdgeInsets.fromLTRB(0, 15, 15, 0) ,
                    height: 75,
                    child: ListView.builder(
                        scrollDirection: Axis.horizontal,
-                       itemCount: attendeesIDs.length,
+                       itemCount: attendees.length,
                        itemBuilder: (context , idx){
-                         return cancelableCircularProfileWidget(attendees[idx].data()['profileURL'],attendees[idx].data()['userID'], attendees[idx].data()['username'], attendees[idx].data()['status']['status']);
+                         return cancelableCircularProfileWidget(
+                           attendees[idx].profileURL,
+                           attendees[idx].userID,
+                           attendees[idx].username,
+                           attendees[idx].status.status);
                        }
                    ),
                  ),
@@ -1497,9 +1665,15 @@ class _ViewLituationState extends State<ViewLituation>{
      return  StreamBuilder(
        stream:lp.getUserStreamByID(hostID),
        builder: (ctx, u){
-         return !u.hasData
-             ?new Text("loading" , style: TextStyle(color: Theme.of(context).buttonColor),)
-             : hostInfo(u.data['userID'], u.data['username'], u.data['profileURL'], ctx);
+         if (u.hasData == false 
+          || u.connectionState != ConnectionState.done)
+         return new Text(
+           "loading" ,
+           style: TextStyle(color: Theme.of(context).buttonColor),
+          );
+        User _u = User.fromJson(u.data.data());
+         return hostInfo(
+           u.data['userID'], u.data['username'], u.data['profileURL'], ctx);
        },
      );
    }
@@ -1773,10 +1947,9 @@ class _ViewLituationState extends State<ViewLituation>{
                      child: ListView.builder(
                          scrollDirection: Axis.horizontal,
                          itemCount: pendingIDs.length,
-                         itemBuilder: (context, idx) {
-                           return pendingCircularProfileWidget(pending[idx]
-                               .data()['profileURL'], pending[idx].data()['userID'],
-                               pending[idx].data()['username'], pending[idx].data()['status']['status']);
+                         itemBuilder: (context, idx) {                           
+                            User _u = User.fromJson(pending[idx].data());
+                            return pendingCircularProfileWidget(_u.profileURL, _u.userID, _u.username, _u.status?.status??"offline");;
                          }
                      ),
                    ), minimizeRSVPS)
@@ -2016,7 +2189,10 @@ class _ViewLituationState extends State<ViewLituation>{
         thumbnails.add(lituationMedia(img));
       }
     }
-
+    if( thumbnails.length == 0) {
+      nails.add(litPlaceHolder);
+      thumbnails.add(lituationMedia(litPlaceHolder));
+    }
     return thumbnails;
   }
 

@@ -34,8 +34,9 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
   final Auth db = Auth();
   List<String> lituationMediaFiles = List();
   List lituationMediaWidgets = List();
+  bool isSaving = false;
   LituationProvider lp;
-  bool uploading  = false;
+
   @override
   void dispose(){
     super.dispose();
@@ -245,28 +246,21 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
  }
 
   Widget postLituation(BuildContext ctx){
-   if (uploading) {
-     //TODO replace with Animated spinner
-     return Container(padding: EdgeInsets.all(25), child: Text("creating your lituation..." , style: infoLabel(Theme.of(context).textSelectionColor), textAlign: TextAlign.center,),);
-   }
-   return Container( //login button
-       height: 45,
-       margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-       padding: EdgeInsets.fromLTRB(75, 0, 75, 0),
-       child: RaisedButton(
-           color: Theme.of(context).buttonColor,
-           textColor: Theme.of(context).primaryColor,
-           child: Text(uploading?'Creating...':'Post' , style: infoValue(Theme.of(context).textSelectionColor),),
-           onPressed: () {
-             setState(() {
-               uploading = true;
-             });
-             _createNewLituation(widget.newLituation , ctx);
-           }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
-       ));
+    return Container( //login button
+        height: 45,
+        margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+        padding: EdgeInsets.fromLTRB(75, 0, 75, 0),
+        child: RaisedButton(
+            color: Theme.of(context).buttonColor,
+            textColor: Theme.of(context).primaryColor,
+            child: isSaving ? CircularProgressIndicator() : Text('Post'),
+            onPressed: isSaving ? null : (){
+              _createNewLituation(widget.newLituation , ctx);
+            }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
+        ));
   }
   Widget saveLituation(BuildContext ctx){
-    if (uploading) {
+    if (isSaving) {
       //TODO replace with Animated spinner
       return Container(padding: EdgeInsets.all(0), child: Text("please wait..." , style: infoLabel(Theme.of(context).textSelectionColor), textAlign: TextAlign.center,),);
     }
@@ -277,12 +271,10 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
         child: RaisedButton(
             color: Theme.of(context).buttonColor,
             textColor: Theme.of(context).primaryColor,
-            child: Text('Save as draft' , style: infoValue(Theme.of(context).textSelectionColor)),
-            onPressed: (){
-              setState(() {
-                uploading = true;
-              });
-
+            child: isSaving ? CircularProgressIndicator() : Text('Save as draft' , style: infoValue(Theme.of(context).textSelectionColor)),
+            onPressed: isSaving ? null : (){
+              _saveAsDraft(widget.newLituation, ctx);
+              //nextPage(ctx);
             }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(25.0))
         ));
   }
@@ -341,7 +333,10 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     );
   }
 
-  _createNewLituation(Lituation l , BuildContext ctx) async {
+  _createNewLituation(Lituation l , BuildContext ctx) async{
+    setState(() {
+      isSaving = true;
+    });
     l.thumbnailURLs = lituationMediaFiles;
     l.observers = [l.hostID];
     l.pending = [];
@@ -349,12 +344,17 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     l.requirements = [];
     l.specialGuests = [];
     l.status = 'pending';
-    if(l.fee == null || l.fee != '0'){
+    if(l.entry != 'Fee' && (l.fee == null || l.fee != '0')){
       l.fee = '';
     }
-    await lp.createNewLituation(l).then((value) => _viewLituation(value, l.title));
-    setState(() {
-      uploading = false;
+    lp.createNewLituation(l).then((value){
+      //_toProfile(l.hostID);
+      setState(() {
+        isSaving = false;
+      });
+      if(value != null) {
+        _viewLituation(value, l.title);
+      }
     });
 }
 
@@ -364,10 +364,14 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     lv.lituationID = lID;
     lv.lituationName = lName;
     lv.action = "edit";
-    Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);
+    Navigator.pop(context);
+    Navigator.pushReplacementNamed(context, ViewLituationRoute , arguments: lv);
   }
 
   _saveAsDraft(Lituation l , BuildContext ctx) async{
+    setState(() {
+      isSaving = true;
+    });
     l.thumbnailURLs = lituationMediaFiles;
     l.observers = [l.hostID];
     l.pending = [];
@@ -378,10 +382,16 @@ class _PreviewLituationPageState extends State<PreviewLituationPage>{
     if(l.fee != null && l.fee != 0){
 
     }
-    await lp.createNewDraft(l).then((value) => _viewLituation(value, l.title));
+    lp.createNewDraft(l).then((value){
+      setState(() {
+        isSaving = false;
+      });
+      _toProfile(l.hostID);
+    });
   }
   void _toProfile(String uID){
-    Navigator.pushReplacementNamed(context, VisitProfilePageRoute , arguments: uID);
+    Navigator.pop(context);
+    Navigator.pop(context);
   }
 
   Widget lituationDescription(BuildContext ctx){
