@@ -339,7 +339,7 @@ class _SearchState extends State<SearchPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: Text(l.title , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 1.2,),),
+          Expanded(child: Text(l.title , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 1.2, overflow: TextOverflow.ellipsis,),),
           Expanded(child: Text(parseThemes(l) , textScaleFactor: 0.7 , style: TextStyle(color: Colors.blueAccent),),),
           Expanded(child: lituationTimeWidget(l),),
           Expanded(child: Text(l.title , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 0.7,),),
@@ -366,7 +366,7 @@ class _SearchState extends State<SearchPage> {
               text: TextSpan(
                   text: parseVibes(l.vibes.length.toString()),style: infoValue(Theme.of(context).textSelectionColor),
                   children: [
-                    TextSpan(text: ' vibes going\n' , style: infoValue(Theme.of(context).primaryColor))
+                    TextSpan(text: '  going\n' , style: infoValue(Theme.of(context).primaryColor))
                   ]
               )
           ),

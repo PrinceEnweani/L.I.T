@@ -93,6 +93,13 @@ class LituationProvider {
   likeLituation(){
     db.addLikeLituation(userID, lID);
   }
+
+  swapLike(){
+    db.swapLikeToDisLike(userID, lID);
+  }
+  swapDislike(){
+    db.swapDisLikeToLike(userID, lID);
+  }
   dislikeLituation(){
     db.addDislikeLituation(userID, lID);
   }
@@ -108,34 +115,12 @@ class LituationProvider {
     db.rsvpToLituation(userID, lID);
   }
   
-  Future<dynamic> searchUser(String username) async {
-    List<String> results = [];
-   var users = [];
-   var friends = await friendList();
-    await db.getUsers().then((value){
-      for(var d in value.docs){
-        if(d.data()['username'].toString().toLowerCase().contains(username.toLowerCase())){
-          if(!results.contains(d.data()[userID])){
-            if(friends.contains(d.data()[userID])){
-              results.add(d.data()['userID']);
-              users.add(d);
-            }
-          }
-        }
-      }
-    });
-    return users;
+  searchUser(String username) async {
+    List results = [];
+    return await db.searchUser(username);
+   // return results;
   }
 
-  Future<List<String>> friendList() async {
-    List<String> friends = [];
-    DocumentSnapshot snapshot = await db.getVibed(userID).first;
-    Map data = snapshot.data();
-    data["vibed"].forEach((element) {
-      friends.add(element);
-    });
-    return friends;
-  }
   Lituation initNewLituation(){
     Lituation l = new Lituation();
     l.capacity = 'N/A';

@@ -131,9 +131,8 @@ class _ViewLituationState extends State<ViewLituation>{
                 children: <Widget>[
                   lituationCarousel(l),
                   lituationAboutRowProvider(l),
-                  ratingRow(context , lit.likes, lit.dislikes),
                   pendingVibesWidgetProvider(l),
-                  lituationTitleWidget(l),
+                  lituationTitleWidget(l , ratingRow(context , lit , lit.likes, lit.dislikes),),
                   attendeesWidgetProvider(l),
                   lituationTimeProvider(l),
                   lituationInfoCard("Entry" , '${lit.entry}${lit.entry == 'Fee' ? ' (\$' + lit.fee + ')' : ''}' , MaterialCommunityIcons.door),
@@ -154,15 +153,24 @@ class _ViewLituationState extends State<ViewLituation>{
         content: Text(text , style: infoValue(Theme.of(context).textSelectionColor),));
   }
 
-   Widget ratingRow(BuildContext context , List<String> likes , List<String> dislikes){
-     String up = "${likes != null? likes.length : 0} voted lit";
-     String down = "${dislikes != null? dislikes.length : 0} voted nope";
+   Widget ratingRow(BuildContext context , Lituation l , List<String> likes , List<String> dislikes){
 
-     return Card(
-       elevation: 5,
-       color: Theme.of(context).scaffoldBackgroundColor,
+     String up = "${likes != null? likes.length : 0}";
+     String down = "${dislikes != null? dislikes.length : 0}";
+
+     likeColor = Theme.of(context).textSelectionColor;
+     dislikeColor = Theme.of(context).textSelectionColor;
+    if (likes.contains(widget.lituationVisit.userID)) {
+      likeColor = Colors.amber;
+    }
+    if (dislikes.contains(widget.lituationVisit.userID)) {
+      dislikeColor = Colors.red;
+    }
+     return Container(
+       width: 175,
+       height: 70,
        child: Row(
-         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+         mainAxisAlignment: MainAxisAlignment.start,
          children: [
            Expanded( //lo
              child: GestureDetector(
@@ -171,7 +179,7 @@ class _ViewLituationState extends State<ViewLituation>{
                      showSnackBar(context , sBar('You already voted!'));
                    }
                    if (dislikes.contains(widget.lituationVisit.userID)) {
-                     showSnackBar(context , sBar('You already voted!'));
+                     lp.swapDislike();
                    }
                    lp.likeLituation();
                  },
@@ -180,7 +188,7 @@ class _ViewLituationState extends State<ViewLituation>{
                      child:  Column(
                        children: [
                          Icon(Icons.local_fire_department , color: likeColor,size: 35,),
-                         Text(up, style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 14)),
+                         Text(up, style: TextStyle(color: likeColor , fontSize: 10)),
                        ],
                      )
                  )
@@ -190,7 +198,7 @@ class _ViewLituationState extends State<ViewLituation>{
              child: GestureDetector(
                  onTap: (){
                    if (likes.contains(widget.lituationVisit.userID)) {
-                     return showSnackBar(context ,sBar('You already voted!'));
+                     lp.swapLike();
                    }
                    if (dislikes.contains(widget.lituationVisit.userID)) {
                      return showSnackBar(context ,sBar('You already voted!'));
@@ -202,7 +210,7 @@ class _ViewLituationState extends State<ViewLituation>{
                      child:  Column(
                        children: [
                          Icon(Icons.fire_extinguisher , color: dislikeColor,size: 35,),
-                         Text(down, style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 14)),
+                         Text(down, style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 10)),
                        ],
                      )
                  )
@@ -400,7 +408,6 @@ class _ViewLituationState extends State<ViewLituation>{
          children: [
            invitedNotifier(l),
            bottomButtons(l)
-
          ],
        ),
      );
@@ -412,6 +419,7 @@ class _ViewLituationState extends State<ViewLituation>{
               if(!ul.hasData){
                 return Container(height: 0,);
               }
+              print(widget.lituationVisit.userID);
               for(String id in ul.data['invitations']){
                 if(id.contains(":${widget.lituationVisit.lituationID}:${widget.lituationVisit.userID}")){
                   invited = true;
@@ -649,6 +657,7 @@ class _ViewLituationState extends State<ViewLituation>{
    }
    Widget hostBottomButtons(Lituation l){
      return Container(
+       height: 100,
        padding: EdgeInsets.fromLTRB(5, 15, 5, 15),
        child: Row(
          children: [
@@ -1665,8 +1674,7 @@ class _ViewLituationState extends State<ViewLituation>{
      return  StreamBuilder(
        stream:lp.getUserStreamByID(hostID),
        builder: (ctx, u){
-         if (u.hasData == false 
-          || u.connectionState != ConnectionState.done)
+         if (!u.hasData)
          return new Text(
            "loading" ,
            style: TextStyle(color: Theme.of(context).buttonColor),
@@ -1746,57 +1754,67 @@ class _ViewLituationState extends State<ViewLituation>{
 
      );
    }
-   Widget lituationDescription(AsyncSnapshot l){
+   Widget lituationDescription(AsyncSnapshot l , Widget ratingRow){
      return Card(
        elevation: 5,
        color: Theme.of(context).scaffoldBackgroundColor,
        child: Container(
          padding: EdgeInsets.fromLTRB(0, 15, 0, 50),
-         child:  Column(children: [
-           Container(
-             margin: EdgeInsets.fromLTRB(15,0, 0, 5),
-             alignment: Alignment.centerLeft,
-             padding: EdgeInsets.fromLTRB(0,0, 0, 0),
-             child: Text(l.data['title'], style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 24),textAlign: TextAlign.center, ),
-           ),
-           lituationHostInfoProvider(l.data['hostID']),
-           Container(
-             padding: EdgeInsets.only(top: 10.0 , left: 15 , bottom: 10),
-             alignment: Alignment.topLeft,
-             child: Text("Description:" ,style: TextStyle(color: Theme.of(context).primaryColor,fontSize: 16 ,fontWeight: FontWeight.w900),textAlign: TextAlign.left,),
-           ),
-           Row(
-             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-             children: [
-               Flexible(
-                   child: Container(
-                     padding: EdgeInsets.fromLTRB(15 , 10 , 15 , 0),
-                     child: Text(l.data['description'],style: TextStyle(color: Theme.of(context).dividerColor , fontSize: 14),textAlign: TextAlign.left,),
-                   )
-               ),
-             ],
-           ),
-           Container(
-               margin: EdgeInsets.fromLTRB(15,25, 0, 0),
-               alignment: Alignment.centerLeft,
-               padding: EdgeInsets.fromLTRB(0,0, 0, 0),
-               child:  Text('Themes:',style: infoLabelMedium(Theme.of(context).primaryColor))
-           ),
-           Container(
-               margin: EdgeInsets.fromLTRB(15,0, 0, 0),
-               alignment: Alignment.centerLeft,
-               padding: EdgeInsets.fromLTRB(0,0, 0, 0),
-               child:  Text(parseThemesFromSnapShot(l)  ,style: infoValueMedium(Theme.of(context).indicatorColor))
-           ),
-         ],),
+         child:  Stack(
+           children: [
+             Column(
+               children: [
+                 Container(
+                   margin: EdgeInsets.fromLTRB(15,0, 0, 5),
+                   alignment: Alignment.centerLeft,
+                   padding: EdgeInsets.fromLTRB(0,0, 0, 0),
+                   child: Text(l.data['title'], style: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 24),textAlign: TextAlign.center, ),
+                 ),
+                 lituationHostInfoProvider(l.data['hostID']),
+                 Container(
+                   padding: EdgeInsets.only(top: 10.0 , left: 15 , bottom: 10),
+                   alignment: Alignment.topLeft,
+                   child: Text("Description:" ,style: TextStyle(color: Theme.of(context).primaryColor,fontSize: 16 ,fontWeight: FontWeight.w900),textAlign: TextAlign.left,),
+                 ),
+                 Row(
+                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                   children: [
+                     Flexible(
+                         child: Container(
+                           padding: EdgeInsets.fromLTRB(15 , 10 , 15 , 0),
+                           child: Text(l.data['description'],style: TextStyle(color: Theme.of(context).dividerColor , fontSize: 14),textAlign: TextAlign.left,),
+                         )
+                     ),
+                   ],
+                 ),
+                 Container(
+                     margin: EdgeInsets.fromLTRB(15,25, 0, 0),
+                     alignment: Alignment.centerLeft,
+                     padding: EdgeInsets.fromLTRB(0,0, 0, 0),
+                     child:  Text('Themes:',style: infoLabelMedium(Theme.of(context).primaryColor))
+                 ),
+                 Container(
+                     margin: EdgeInsets.fromLTRB(15,0, 0, 0),
+                     alignment: Alignment.centerLeft,
+                     padding: EdgeInsets.fromLTRB(0,0, 0, 0),
+                     child:  Text(parseThemesFromSnapShot(l)  ,style: infoValueMedium(Theme.of(context).indicatorColor))
+                 ),
+               ],),
+             Positioned(
+              top: 110,
+               right: 0,
+               child: ratingRow,
+             )
+           ],
+         )
        ),
      );
    }
-   Widget lituationTitleWidget(AsyncSnapshot l){
+   Widget lituationTitleWidget(AsyncSnapshot l , Widget ratingRow){
      if(editMode){
        return editableLituationTitleWidget(l);
      }
-     return lituationDescription(l);
+     return lituationDescription(l ,ratingRow);
    }
    Widget editableLituationTitleWidget(l){
      if(tec.text == ''){ tec = new TextEditingController(text: l.data['title']);}

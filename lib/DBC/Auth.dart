@@ -261,6 +261,9 @@ class Auth implements DBA {
   Future<QuerySnapshot> searchUser(String username) async {
     return dbRef.collection('users').where('username', isEqualTo: username).get();
   }
+  Future<QuerySnapshot> searchUserSnapshots(String username) async {
+    return dbRef.collection('users').where('username', isEqualTo: username).get();
+  }
   Future<QuerySnapshot> getUsers() async {
     return dbRef.collection("users").get();
   }
@@ -463,6 +466,16 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     await dbRef.collection('lituations').doc(lID).update({"dislikes": FieldValue.arrayUnion(data)});
     await dbRef.collection('lituations').doc(lID).update({"clout": FieldValue.increment(-3)});
 
+  }
+  Future<void> swapLikeToDisLike(String userId, String lID) async {
+    var data = [userId];
+    await dbRef.collection('lituations').doc(lID).update({"likes": FieldValue.arrayRemove(data)});
+    await dbRef.collection('lituations').doc(lID).update({"dislikes": FieldValue.arrayUnion(data)});
+  }
+  Future<void> swapDisLikeToLike(String userId, String lID) async {
+    var data = [userId];
+    await dbRef.collection('lituations').doc(lID).update({"dislikes": FieldValue.arrayRemove(data)});
+    await dbRef.collection('lituations').doc(lID).update({"likes": FieldValue.arrayUnion(data)});
   }
   Future<void> addLikeTest(String userId, String lID) async {
     var data = [userId];

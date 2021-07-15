@@ -16,6 +16,9 @@ String parseVibes(String vibes){
   if(vibes == null){
     return '0';
   }
+  if(vibes.length > 3){
+    return vibes.substring(0 , 1) + " k";
+  }
   return vibes;
 }
 
