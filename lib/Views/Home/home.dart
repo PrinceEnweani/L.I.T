@@ -81,7 +81,7 @@ class _FeedState extends State<FeedPage> {
     LituationVisit lv = LituationVisit();
     lv.userID = widget.userID;
     lv.lituationID = id;
-    Navigator.pushReplacementNamed(context, LituationSurveyRoute,
+    Navigator.pushNamed(context, LituationSurveyRoute,
         arguments: lv);
   }
 
@@ -89,18 +89,19 @@ class _FeedState extends State<FeedPage> {
     _firebaseMessaging.requestPermission();
 
     _firebaseMessaging.getToken().then((token) {
+      print("token: ${token}");
       sp.db.updateUserPushToken(widget.userID, token);
     });
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage event) {
       print('onMessageOpenedApp: from:${event.from} ${event.data}');
-      if (event.data["event"] == "lituation_survey") {
+      if (mounted && event.data["event"] == "lituation_survey") {
         String litID = event.data["litID"];
         gotoSurvey(litID);
       }
     });
     FirebaseMessaging.onMessage.listen((RemoteMessage event) {
       print('onMessage: from:${event.from} ${event.data}');
-      if (event.data["event"] == "lituation_survey") {
+      if (mounted && event.data["event"] == "lituation_survey") {
         String litID = event.data["litID"];
         gotoSurvey(litID);
       }

@@ -213,7 +213,7 @@ class _ProfileState extends State<ProfilePage>{
                   }
                 },
                 //TODO Replace with vibe icon
-                child: indexedStackTab(vibe_label, Icons.person , 0),
+                child: indexedStackTab(myvibe_label, Icons.person , 0),
               )
           ),
           Expanded(
