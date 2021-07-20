@@ -571,7 +571,8 @@ Widget titleTextField(String u){
         return lp.searchUser(pattern).then((value){
         var results = [];
         for(var u in value){
-          if(u.data()['username'].toString().toLowerCase().contains(pattern.toLowerCase())){
+          User _user = User.fromJson(u.data());
+          if(_user.username.toLowerCase().contains(pattern.toLowerCase())){
             results.add(u);
           }
         }

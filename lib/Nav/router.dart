@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:lit_beta/Models/Lituation.dart';
 import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Views/Auth/login.dart';
 import 'package:lit_beta/Views/Auth/register.dart';
@@ -7,6 +8,7 @@ import 'package:lit_beta/Views/Auth/survey.dart';
 import 'package:lit_beta/Views/Chat/chatV2.dart';
 import 'package:lit_beta/Views/Home/home.dart';
 import 'package:lit_beta/Views/Lituations/create_lituation.dart';
+import 'package:lit_beta/Views/Lituations/invite_users.dart';
 import 'package:lit_beta/Views/Lituations/lituation_survey.dart';
 import 'package:lit_beta/Views/Lituations/preview_lituation.dart';
 import 'package:lit_beta/Views/Lituations/view_lituation.dart';
@@ -56,5 +58,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case LituationSurveyRoute:
       var lv = settings.arguments;
       return PageTransition(child:  LituationSurveyPage(lv), type: PageTransitionType.fade);
+    case InviteUsersRoute:
+      InviteVisit lv = settings.arguments;
+      return PageTransition(child: InviteView(lit: lv.lit, userID: lv.userID), type: PageTransitionType.fade);
   }
 }

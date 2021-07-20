@@ -394,6 +394,7 @@ class _ViewLituationState extends State<ViewLituation> {
         if (!l.hasData) {
           return Container();
         }
+        Lituation _lit = Lituation.fromJson(l.data.data());
         bool attending = l.data['vibes'].contains(widget.lituationVisit.userID);
         return Container(
             height: 50,
@@ -422,7 +423,7 @@ class _ViewLituationState extends State<ViewLituation> {
                   ],
                 ),
                 onPressed: () {
-                  sendInvite(l.data['entry'], attending);
+                  sendInvite(l.data['entry'], attending, _lit);
                 },
                 shape: new RoundedRectangleBorder(
                     borderRadius: new BorderRadius.circular(5.0))));
@@ -430,12 +431,11 @@ class _ViewLituationState extends State<ViewLituation> {
     );
   }
 
-  void _viewVibes(String note) {
-    UserVisit v = UserVisit(
-        visitedID: widget.lituationVisit.userID,
-        visitorID: widget.lituationVisit.userID,
-        visitNote: note);
-    Navigator.of(context).pushNamed(VibesPageRoute, arguments: v);
+  void _viewVibes(String note, Lituation _lit) {
+    InviteVisit visit = InviteVisit(
+      userID: widget.lituationVisit.userID,
+      lit: _lit);
+    Navigator.of(context).pushNamed(InviteUsersRoute, arguments: visit);
   }
 
   Widget seperator() {
@@ -1430,6 +1430,7 @@ class _ViewLituationState extends State<ViewLituation> {
             valueColor: AlwaysStoppedAnimation(Theme.of(context).splashColor)),
       );
     }
+    Lituation _lit = Lituation.fromJson(l.data.data());
     List<String> attendeesIDs = List.from(l.data['vibes']);
     List attendees = [];
     List<String> addedIDs = [];
@@ -1491,7 +1492,7 @@ class _ViewLituationState extends State<ViewLituation> {
             ),
           );
         } else {
-          return noAttendeesWidget();
+          return noAttendeesWidget(_lit);
         }
       },
     );
@@ -1757,17 +1758,18 @@ class _ViewLituationState extends State<ViewLituation> {
         if (!l.hasData) {
           return Container();
         }
+        Lituation _lit = Lituation.fromJson(l.data.data());
         bool attending = l.data['vibes'].contains(widget.lituationVisit.userID);
         return GestureDetector(
             onTap: () {
-              sendInvite(l.data['entry'], attending);
+              sendInvite(l.data['entry'], attending, _lit);
             },
             child: roundInviteButton());
       },
     );
   }
 
-  void sendInvite(String entry, bool attending) {
+  void sendInvite(String entry, bool attending, Lituation lit) {
     if (entry.contains(PRIVATE_ENTRY)) {
       showSnackBar(
           context, sBar('This lituation is private, reach out to the host.'));
@@ -1776,7 +1778,7 @@ class _ViewLituationState extends State<ViewLituation> {
     if (entry.contains(INVITE_ONLY)) {
       if (attending) {
         String visit_note = "invite:" + widget.lituationVisit.lituationID;
-        _viewVibes(visit_note);
+        _viewVibes(visit_note, lit);
         return;
       } else {
         showSnackBar(context, sBar('You must be attending to send an invite.'));
@@ -1784,7 +1786,7 @@ class _ViewLituationState extends State<ViewLituation> {
       }
     }
     String visit_note = "invite:" + widget.lituationVisit.lituationID;
-    _viewVibes(visit_note);
+    _viewVibes(visit_note, lit);
   }
 
   Widget roundInviteButton() {
@@ -1871,6 +1873,7 @@ class _ViewLituationState extends State<ViewLituation> {
             valueColor: AlwaysStoppedAnimation(Theme.of(context).splashColor)),
       );
     }
+    Lituation _lit = Lituation.fromJson(l.data.data());
     List<String> attendeesIDs = List.from(l.data['vibes']);
     List<User> attendees = [];
     return StreamBuilder<QuerySnapshot>(
@@ -1919,25 +1922,25 @@ class _ViewLituationState extends State<ViewLituation> {
             ),
           );
         } else {
-          return noAttendeesWidget();
+          return noAttendeesWidget(_lit);
         }
       },
     );
   }
 
-  Widget noAttendeesWidget() {
+  Widget noAttendeesWidget(Lituation _lit) {
     return Card(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: Container(
         padding: EdgeInsets.all(15),
         child: Column(
-          children: [inviteUserButton()],
+          children: [inviteUserButton(_lit)],
         ),
       ),
     );
   }
 
-  Widget inviteUserButton() {
+  Widget inviteUserButton(Lituation _lit) {
     return Container(
         height: 50,
         width: MediaQuery.of(context).size.width,
@@ -1947,7 +1950,7 @@ class _ViewLituationState extends State<ViewLituation> {
                 style: infoValue(Theme.of(context).textSelectionColor)),
             onPressed: () {
               String visit_note = "invite:" + widget.lituationVisit.lituationID;
-              _viewVibes(visit_note);
+              _viewVibes(visit_note, _lit);
             },
             shape: new RoundedRectangleBorder(
                 borderRadius: new BorderRadius.circular(25.0))));

@@ -360,6 +360,7 @@ Widget viewList(BuildContext context, String viewer, List data,
               scrollDirection: Axis.horizontal,
               itemCount: data.length,
               itemBuilder: (ctx, idx) {
+                Lituation _lit = Lituation.fromJson(data[idx].data());
                 return Container(
                     margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
                     width: 150,
@@ -368,11 +369,11 @@ Widget viewList(BuildContext context, String viewer, List data,
                         lituationDetailCard(
                             context,
                             viewer,
-                            data[idx]['eventID'],
-                            data[idx]['thumbnail'][0],
-                            data[idx]['title'],
-                            parseDate(data[idx]['date']),
-                            data[idx]['entry']),
+                            _lit.eventID,
+                            _lit.thumbnailURLs[0],
+                            _lit.title,
+                            parseDate(Timestamp.fromDate(_lit.date)),
+                            _lit.entry),
                         Positioned(
                           child: removeButtons[idx],
                           top: 10,
@@ -419,6 +420,7 @@ Widget viewListVisitor(BuildContext context, String viewer, List data,
               scrollDirection: Axis.horizontal,
               itemCount: data.length,
               itemBuilder: (ctx, idx) {
+                Lituation _lit = Lituation.fromJson(data[idx].data());
                 return Container(
                     margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
                     width: 150,
@@ -427,11 +429,11 @@ Widget viewListVisitor(BuildContext context, String viewer, List data,
                         lituationDetailCard(
                             context,
                             viewer,
-                            data[idx]['eventID'],
-                            data[idx]['thumbnail'][0],
-                            data[idx]['title'],
-                            parseDate(data[idx]['date']),
-                            data[idx]['entry']),
+                            _lit.eventID,
+                            _lit.thumbnailURLs[0],
+                            _lit.title,
+                            parseDate(Timestamp.fromDate(_lit.date)),
+                            _lit.entry),
                       ],
                     ));
               }),

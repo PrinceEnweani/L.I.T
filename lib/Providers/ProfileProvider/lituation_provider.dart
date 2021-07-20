@@ -128,14 +128,13 @@ class LituationProvider {
     var friends = await friendList();
     await db.getUsers().then((value) {
       for (var d in value.docs) {
-        if (d
-            .data()['username']
-            .toString()
+        User _user  = User.fromJson(d.data());
+        if (_user.username
             .toLowerCase()
             .contains(username.toLowerCase())) {
-          if (!results.contains(d.data()[userID])) {
-            if (friends.contains(d.data()[userID])) {
-              results.add(d.data()['userID']);
+          if (!results.contains(_user.userID)) {
+            if (friends.contains(_user.userID)) {
+              results.add(_user.userID);
               users.add(d);
             }
           }

@@ -13,3 +13,4 @@ const String ViewLituationRoute = '/viewLituation';
 const String PreviewLituationPageRoute = '/previewLituation';
 const String GuestListPageRoute = '/showGuestList';
 const String LituationSurveyRoute = '/lituationSurvey';
+const String InviteUsersRoute = '/inviteusers';

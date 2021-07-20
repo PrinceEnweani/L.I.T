@@ -988,8 +988,9 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
     await addToUpcomingLituations(l.hostID, l.eventID);
     List<String> tokens = [];
     l.invited.forEach((element) async {
-      UserModel.User hoster = await getUserModel(element);
-      if (hoster.deviceToken != "") tokens.add(hoster.deviceToken);
+      UserModel.User invited = await getUserModel(element);
+      if (invited.deviceToken != "") tokens.add(invited.deviceToken);
+      await addToUserInvitation(invited.userID, l.eventID, l.hostID);
     });
     sendPushNotification("", "Invitation",
         "You have been invited to  ${l.title} by ${hoster.username}",
@@ -1091,7 +1092,7 @@ if user is not in vibing and user is not pending: add user to pending vibing of 
 
   Future<void> addToUserInvitation(
       String userId, String lID, String fromId) async {
-    var data = ["${fromId}:${lID}:${fromId}"];
+    var data = ["${fromId}:${lID}:${userId}"];
     var invites = [userId];
     await dbRef
         .collection('users_lituations')

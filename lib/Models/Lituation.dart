@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lit_beta/Models/User.dart';
+import 'package:lit_beta/Strings/constants.dart';
 
 class UserRate {
   String from;
@@ -130,7 +131,7 @@ class Lituation {
     data['thumbnail'] = this._thumbnailURLs;
     data['likes'] = this._likes;
     data['dislikes'] = this._dislikes;
-    data['rates'] = this._rates.map((e) => e.toJSON());
+    data['rates'] = this._rates?.map((e) => e.toJSON())??[];
 
     return data;
   }
@@ -290,7 +291,12 @@ class Lituation {
     _invited = value;
   }
 
-  List<String> get thumbnailURLs => _thumbnailURLs;
+  List<String> get thumbnailURLs {
+    if (_thumbnailURLs.length > 0)
+      return _thumbnailURLs;
+    else
+      return [litPlaceHolder];
+  }
 
   set thumbnailURLs(List<String> value) {
     _thumbnailURLs = value;
@@ -320,4 +326,18 @@ class Lituation {
     _dislikes = value;
   }
   List<UserRate> get rates => _rates;
+}
+
+class InviteVisit{
+  String userID;
+  Lituation lit;
+
+  InviteVisit(
+      {  String userID,
+        Lituation lit
+      }) {
+    this.userID = userID;    
+    this.lit = lit;
+  }
+
 }
