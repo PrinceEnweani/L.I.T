@@ -107,6 +107,7 @@ class _VisitProfileState extends State<VisitProfilePage>{
       children: [
         userVibeTabProvider(u),
         userLituationTabProvider(u),
+        Container()
         //userActivityTab(context , u),
 
         //aboutList(u),

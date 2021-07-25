@@ -1,6 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lit_beta/Models/User.dart';
+import 'package:lit_beta/Strings/constants.dart';
+
+class UserRate {
+  String from;
+  String to;
+  int rate;
+  DateTime createdAt;
+  UserRate(this.from, this.to, this.rate, this.createdAt);
+  Map<String, dynamic> toJSON() {
+    return {'from': from, 'to': to, 'rate': rate, 'createdAt': createdAt};
+  }
+  UserRate.fromJSON(Map<String, dynamic> json) {
+    this.from = json['from'] ?? "";
+    this.to = json['to'] ?? "";
+    this.rate = json['rate'] ?? 0;
+    this.createdAt = json['createdAt']?.toDate()??DateTime.now();
+  }
+}
 
 class Lituation {
   String _capacity;
@@ -29,34 +47,35 @@ class Lituation {
   List<String> _thumbnailURLs;
   List<String> _likes;
   List<String> _dislikes;
+  List<UserRate> _rates;
 
-  Lituation({
-    String capacity,
-    DateTime date,
-    DateTime end_date,
-    DateTime dateCreated,
-    String description,
-    String title,
-    String entry,
-    String eventID,
-    String hostID,
-    String fee,
-    String location,
-    LatLng locationLatLng,
-    List<String> musicGenres,
-    List<String> requirements,
-    String themes,
-    String status,
-    int clout,
-    List<String> specialGuests,
-    List<String> observers,
-    List<String> vibes,
-    List<String> invited,
-    List<String> pending,
-    List<String> thumbnailURLs,
-    List<String> likes,
-    List<String> dislikes
-  }) {
+  Lituation(
+      {String capacity,
+      DateTime date,
+      DateTime end_date,
+      DateTime dateCreated,
+      String description,
+      String title,
+      String entry,
+      String eventID,
+      String hostID,
+      String fee,
+      String location,
+      LatLng locationLatLng,
+      List<String> musicGenres,
+      List<String> requirements,
+      String themes,
+      String status,
+      int clout,
+      List<String> specialGuests,
+      List<String> observers,
+      List<String> vibes,
+      List<String> invited,
+      List<String> pending,
+      List<String> thumbnailURLs,
+      List<String> likes,
+      List<String> dislikes,
+      List<UserRate> rates}) {
     this._capacity = capacity;
     this._date = date;
     this._end_date = end_date;
@@ -81,6 +100,7 @@ class Lituation {
     this._thumbnailURLs = thumbnailURLs;
     this._likes = likes;
     this._dislikes = dislikes;
+    this._rates = rates;
   }
 
   Map<String, dynamic> toJson() {
@@ -111,11 +131,12 @@ class Lituation {
     data['thumbnail'] = this._thumbnailURLs;
     data['likes'] = this._likes;
     data['dislikes'] = this._dislikes;
+    data['rates'] = this._rates?.map((e) => e.toJSON())??[];
 
     return data;
   }
 
-  Lituation.fromJson(Map<String, dynamic> json) {    
+  Lituation.fromJson(Map<String, dynamic> json) {
     this._capacity = json['capacity'];
     this._date = json['date'].toDate();
     this._end_date = json['end_date'].toDate();
@@ -129,7 +150,8 @@ class Lituation {
     this._fee = json['fee'];
     this._clout = json['clout'];
     this._location = json['location'];
-    this._locationLatLng = LatLng(json['locationLatLng'].latitude, json['locationLatLng'].longitude);
+    this._locationLatLng = LatLng(
+        json['locationLatLng'].latitude, json['locationLatLng'].longitude);
     this._musicGenres = List<String>.from(json['musicGenres']);
     this._requirements = List<String>.from(json['requirements']);
     this._themes = json['themes'];
@@ -138,12 +160,11 @@ class Lituation {
     this._vibes = List<String>.from(json['vibes']);
     this._invited = List<String>.from(json['invited'] ?? []);
     this._pending = List<String>.from(json['pending']);
-    this._thumbnailURLs = List<String>.from(json['thumbnail']); 
+    this._thumbnailURLs = List<String>.from(json['thumbnail']);
     this._likes = List<String>.from(json['likes'] ?? []);
-    this._dislikes = List<String>.from(json['dislikes'] ?? []); 
+    this._dislikes = List<String>.from(json['dislikes'] ?? []);
+    this._rates = List<UserRate>.from((json['rates'] ?? []).map((element) => UserRate.fromJSON(element)));
   }
-
-
 
   DateTime get date => _date;
 
@@ -239,8 +260,7 @@ class Lituation {
   }
 
   String get fee {
-    if (_fee == "")
-      return "0";
+    if (_fee == "") return "0";
     return _fee;
   }
 
@@ -270,7 +290,13 @@ class Lituation {
   set invited(List<String> value) {
     _invited = value;
   }
-  List<String> get thumbnailURLs => _thumbnailURLs;
+
+  List<String> get thumbnailURLs {
+    if (_thumbnailURLs.length > 0)
+      return _thumbnailURLs;
+    else
+      return [litPlaceHolder];
+  }
 
   set thumbnailURLs(List<String> value) {
     _thumbnailURLs = value;
@@ -289,14 +315,29 @@ class Lituation {
   }
 
   List<String> get likes => _likes;
-  
+
   set likes(List<String> value) {
     _likes = value;
   }
 
   List<String> get dislikes => _dislikes;
-  
+
   set dislikes(List<String> value) {
     _dislikes = value;
   }
+  List<UserRate> get rates => _rates;
+}
+
+class InviteVisit{
+  String userID;
+  Lituation lit;
+
+  InviteVisit(
+      {  String userID,
+        Lituation lit
+      }) {
+    this.userID = userID;    
+    this.lit = lit;
+  }
+
 }

@@ -213,7 +213,7 @@ class _ProfileState extends State<ProfilePage>{
                   }
                 },
                 //TODO Replace with vibe icon
-                child: indexedStackTab(vibe_label, Icons.person , 0),
+                child: indexedStackTab(myvibe_label, Icons.person , 0),
               )
           ),
           Expanded(
@@ -1379,7 +1379,7 @@ class _ProfileState extends State<ProfilePage>{
             setState(() {
               provider.acceptInvitation(i);
             });
-              showSnackBar(context, sBar(i.lituationID));
+              showSnackBar(context, sBar("success"));
             }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
         )
     );
@@ -1397,7 +1397,7 @@ class _ProfileState extends State<ProfilePage>{
               setState(() {
                 showConfirmationDialog(context , 'cancel this invitation?' , 'you\'ll miss out, \n are you sure?' , [confirmCancelInvitation(i) , cancelDialogButton()]);
               });
-              showSnackBar(context, sBar(i.lituationID));
+              showSnackBar(context, sBar("success"));
             }, shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0))
         )
     );

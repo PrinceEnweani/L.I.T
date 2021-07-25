@@ -10,30 +10,32 @@ class LituationProvider {
   final String lID;
   final String userID;
 
-  LituationProvider(this.lID , this.userID);
+  LituationProvider(this.lID, this.userID);
 
-  lituationStream(){
+  lituationStream() {
     return db.getLituationByID(lID);
   }
 
   usersStream() {
     return db.getAllUsers();
   }
-  Future<DocumentSnapshot> getCategories(){
+
+  Future<DocumentSnapshot> getCategories() {
     return db.getLituationCategories();
   }
-  getUserStreamByID(String id){
+
+  getUserStreamByID(String id) {
     return db.getUser(id);
   }
-  
+
   Future<dynamic> queryUsers(String username) async {
     List<String> results = [];
-   var users = [];
-    await db.getUsers().then((value){
-      for(var d in value.docs){
+    var users = [];
+    await db.getUsers().then((value) {
+      for (var d in value.docs) {
         User u = User.fromJson(d.data());
-        if(u.username.toLowerCase().contains(username.toLowerCase())){
-          if(!results.contains(u.userID)) {
+        if (u.username.toLowerCase().contains(username.toLowerCase())) {
+          if (!results.contains(u.userID)) {
             results.add(u.userID);
             users.add(u);
           }
@@ -41,87 +43,118 @@ class LituationProvider {
       }
     });
     return users;
-}
+  }
 
-
-  approveUser(String userID){
+  approveUser(String userID) {
     db.approveUser(userID, lID);
   }
 
-  updateLituationTitle(String newTitle){
+  updateLituationTitle(String newTitle) {
     db.updateLituationTitle(lID, newTitle);
   }
-  updateLituationDate(DateTime newDate){
+
+  updateLituationDate(DateTime newDate) {
     db.updateLituationDate(lID, newDate);
   }
-  updateLituationDescription(String desc){
+
+  updateLituationDescription(String desc) {
     db.updateLituationDescription(lID, desc);
   }
-  updateLituationEndDate(DateTime newEndDate){
+
+  updateLituationEndDate(DateTime newEndDate) {
     db.updateLituationEndDate(lID, newEndDate);
   }
-  updateLituationCapacity(String newCapacity){
+
+  updateLituationCapacity(String newCapacity) {
     db.updateLituationCapacity(lID, newCapacity);
   }
-  updateLituationLocation(String location){
+
+  updateLituationLocation(String location) {
     db.updateLituationLocation(lID, location);
   }
-  updateLituationLocationLatLng(LatLng locLatLng){
+
+  updateLituationLocationLatLng(LatLng locLatLng) {
     db.updateLituationLocationLatLng(lID, locLatLng);
   }
-  attendLituation () async {
+
+  attendLituation() async {
     await db.attendLituation(userID, lID);
   }
-  acceptInvitation(Invitation i){
+
+  acceptInvitation(Invitation i) {
     db.acceptInvitation(i);
   }
+
   Future<dynamic> getInvitations() async {
     List invitations = [];
     await db.getUserInvitations(userID, lID).then((value) => {
-      for(var id in value.docs){
-        invitations.add(invitations)
-      }
-    });
+          for (var id in value.docs) {invitations.add(invitations)}
+        });
   }
+
   userLituationsStream() {
     return db.getUserLituations(userID);
   }
-  cancelPendingRsvp(String userID){
+
+  cancelPendingRsvp(String userID) {
     db.cancelRSVP(userID, lID);
     //TODO Notify user
   }
-  likeLituation(){
+
+  likeLituation() {
     db.addLikeLituation(userID, lID);
   }
 
-  swapLike(){
-    db.swapLikeToDisLike(userID, lID);
-  }
-  swapDislike(){
-    db.swapDisLikeToLike(userID, lID);
-  }
-  dislikeLituation(){
+  dislikeLituation() {
     db.addDislikeLituation(userID, lID);
   }
-  observeLituation(){
+
+  observeLituation() {
     db.watchLituation(userID, lID);
   }
-  removeFromGuestList(String userID){
+
+  removeFromGuestList(String userID) {
     db.removeUserFromLituation(userID, lID);
     //TODO Notify user
   }
 
-  sendRSVPToLituation(){
+  sendRSVPToLituation() {
     db.rsvpToLituation(userID, lID);
   }
-  
-  searchUser(String username) async {
-    List results = [];
-    return await db.searchUser(username);
-   // return results;
+
+  Future<dynamic> searchUser(String username) async {
+    List<String> results = [];
+    var users = [];
+    var friends = await friendList();
+    await db.getUsers().then((value) {
+      for (var d in value.docs) {
+        User _user  = User.fromJson(d.data());
+        if (_user.username
+            .toLowerCase()
+            .contains(username.toLowerCase())) {
+          if (!results.contains(_user.userID)) {
+            if (friends.contains(_user.userID)) {
+              results.add(_user.userID);
+              users.add(d);
+            }
+          }
+        }
+      }
+    });
+    return users;
   }
 
-  Lituation initNewLituation(){
+  Future<List<String>> friendList() async {
+    List<String> friends = [];
+    DocumentSnapshot snapshot = await db.getVibed(userID).first;
+    Map data = snapshot.data();
+    data["vibed"].forEach((element) {
+      friends.add(element);
+    });
+    return friends;
+  }
+
+  Lituation initNewLituation() {
     Lituation l = new Lituation();
     l.capacity = 'N/A';
     l.date = DateTime.now();
@@ -148,65 +181,68 @@ class LituationProvider {
 
     return l;
   }
+
   Future<String> createNewLituation(Lituation l) async {
     return await db.createLituation(l);
   }
+
   Future<String> createNewDraft(Lituation l) async {
     return await db.addToDrafts(l);
   }
-  String validateLituation(Lituation l){
-    if(l.title == '' || l.title == null){
+
+  String validateLituation(Lituation l) {
+    if (l.title == '' || l.title == null) {
       return 'You must enter a valid title for your Lituation.';
     }
-    if(l.capacity == null){
+    if (l.capacity == null) {
       return 'Select the capacity for your Lituation.';
     }
-    if(l.date == null){
+    if (l.date == null) {
       return 'Select a valid start date for your Lituation.';
     }
-    if(l.end_date == null){
+    if (l.end_date == null) {
       return 'Select an end time for your Lituation.';
     }
-    if(l.description == '' || l.description == null){
+    if (l.description == '' || l.description == null) {
       return 'You must enter a proper \n description of your Lituation.';
     }
-    if(l.entry == '' || l.entry == null){
+    if (l.entry == '' || l.entry == null) {
       return 'You must select an Entry type for your Lituation.';
     }
-    if(l.entry == 'Fee' && (l.fee == null || l.fee == '' || l.fee == '0')){
+    if (l.entry == 'Fee' && (l.fee == null || l.fee == '' || l.fee == '0')) {
       return 'You must set the fee.';
     }
-    if(l.location == '' && l.locationLatLng == LatLng(0,0)){
+    if (l.location == '' && l.locationLatLng == LatLng(0, 0)) {
       return 'Enter a valid address for your Lituation.';
     }
-    if(l.themes == '' || l.themes == null){
+    if (l.themes == '' || l.themes == null) {
       return 'You must provide at least one theme \nfor your Lituation.';
     }
-    if(l.status == null || l.status == ''){
+    if (l.status == null || l.status == '') {
       l.status = 'New';
     }
-    if(l.clout == null){
+    if (l.clout == null) {
       l.clout = 0;
     }
-    if(l.invited == null){
+    if (l.invited == null) {
       l.invited = [];
     }
-    if(l.musicGenres == null){
+    if (l.musicGenres == null) {
       l.musicGenres = [];
     }
-    if(l.requirements == null){
+    if (l.requirements == null) {
       l.requirements = [];
     }
-    if(l.specialGuests == null){
+    if (l.specialGuests == null) {
       l.specialGuests = [];
     }
-    if(l.observers == null){
+    if (l.observers == null) {
       l.observers = [];
     }
-    if(l.vibes == null){
+    if (l.vibes == null) {
       l.vibes = [];
     }
-    if(l.thumbnailURLs == null){
+    if (l.thumbnailURLs == null) {
       l.thumbnailURLs = [];
     }
     return 'valid';
