@@ -3,12 +3,13 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:latlong/latlong.dart';
 import 'package:lit_beta/Models/Lituation.dart';
+import 'package:lit_beta/Strings/constants.dart';
 import 'package:uuid/uuid.dart';
 import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 double distance(double l1, double d1, double l2, double d2) {
-  Distance distance = new Distance();  
+  Distance distance = new Distance();
   double d = distance(new LatLng(l1, d1), new LatLng(l2, d2));
   return d;
 }
@@ -24,16 +25,14 @@ Future<String> downloadFile(String url, String dir, String ext) async {
   try {
     var request = await httpClient.getUrl(Uri.parse(url));
     var response = await request.close();
-    if(response.statusCode == 200) {
+    if (response.statusCode == 200) {
       var bytes = await consolidateHttpClientResponseBytes(response);
       filePath = '$dir/$fileName';
       file = File(filePath);
       await file.writeAsBytes(bytes);
-    }
-    else
-      filePath = 'Error code: '+response.statusCode.toString();
-  }
-  catch(ex){
+    } else
+      filePath = 'Error code: ' + response.statusCode.toString();
+  } catch (ex) {
     filePath = 'Can not fetch url';
   }
 
@@ -41,7 +40,7 @@ Future<String> downloadFile(String url, String dir, String ext) async {
 }
 
 void addEvent2Calendar(Lituation lit) {
-  Event e =  Event(
+  Event e = Event(
     title: lit.title,
     description: lit.description,
     location: lit.location,
@@ -51,9 +50,8 @@ void addEvent2Calendar(Lituation lit) {
     iosParams: IOSParams(
       reminder: Duration(minutes: 40),
     ),
-    androidParams: AndroidParams(
-    ),
-    recurrence:  null,
+    androidParams: AndroidParams(),
+    recurrence: null,
   );
   Add2Calendar.addEvent2Cal(e);
 }
@@ -82,4 +80,17 @@ Future<String> sendEmail(Lituation lit) async {
     platformResponse = error.toString();
   }
   return platformResponse;
+}
+
+String lituationStatus(String status) {
+  if (status == LIT_PENDING)
+    return "pending";
+  else if (status == LIT_ONGOING)
+    return "going now";
+  else if (status == LIT_ALMOSTOVER)
+    return "almost over";
+  else if (status == LIT_OVER)
+    return "over";
+  else
+    return "";
 }

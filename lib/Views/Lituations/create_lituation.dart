@@ -569,8 +569,14 @@ Widget titleTextField(String u){
       suggestionsCallback: (pattern) async {
        // print("test");
         return lp.searchUser(pattern).then((value){
-          return List.from(value.data()['username']).where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
-              .toList();
+        var results = [];
+        for(var u in value){
+          User _user = User.fromJson(u.data());
+          if(_user.username.toLowerCase().contains(pattern.toLowerCase())){
+            results.add(u);
+          }
+        }
+        return results;
         });
       }
       ,

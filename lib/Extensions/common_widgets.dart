@@ -23,6 +23,7 @@ Widget selectedIndicator(Color c) {
     color: c,
   );
 }
+
 Widget divider(Color c) {
   return Container(
     height: 25,
@@ -30,27 +31,30 @@ Widget divider(Color c) {
     color: c,
   );
 }
-Widget horizontalDivider(Color c , double w) {
-  return Opacity(opacity: 0.3,
-  child: Container(
-      margin: EdgeInsets.only(left: 10 , right: 10),
-  height: 0.7,
-  width: w,
-  color: c,
-  ),
+
+Widget horizontalDivider(Color c, double w) {
+  return Opacity(
+    opacity: 0.3,
+    child: Container(
+      margin: EdgeInsets.only(left: 10, right: 10),
+      height: 0.7,
+      width: w,
+      color: c,
+    ),
   );
 }
-  Widget topNav(Widget leading , Widget title , List<Widget> actions, Color c){
-    return AppBar(
-      backgroundColor: c,
-      centerTitle: true,
-      leading: leading,
-      title: title,
-      actions: actions,
-    );
-  }
 
-Widget nullUrl(){
+Widget topNav(Widget leading, Widget title, List<Widget> actions, Color c) {
+  return AppBar(
+    backgroundColor: c,
+    centerTitle: true,
+    leading: leading,
+    title: title,
+    actions: actions,
+  );
+}
+
+Widget nullUrl() {
   return Container(
     padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
     child: Stack(
@@ -65,14 +69,15 @@ Widget nullUrl(){
   );
 }
 
-Widget minimizeableList(Widget listWidget , bool minimize){
-  if(minimize){
+Widget minimizeableList(Widget listWidget, bool minimize) {
+  if (minimize) {
     return Container();
-  }else{
+  } else {
     return listWidget;
   }
 }
-Widget nullProfileUrl(BuildContext context){
+
+Widget nullProfileUrl(BuildContext context) {
   return Container(
     padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
     width: 125.0,
@@ -92,36 +97,32 @@ Widget nullProfileUrl(BuildContext context){
     ),
   );
 }
+
 //labeL
-Widget bioCard(List<Widget> labelAndEdit , Widget value, Color bgColor){
+Widget bioCard(List<Widget> labelAndEdit, Widget value, Color bgColor) {
   return Card(
     color: bgColor,
     elevation: 3,
     child: Container(
       margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-      padding: EdgeInsets.only(top: 15.0, bottom: 15.0, left: 10 , right: 10),
+      padding: EdgeInsets.only(top: 15.0, bottom: 15.0, left: 10, right: 10),
       child: Column(
         children: [
           Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: labelAndEdit
-          ),
-          Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(child: Container(
-                    padding: EdgeInsets.fromLTRB(0 , 15 , 0 , 0),
-                    child: value
-                ))
-              ]
-          )
+              children: labelAndEdit),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Flexible(
+                child: Container(
+                    padding: EdgeInsets.fromLTRB(0, 15, 0, 0), child: value))
+          ])
         ],
       ),
     ),
   );
 }
 
-Widget userThumbnailAppbar(String url){
+Widget userThumbnailAppbar(String url) {
   return CachedNetworkImage(
     height: 50,
     width: 50,
@@ -135,11 +136,16 @@ Widget userThumbnailAppbar(String url){
         ),
       ),
     ),
-    placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).splashColor),),
+    placeholder: (context, url) => CircularProgressIndicator(
+      valueColor:
+          new AlwaysStoppedAnimation<Color>(Theme.of(context).splashColor),
+    ),
     errorWidget: (context, url, error) => nullUrl(),
   );
 }
-Widget settingCardSwitch(String label , String value, Widget switchWidget, Color bgColor , Color labelCol , Color textCol){
+
+Widget settingCardSwitch(String label, String value, Widget switchWidget,
+    Color bgColor, Color labelCol, Color textCol) {
   return Card(
     color: bgColor,
     elevation: 3,
@@ -151,28 +157,30 @@ Widget settingCardSwitch(String label , String value, Widget switchWidget, Color
         children: [
           Container(
             width: double.infinity,
-            child:
-            Text(label ,style: infoLabel(labelCol),),
-            padding: EdgeInsets.fromLTRB(0 , 5 , 0 , 0),
+            child: Text(
+              label,
+              style: infoLabel(labelCol),
+            ),
+            padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
           ),
-          Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                    child: Container(
-                        padding: EdgeInsets.fromLTRB(0 , 10 , 0 , 0),
-                        child: Text(value , style: infoValue(textCol),)
-                    )
-                ),
-                switchWidget
-              ]
-          )
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Flexible(
+                child: Container(
+                    padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                    child: Text(
+                      value,
+                      style: infoValue(textCol),
+                    ))),
+            switchWidget
+          ])
         ],
       ),
     ),
   );
 }
-Widget infoCard(String label , String value , IconData icon , Color bgColor , Color labelCol , Color textCol){
+
+Widget infoCard(String label, String value, IconData icon, Color bgColor,
+    Color labelCol, Color textCol) {
   return Card(
     color: bgColor,
     elevation: 3,
@@ -184,33 +192,34 @@ Widget infoCard(String label , String value , IconData icon , Color bgColor , Co
         children: [
           Container(
             width: double.infinity,
-            child:
-            Text(label ,style: infoLabel(labelCol),),
-            padding: EdgeInsets.fromLTRB(0 , 5 , 0 , 0),
+            child: Text(
+              label,
+              style: infoLabel(labelCol),
+            ),
+            padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
           ),
-          Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                    child: Container(
-                    padding: EdgeInsets.fromLTRB(0 , 10 , 0 , 0),
-                    child: Text(value ?? "" , style: infoValue(textCol),)
-                )
-                ),
-                Container(
-                  padding: EdgeInsets.fromLTRB(0 , 0 , 0 , 0),
-                  margin: EdgeInsets.fromLTRB(0 ,0 , 15 , 15),
-                  child:Icon(icon, color: labelCol),
-                )
-              ]
-          )
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Flexible(
+                child: Container(
+                    padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                    child: Text(
+                      value ?? "",
+                      style: infoValue(textCol),
+                    ))),
+            Container(
+              padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              margin: EdgeInsets.fromLTRB(0, 0, 15, 15),
+              child: Icon(icon, color: labelCol),
+            )
+          ])
         ],
       ),
     ),
   );
 }
+
 //
-Widget editableBioCard(List<Widget> labelAndEdit , Widget value, Color bgColor){
+Widget editableBioCard(List<Widget> labelAndEdit, Widget value, Color bgColor) {
   return Card(
     color: bgColor,
     elevation: 3,
@@ -221,23 +230,17 @@ Widget editableBioCard(List<Widget> labelAndEdit , Widget value, Color bgColor){
         children: [
           Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: labelAndEdit
-          ),
+              children: labelAndEdit),
           Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(child: Container(
-                  child: value
-                ))
-              ]
-          )
+              children: [Flexible(child: Container(child: value))])
         ],
       ),
     ),
   );
 }
 
-Widget editableInfoCard(Widget label , Widget value, Color bgColor){
+Widget editableInfoCard(Widget label, Widget value, Color bgColor) {
   return Card(
     color: bgColor,
     elevation: 3,
@@ -248,23 +251,18 @@ Widget editableInfoCard(Widget label , Widget value, Color bgColor){
         children: [
           Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [label]
-          ),
+              children: [label]),
           Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(child: Container(
-                    child: value
-                ))
-              ]
-          )
+              children: [Flexible(child: Container(child: value))])
         ],
       ),
     ),
   );
 }
 
-Widget editableLituationInfoCard(Widget label ,Widget hint, Widget value, Color bgColor){
+Widget editableLituationInfoCard(
+    Widget label, Widget hint, Widget value, Color bgColor) {
   return Card(
     color: bgColor,
     elevation: 3,
@@ -275,15 +273,10 @@ Widget editableLituationInfoCard(Widget label ,Widget hint, Widget value, Color 
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-              label,
+          label,
           Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(child: Container(
-                    child: value
-                ))
-              ]
-          ),
+              children: [Flexible(child: Container(child: value))]),
           hint,
         ],
       ),
@@ -291,36 +284,55 @@ Widget editableLituationInfoCard(Widget label ,Widget hint, Widget value, Color 
   );
 }
 
-Widget infoSectionHeader(String title , Color c){
+Widget infoSectionHeader(String title, Color c) {
   return Container(
-    margin: EdgeInsets.only(top: 25 , left: 5),
+    margin: EdgeInsets.only(top: 25, left: 5),
     height: 35,
     width: double.infinity,
-    child:
-    Text(title ,style: infoLabel(c),textAlign: TextAlign.left, textScaleFactor: 1.2,),
+    child: Text(
+      title,
+      style: infoLabel(c),
+      textAlign: TextAlign.left,
+      textScaleFactor: 1.2,
+    ),
   );
 }
 
-Widget pageTitle(String title , Color c){
+Widget pageTitle(String title, Color c) {
   return Container(
-    child: Text(title , textAlign: TextAlign.center, style: TextStyle(color: c),textScaleFactor: 1.2,),
+    child: Text(
+      title,
+      textAlign: TextAlign.center,
+      style: TextStyle(color: c),
+      textScaleFactor: 1.2,
+    ),
   );
 }
 
-Widget lituationCardLabel(String title , Color c){
+Widget lituationCardLabel(String title, Color c) {
   return Container(
-    child: Text(title , textAlign: TextAlign.center, style: infoLabel(c),),
+    child: Text(
+      title,
+      textAlign: TextAlign.center,
+      style: infoLabel(c),
+    ),
   );
 }
 
-Widget lituationCardHint(String hint , Color c){
+Widget lituationCardHint(String hint, Color c) {
   return Container(
-    child: Text(hint , textAlign: TextAlign.center, style: TextStyle(color: c),textScaleFactor: 0.8,),
+    child: Text(
+      hint,
+      textAlign: TextAlign.center,
+      style: TextStyle(color: c),
+      textScaleFactor: 0.8,
+    ),
   );
 }
 
-Widget viewList(BuildContext context, String viewer, List data, List<Widget> removeButtons , String listname , Color labelCol){
-  if(data.length != null && data.length > 0) {
+Widget viewList(BuildContext context, String viewer, List data,
+    List<Widget> removeButtons, String listname, Color labelCol) {
+  if (data.length != null && data.length > 0) {
     return Column(
       children: [
         Row(
@@ -329,20 +341,20 @@ Widget viewList(BuildContext context, String viewer, List data, List<Widget> rem
               child: Container(
                 height: 35,
                 width: double.infinity,
-                child: Text(listname,
+                child: Text(
+                  listname,
                   style: infoValue(labelCol),
-                  textAlign: TextAlign.left,),
+                  textAlign: TextAlign.left,
+                ),
                 padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
               ),
             ),
             Expanded(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
-                )
-            ),
+              padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
+            )),
           ],
-        )
-        ,
+        ),
         Expanded(
           //padding: EdgeInsets.all(0),
           // height: 185,
@@ -350,31 +362,37 @@ Widget viewList(BuildContext context, String viewer, List data, List<Widget> rem
               scrollDirection: Axis.horizontal,
               itemCount: data.length,
               itemBuilder: (ctx, idx) {
+                Lituation _lit = Lituation.fromJson(data[idx].data());
                 return Container(
                     margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
                     width: 150,
                     child: Stack(
                       children: [
-                        lituationDetailCard(context ,viewer, data[idx]['eventID'],
-                            data[idx]['thumbnail'][0], data[idx]['title'],
-                            parseDate(data[idx]['date']),
-                            data[idx]['entry']),
-                        Positioned(child: removeButtons[idx],
+                        lituationDetailCard(
+                            context,
+                            viewer,
+                            _lit.eventID,
+                            _lit.thumbnailURLs[0],
+                            _lit.title,
+                            parseDate(Timestamp.fromDate(_lit.date)),
+                            _lit.entry),
+                        Positioned(
+                          child: removeButtons[idx],
                           top: 10,
                           right: 10,
                         )
                       ],
-                    )
-                );
-              }
-          ),
+                    ));
+              }),
         )
       ],
     );
   }
 }
-Widget viewListVisitor(BuildContext context, String viewer, List data, List<Widget> removeButtons , String listname , Color labelCol){
-  if(data.length != null || data.length > 0) {
+
+Widget viewListVisitor(BuildContext context, String viewer, List data,
+    List<Widget> removeButtons, String listname, Color labelCol) {
+  if (data.length != null || data.length > 0) {
     return Column(
       children: [
         Row(
@@ -383,20 +401,20 @@ Widget viewListVisitor(BuildContext context, String viewer, List data, List<Widg
               child: Container(
                 height: 35,
                 width: double.infinity,
-                child: Text(listname,
+                child: Text(
+                  listname,
                   style: infoValue(labelCol),
-                  textAlign: TextAlign.left,),
+                  textAlign: TextAlign.left,
+                ),
                 padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
               ),
             ),
             Expanded(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
-                )
-            ),
+              padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
+            )),
           ],
-        )
-        ,
+        ),
         Expanded(
           //padding: EdgeInsets.all(0),
           // height: 185,
@@ -404,52 +422,68 @@ Widget viewListVisitor(BuildContext context, String viewer, List data, List<Widg
               scrollDirection: Axis.horizontal,
               itemCount: data.length,
               itemBuilder: (ctx, idx) {
+                Lituation _lit = Lituation.fromJson(data[idx].data());
                 return Container(
                     margin: EdgeInsets.fromLTRB(5, 5, 5, 5),
                     width: 150,
                     child: Stack(
                       children: [
-                        lituationDetailCard(context , viewer , data[idx]['eventID'],
-                            data[idx]['thumbnail'][0], data[idx]['title'],
-                            parseDate(data[idx]['date']),
-                            data[idx]['entry']),
+                        lituationDetailCard(
+                            context,
+                            viewer,
+                            _lit.eventID,
+                            _lit.thumbnailURLs[0],
+                            _lit.title,
+                            parseDate(Timestamp.fromDate(_lit.date)),
+                            _lit.entry),
                       ],
-                    )
-                );
-              }
-          ),
+                    ));
+              }),
         )
       ],
     );
   }
 }
-Widget loadingWidget(BuildContext context){
-  return CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Theme.of(context).splashColor),);
+
+Widget loadingWidget(BuildContext context) {
+  return CircularProgressIndicator(
+    valueColor: AlwaysStoppedAnimation(Theme.of(context).splashColor),
+  );
 }
-Widget placeResultTile(BuildContext context, PlacesSearchResult suggestion){
-  return  ListTile(
+
+Widget placeResultTile(BuildContext context, PlacesSearchResult suggestion) {
+  return ListTile(
     tileColor: Theme.of(context).scaffoldBackgroundColor,
     contentPadding: EdgeInsets.all(5),
     leading: Image.asset('assets/images/litlocationicon.png'),
     title: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(suggestion.name , style: TextStyle(color: Theme.of(context).primaryColor , decoration: TextDecoration.none , fontSize: 14)),
+        Text(suggestion.name,
+            style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                decoration: TextDecoration.none,
+                fontSize: 14)),
         Padding(padding: EdgeInsets.only(bottom: 10)),
-        Text(suggestion.formattedAddress , style: TextStyle(color: Theme.of(context).textSelectionColor , decoration: TextDecoration.none , fontSize: 12.5)),
-
+        Text(suggestion.formattedAddress,
+            style: TextStyle(
+                color: Theme.of(context).textSelectionColor,
+                decoration: TextDecoration.none,
+                fontSize: 12.5)),
       ],
     ),
   );
 }
-Marker googleMapMarker(String title , BitmapDescriptor icon , LatLng pos){
+
+Marker googleMapMarker(String title, BitmapDescriptor icon, LatLng pos) {
   return Marker(
     markerId: MarkerId(title),
     position: pos,
     icon: icon,
   );
 }
-Widget nullLituationUrl(){
+
+Widget nullLituationUrl() {
   return Container(
     padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
     width: 175.0,
@@ -469,15 +503,20 @@ Widget nullLituationUrl(){
   );
 }
 
-
-Widget lituationCategoryResultTile(String suggestion , BuildContext context){
+Widget lituationCategoryResultTile(String suggestion, BuildContext context) {
   return ListTile(
     contentPadding: EdgeInsets.all(15),
     leading: Image.asset(logo),
-    title: Text(suggestion , style: TextStyle(color: Theme.of(context).textSelectionColor , decoration: TextDecoration.none),),
+    title: Text(
+      suggestion,
+      style: TextStyle(
+          color: Theme.of(context).textSelectionColor,
+          decoration: TextDecoration.none),
+    ),
   );
 }
-Widget userResultTile(String username , String profile , BuildContext context){
+
+Widget userResultTile(String username, String profile, BuildContext context) {
   return Container(
     margin: EdgeInsets.only(left: 5, right: 5),
     child: Card(
@@ -486,76 +525,124 @@ Widget userResultTile(String username , String profile , BuildContext context){
       child: ListTile(
         contentPadding: EdgeInsets.all(10),
         leading: userProfileThumbnail(profile, 'online'),
-        title: Text(username , style: TextStyle(color: Theme.of(context).textSelectionColor , decoration: TextDecoration.none),),
+        title: Text(
+          username,
+          style: TextStyle(
+              color: Theme.of(context).textSelectionColor,
+              decoration: TextDecoration.none),
+        ),
       ),
     ),
   );
 }
-Widget userSearchResultTile(String username , String profile , Widget vibing, BuildContext context){
+
+Widget userSearchResultTile(
+    String username, String profile, Widget vibing, BuildContext context) {
   return Card(
     elevation: 3,
     color: Theme.of(context).scaffoldBackgroundColor,
     child: ListTile(
-      contentPadding: EdgeInsets.all(10),
-      leading: userProfileThumbnail(profile, 'online'),
-      title: Text(username , style: TextStyle(color: Theme.of(context).textSelectionColor , decoration: TextDecoration.none),),
-      subtitle: vibing
-    ),
+        contentPadding: EdgeInsets.all(10),
+        leading: userProfileThumbnail(profile, 'online'),
+        title: Text(
+          username,
+          style: TextStyle(
+              color: Theme.of(context).textSelectionColor,
+              decoration: TextDecoration.none),
+        ),
+        subtitle: vibing),
   );
 }
 
-Widget lituationResultCard(BuildContext ctx, DocumentSnapshot l){
+Widget lituationResultCard(BuildContext ctx, DocumentSnapshot l) {
   return Card(
-    color: Theme.of(ctx).scaffoldBackgroundColor,
-    elevation: 3,
-      child:  Container(
+      color: Theme.of(ctx).scaffoldBackgroundColor,
+      elevation: 3,
+      child: Container(
         width: 225,
         height: 250,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-           Expanded(
-             flex: 6,
-             child:  CachedNetworkImage(
-             imageUrl: l.data()['thumbnail'][0],
-             imageBuilder: (context, imageProvider) => Container(
-               decoration: BoxDecoration(
-                 borderRadius: BorderRadius.circular(5),
-                 image: DecorationImage(
-                   image: imageProvider,
-                   fit: BoxFit.cover,
-                 ),
-               ),
-             ),
-             placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).buttonColor),),
-             errorWidget: (context, url, error) => nullUrl(),
-           ),),
+            Expanded(
+              flex: 6,
+              child: CachedNetworkImage(
+                imageUrl: l.data()['thumbnail'][0],
+                imageBuilder: (context, imageProvider) => Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    image: DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                placeholder: (context, url) => CircularProgressIndicator(
+                  valueColor: new AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).buttonColor),
+                ),
+                errorWidget: (context, url, error) => nullUrl(),
+              ),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: lituationDateDocumentSnapshotWidget(ctx , l)),
+                Expanded(child: lituationDateDocumentSnapshotWidget(ctx, l)),
                 Expanded(
-                  child: Text(l.data()['title'] , style: TextStyle(color: Colors.white , fontSize: 14 ,fontWeight: FontWeight.w900),textAlign: TextAlign.center,),
+                  child: Text(
+                    l.data()['title'],
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900),
+                    textAlign: TextAlign.center,
+                  ),
                 )
               ],
             ),
             Expanded(
               flex: 1,
-              child: Text(l.data()['entry'] , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
+              child: Text(
+                l.data()['entry'],
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
+              ),
             ),
             Expanded(
               flex: 2,
-              child: Text(parseDate(l.data()['date']) , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
+              child: Text(
+                parseDate(l.data()['date']),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
         ),
-      )
-  );
+      ));
 }
 
-Widget lituationDateWidget(BuildContext context , Lituation l){
-  List months = ['Jan', 'Feb', 'Mar', 'Apr', 'May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+Widget lituationDateWidget(BuildContext context, Lituation l) {
+  List months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
+  ];
   DateTime date = l.date;
   String month = months[date.month - 1];
   String day = date.day.toString();
@@ -563,14 +650,60 @@ Widget lituationDateWidget(BuildContext context , Lituation l){
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(flex: 1,child: Text(day, style: TextStyle(fontWeight: FontWeight.w600,color: Theme.of(context).textSelectionColor), textScaleFactor: 1.6,)),
-        Expanded(flex: 1,child: Container(margin: EdgeInsets.only(top: 10) ,child:Text(month, style: TextStyle(fontWeight: FontWeight.w200,color: Theme.of(context).textSelectionColor), textScaleFactor: 1,),)),
-        Expanded(flex: 2,child: Container(margin: EdgeInsets.only(top: 10) ,child: userProfileThumbnail(l.host?.profileURL ?? "https://via.placeholder.com/150/FF0000/FFFFFF?text=Loading" , 'online'),)),
+        Expanded(
+            flex: 1,
+            child: Text(
+              day,
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).textSelectionColor),
+              textScaleFactor: 1.6,
+            )),
+        Expanded(
+            flex: 1,
+            child: Container(
+              margin: EdgeInsets.only(top: 10),
+              child: Text(
+                month,
+                style: TextStyle(
+                    fontWeight: FontWeight.w200,
+                    color: Theme.of(context).textSelectionColor),
+                textScaleFactor: 1,
+              ),
+            )),
+        Expanded(
+            flex: 2,
+            child: Container(
+              margin: EdgeInsets.only(top: 10),
+              child: userProfileThumbnail(
+                  l.host?.profileURL ??
+                      "https://images.unsplash.com/photo-1606664817180-00391bdfb9d0?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Njl8fGZyZWV8ZW58MHx8MHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=60",
+                  'online'),
+            )),
       ],
     ),
   );
 }
 
+Widget lituationDateDocumentSnapshotWidget(
+    BuildContext context, DocumentSnapshot l) {
+  List months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
+  ];
+  DateTime date = DateTime.fromMicrosecondsSinceEpoch(
+      l.data()['date'].millisecondsSinceEpoch * 1000);
+}
 Widget lituationDateWidgetSmall(BuildContext context , Lituation l){
   List months = ['Jan', 'Feb', 'Mar', 'Apr', 'May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   DateTime date = l.date;
@@ -602,16 +735,36 @@ Widget lituationDateDocumentSnapshotWidget(BuildContext context , DocumentSnapsh
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Container(child: Text(day, style: TextStyle(fontWeight: FontWeight.w600,color: Theme.of(context).textSelectionColor), textScaleFactor: 1.6,)),
-        Container(child: Text(month, style: TextStyle(fontWeight: FontWeight.w200,color: Theme.of(context).textSelectionColor), textScaleFactor: 1,)),
-        Container(margin: EdgeInsets.only(top: 10),child: userProfileThumbnail(l.data()['hostID'] , 'online'),),
+        Container(
+            child: Text(
+          day,
+          style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).textSelectionColor),
+          textScaleFactor: 1.6,
+        )),
+        Container(
+            child: Text(
+          month,
+          style: TextStyle(
+              fontWeight: FontWeight.w200,
+              color: Theme.of(context).textSelectionColor),
+          textScaleFactor: 1,
+        )),
+        Container(
+          margin: EdgeInsets.only(top: 10),
+          child: userProfileThumbnail(l.data()['hostID'], 'online'),
+        ),
       ],
     ),
   );
 }
-Widget lituationThumbnailWidget(Lituation l){
+
+Widget lituationThumbnailWidget(Lituation l) {
   return CachedNetworkImage(
-    imageUrl: l.thumbnailURLs != null && l.thumbnailURLs.length > 0 ? l.thumbnailURLs[0] : litPlaceHolder,
+    imageUrl: l.thumbnailURLs != null && l.thumbnailURLs.length > 0
+        ? l.thumbnailURLs[0]
+        : litPlaceHolder,
     imageBuilder: (context, imageProvider) => Container(
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
@@ -621,22 +774,27 @@ Widget lituationThumbnailWidget(Lituation l){
         ),
       ),
     ),
-    placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).buttonColor),),
+    placeholder: (context, url) => CircularProgressIndicator(
+      valueColor:
+          new AlwaysStoppedAnimation<Color>(Theme.of(context).buttonColor),
+    ),
     errorWidget: (context, url, error) => nullLituationUrl(),
   );
 }
-Widget lituationDetailCard(BuildContext ctx ,String visitorID , String lID , String thumbnail , String title , String date , String entry){
+
+Widget lituationDetailCard(BuildContext ctx, String visitorID, String lID,
+    String thumbnail, String title, String date, String entry) {
   return GestureDetector(
-    onTap: (){
-     _viewLituation(ctx, visitorID, lID, title);
+    onTap: () {
+      _viewLituation(ctx, visitorID, lID, title);
     },
     child: Card(
       elevation: 3,
-      child:  Stack(
+      child: Stack(
         children: [
           Opacity(
             opacity: 1,
-            child:  CachedNetworkImage(
+            child: CachedNetworkImage(
               imageUrl: thumbnail,
               imageBuilder: (context, imageProvider) => Container(
                 decoration: BoxDecoration(
@@ -647,7 +805,10 @@ Widget lituationDetailCard(BuildContext ctx ,String visitorID , String lID , Str
                   ),
                 ),
               ),
-              placeholder: (context, url) => CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Theme.of(context).buttonColor),),
+              placeholder: (context, url) => CircularProgressIndicator(
+                valueColor: new AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).buttonColor),
+              ),
               errorWidget: (context, url, error) => nullUrl(),
             ),
           ),
@@ -661,96 +822,158 @@ Widget lituationDetailCard(BuildContext ctx ,String visitorID , String lID , Str
                 child: Column(
                   children: [
                     Expanded(
-                      child: Text(title , style: TextStyle(color: Colors.white , fontSize: 14 ,fontWeight: FontWeight.w900),textAlign: TextAlign.center,),
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                     Expanded(
-                      child: Text(entry , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
+                      child: Text(
+                        entry,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                     Expanded(
-                      child: Text(date , style: TextStyle(color: Colors.white , fontSize: 12 ,fontWeight: FontWeight.w500),textAlign: TextAlign.center,),
+                      child: Text(
+                        date,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ],
                 ),
-              )
-          )
+              ))
         ],
       ),
     ),
   );
 }
-void _viewLituation(BuildContext context,String userID , String lID , String lName){
+
+void _viewLituation(
+    BuildContext context, String userID, String lID, String lName) {
   LituationVisit lv = LituationVisit();
   lv.userID = userID;
   lv.lituationID = lID;
   lv.lituationName = lName;
-  Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);
+  Navigator.pushNamed(context, ViewLituationRoute, arguments: lv);
 }
-Widget lituationCard(Lituation l, BuildContext context, String visitorID) {    
+
+Widget lituationCard(Lituation l, BuildContext context, String visitorID) {
   return Container(
       child: GestureDetector(
-        onTap: () async {          
-            LituationVisit lv = LituationVisit();
-            lv.userID = visitorID;
-            lv.lituationID = l.eventID;
-            lv.lituationName = l.title;
-            Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);
-          },
-        child: Card(
-          color: Theme.of(context).backgroundColor,
-          elevation: 5,
-          child: Container(
-            padding: EdgeInsets.only(bottom: 10),
-            height: 325,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(flex: 5,child: lituationThumbnailWidget(l),),
-                Expanded(flex: 3,child: lituationInfoRow(l, context),)
-              ],
+    onTap: () async {
+      LituationVisit lv = LituationVisit();
+      lv.userID = visitorID;
+      lv.lituationID = l.eventID;
+      lv.lituationName = l.title;
+      Navigator.pushNamed(context, ViewLituationRoute, arguments: lv);
+    },
+    child: Card(
+      color: Theme.of(context).backgroundColor,
+      elevation: 5,
+      child: Container(
+        padding: EdgeInsets.only(bottom: 10),
+        height: 325,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 5,
+              child: lituationThumbnailWidget(l),
             ),
-          ),
+            Expanded(
+              flex: 3,
+              child: lituationInfoRow(l, context),
+            )
+          ],
         ),
-      )
-  );
+      ),
+    ),
+  ));
 }
-Widget lituationInfoRow(Lituation l, BuildContext context){
+
+Widget lituationInfoRow(Lituation l, BuildContext context) {
   return Container(
     margin: EdgeInsets.only(top: 10),
     child: Row(
       children: [
-        Expanded(flex: 2,child: lituationDateWidget(context , l),),
-        Expanded(flex: 6,child: lituationInfoCardWidget(l, context),),
-      //TODO Make row below address
-        Expanded(flex: 3,child: lituationResultStatusCard(l, context),),
+        Expanded(
+          flex: 2,
+          child: lituationDateWidget(context, l),
+        ),
+        Expanded(
+          flex: 6,
+          child: lituationInfoCardWidget(l, context),
+        ),
+        //TODO Make row below address
+        Expanded(
+          flex: 3,
+          child: lituationResultStatusCard(l, context),
+        ),
       ],
     ),
   );
 }
-Widget lituationInfoCardWidget(Lituation l, BuildContext context){
+
+Widget lituationInfoCardWidget(Lituation l, BuildContext context) {
   return Container(
     margin: EdgeInsets.only(top: 2),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: Text(l.title , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 1.2,),),
-        Expanded(child: Text(parseThemes(l) , textScaleFactor: 0.7 , style: TextStyle(color: Colors.blueAccent),),),
-        Expanded(child: lituationTimeWidget(l, context),),
-        Expanded(child: Text(l.title , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 0.7,),),
+        Expanded(
+          child: Text(
+            l.title,
+            style: TextStyle(color: Theme.of(context).textSelectionColor),
+            textScaleFactor: 1.2,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            parseThemes(l),
+            textScaleFactor: 0.7,
+            style: TextStyle(color: Colors.blueAccent),
+          ),
+        ),
+        Expanded(
+          child: lituationTimeWidget(l, context),
+        ),
+        Expanded(
+          child: Text(
+            l.title,
+            style: TextStyle(color: Theme.of(context).textSelectionColor),
+            textScaleFactor: 0.7,
+          ),
+        ),
       ],
     ),
   );
 }
+
 //shows time from 2 time stamps
-Widget lituationTimeWidget(Lituation l, BuildContext context){
+Widget lituationTimeWidget(Lituation l, BuildContext context) {
   String st = parseTime(Timestamp.fromDate(l.date));
   String et = parseTime(Timestamp.fromDate(l.end_date));
   String day = parseDay(true, Timestamp.fromDate(l.date));
   return Text(
-      '$day,$st - $et' , style: infoValue(Theme.of(context).textSelectionColor),
+    '$day,$st - $et',
+    style: infoValue(Theme.of(context).textSelectionColor),
   );
 }
-Widget lituationResultStatusCard(Lituation l, BuildContext context){
+
+Widget lituationResultStatusCard(Lituation l, BuildContext context) {
   return Container(
     margin: EdgeInsets.only(right: 15),
     child: Column(
@@ -758,78 +981,89 @@ Widget lituationResultStatusCard(Lituation l, BuildContext context){
       children: [
         RichText(
             text: TextSpan(
-                text: parseVibes(l.vibes.length.toString()),style: infoValue(Theme.of(context).textSelectionColor),
+                text: parseVibes(l.vibes.length.toString()),
+                style: infoValue(Theme.of(context).textSelectionColor),
                 children: [
-                  TextSpan(text: ' vibes going\n' , style: infoValue(Theme.of(context).primaryColor))
-                ]
-            )
-        ),
+              TextSpan(
+                  text: ' vibes going\n',
+                  style: infoValue(Theme.of(context).primaryColor))
+            ])),
         RichText(
             text: TextSpan(
-                text: lituation_result_entry_label,style: infoValue(Theme.of(context).textSelectionColor),
+                text: lituation_result_entry_label,
+                style: infoValue(Theme.of(context).textSelectionColor),
                 children: [
-                  TextSpan(text: l.entry + '\n' , style: infoValue(Theme.of(context).primaryColor))
-                ]
-            )
-        ),
+              TextSpan(
+                  text: l.entry + '\n',
+                  style: infoValue(Theme.of(context).primaryColor))
+            ])),
         RichText(
             text: TextSpan(
-                text: 'capacity: ',style: infoValue(Theme.of(context).textSelectionColor),
+                text: 'capacity: ',
+                style: infoValue(Theme.of(context).textSelectionColor),
                 children: [
-                  TextSpan(text: l.capacity , style: infoValue(Theme.of(context).primaryColor))
-                ]
-            )
-        ),
-      ],),
+              TextSpan(
+                  text: l.capacity,
+                  style: infoValue(Theme.of(context).primaryColor))
+            ])),
+      ],
+    ),
   );
 }
-Widget nullList(String username , String listname , Color c){
-  return Column(
-      children: [
-        Container(
-          height: 35,
-          width: double.infinity,
-          child: Text(listname,
-            style: infoValue(c),
-            textAlign: TextAlign.left,),
-          padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
+
+Widget nullList(String username, String listname, Color c) {
+  return Column(children: [
+    Container(
+      height: 35,
+      width: double.infinity,
+      child: Text(
+        listname,
+        style: infoValue(c),
+        textAlign: TextAlign.left,
+      ),
+      padding: EdgeInsets.fromLTRB(15, 15, 0, 0),
+    ),
+    Container(
+      height: 150,
+      alignment: Alignment.center,
+      child: Center(
+        child: Text(
+          username + ' has no ' + listname,
+          style: TextStyle(color: c),
         ),
-        Container(
-          height: 150,
-          alignment: Alignment.center,
-          child: Center(child: Text( username + ' has no ' + listname , style: TextStyle(color: c),),),
-        )
-      ]);
+      ),
+    )
+  ]);
 }
-Color status(String data){
-  if(data.contains('online')){
+
+Color status(String data) {
+  if (data.contains('online')) {
     return Colors.lightGreenAccent;
   }
   return Colors.red;
 }
-Widget userProfileThumbnail(String url ,  String stat) {
+
+Widget userProfileThumbnail(String url, String stat) {
   return Container(
     margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
     child: CachedNetworkImage(
       height: 45,
       width: 45,
       imageUrl: url,
-      imageBuilder: (context, imageProvider) =>
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: status(stat)),
-              shape: BoxShape.circle,
-              image: DecorationImage(
-                image: imageProvider,
-                fit: BoxFit.cover,
-              ),
-            ),
+      imageBuilder: (context, imageProvider) => Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: status(stat)),
+          shape: BoxShape.circle,
+          image: DecorationImage(
+            image: imageProvider,
+            fit: BoxFit.cover,
           ),
-      placeholder: (context, url) =>
-          CircularProgressIndicator(
-            valueColor: new AlwaysStoppedAnimation<Color>(Theme
-                .of(context)
-                .splashColor),),
+        ),
+      ),
+      placeholder: (context, url) => CircularProgressIndicator(
+        valueColor:
+            new AlwaysStoppedAnimation<Color>(Theme.of(context).splashColor),
+      ),
       errorWidget: (context, url, error) => nullUrl(),
     ),
   );

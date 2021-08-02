@@ -34,6 +34,7 @@ class _ChatState extends State<ChatPage>{
     cp = new ChatProvider(widget.userID);
     //getRooms();
     super.initState();
+    loadAllChats();
   }
   @override
   void dispose() {
@@ -110,17 +111,18 @@ String parseRoomIDToUser(String roomID){
     return ids[0];
 }
   Widget chatRoomTitle(String id){
-    StreamBuilder(
+    return StreamBuilder(
       stream: cp.getChatRoom(id),
       builder: (context , party){
         if(!party.hasData || party.connectionState == ConnectionState.waiting){
           return CircularProgressIndicator();
         }
-        print("WORLD");
-        if(party.data()[0].toString().contains(widget.userID)){
-          return usernameWidget(party.data()[1]);
+        Map data = party.data.data();
+        print("WORLD ${data}");
+        if(data["party"][0].toString().contains(widget.userID)){
+          return usernameWidget(data["party"][1]);
         }
-        return usernameWidget(party.data()[0]);
+        return usernameWidget(data["party"][0]);
       },
     );
   }
@@ -131,8 +133,9 @@ String parseRoomIDToUser(String roomID){
         if(!user.hasData || user.connectionState == ConnectionState.waiting){
           return CircularProgressIndicator();
         }
-        print(id);
-        return Text( user.data()['username'],style: infoValue(Theme.of(context).textSelectionColor));
+        print("usernamewidget ${id}");
+        User _user = User.fromJson(user.data.data());
+        return Text( _user.username,style: infoValue(Colors.white));
       },
     );
   }
@@ -189,6 +192,24 @@ String parseRoomIDToUser(String roomID){
       return url;
     }
   }
+
+  void loadAllChats() async {
+    var results = [];
+    await cp.getUserChatRooms().then((value){
+      setState(() {
+        rooms.clear();
+        for(var room in value){
+          Map _data = room.data();
+          if(!results.contains(_data['room_name'])){
+            results.add(_data['room_name']);
+            rooms.add(chatRoomResult(
+                _data['party'][1],
+                _data['roomID'], context));
+          }
+        }
+      });
+    });
+  }
   Widget searchBar(){
     return Container(
       decoration:  BoxDecoration(
@@ -229,38 +250,23 @@ String parseRoomIDToUser(String roomID){
                 borderSide: BorderSide(color: Theme.of(context).buttonColor , width: 1))
         ),
         onChanged: (value) async {
-          var results = [];
-          setState(() {
-            rooms.clear();
-          });
           if(value == ''){
-          await cp.getUserChatRooms().then((value){
-            setState(() {
+            loadAllChats();
+          }
+          else
+            await cp.searchChatRooms(value).then((value) async {            
+              rooms.clear();
+              var results = [];
               for(var room in value){
                 if(!results.contains(room.data()['room_name'])){
-                  setState(() {
-                    results.add(room.data()['room_name']);
-                    rooms.add(chatRoomResult(
-                        room.data()['party'][1],
-                        room.data()['roomID'], context));
-                  });
+                  results.add(room.data()['room_name']);
+                  rooms.add(chatRoomResult(
+                      room.data()['party'][1],
+                      room.data()['roomID'], context));
                 }
               }
+              setState((){});
             });
-          });
-          }
-          await cp.searchChatRooms(value).then((value) async {
-            for(var room in value){
-              if(!results.contains(room.data()['room_name'])){
-               setState(() {
-                 results.add(room.data()['room_name']);
-                 rooms.add(chatRoomResult(
-                     room.data()['party'][1],
-                     room.data()['roomID'], context));
-               });
-              }
-            }
-          });
         },
       ),
     );

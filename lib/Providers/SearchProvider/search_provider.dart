@@ -138,7 +138,7 @@ class SearchProvider {
           lit.host = host;
         }
         lituationResults.add(lit);
-        if (lituationResults.length >= 5)
+        if (lituationResults.length >= 20)
           break;
       }
     });
@@ -157,7 +157,7 @@ class SearchProvider {
         User host = User.fromJson(snap.data());
         lit.host = host;
         lituationResults.add(lit);
-        if (lituationResults.length >= 5)
+        if (lituationResults.length >= 20)
           break;
       }
     });

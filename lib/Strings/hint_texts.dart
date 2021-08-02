@@ -32,6 +32,7 @@ String vibing_label = 'vibing';
 String clout_label = 'clout';
 String vibed_label = 'vibed';
 String vibe_label = 'vibe';
+String myvibe_label = 'my vibe';
 String lituation_label = 'lituation';
 String activity_label = 'activity';
 String activity_selection_hint = 'showing activity for...';
