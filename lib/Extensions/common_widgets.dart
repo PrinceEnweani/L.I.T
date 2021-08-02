@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:lit_beta/DBC/Auth.dart';
 import 'package:lit_beta/Models/Lituation.dart';
 import 'package:lit_beta/Models/User.dart';
 import 'package:lit_beta/Nav/routes.dart';
@@ -14,6 +15,7 @@ import 'package:lit_beta/Utils/Common.dart';
 
 import 'common_functions.dart';
 
+Auth cp = Auth();
 Widget selectedIndicator(Color c) {
   return Container(
     height: 0.7,
@@ -701,6 +703,32 @@ Widget lituationDateDocumentSnapshotWidget(
   ];
   DateTime date = DateTime.fromMicrosecondsSinceEpoch(
       l.data()['date'].millisecondsSinceEpoch * 1000);
+}
+Widget lituationDateWidgetSmall(BuildContext context , Lituation l){
+  List months = ['Jan', 'Feb', 'Mar', 'Apr', 'May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  DateTime date = l.date;
+  String month = months[date.month - 1];
+  String day = date.day.toString();
+  return Container(
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: Container(child: userProfileThumbnailWithName(l.host?.profileURL ?? "https://via.placeholder.com/150/FF0000/FFFFFF?text=Loading" , 'online',l.host.username , Theme.of(context).textSelectionColor),)),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(flex: 1,child: Text(day, style: TextStyle(fontWeight: FontWeight.w600,color: Theme.of(context).textSelectionColor), textScaleFactor: 1.2,)),
+            Expanded(flex: 1,child: Container(margin: EdgeInsets.only(top: 5) ,child:Text(month, style: TextStyle(fontWeight: FontWeight.w200,color: Theme.of(context).textSelectionColor), textScaleFactor: 0.9,),)),
+          ],
+        ),
+      ],
+    )
+  );
+}
+Widget lituationDateDocumentSnapshotWidget(BuildContext context , DocumentSnapshot l){
+  List months = ['Jan', 'Feb', 'Mar', 'Apr', 'May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  DateTime date = DateTime.fromMicrosecondsSinceEpoch(l.data()['date'].millisecondsSinceEpoch * 1000);
   String month = months[date.month - 1];
   String day = date.day.toString();
   return Container(
@@ -1040,3 +1068,41 @@ Widget userProfileThumbnail(String url, String stat) {
     ),
   );
 }
+
+Widget userProfileThumbnailWithName(String url , String username, String stat , Color c) {
+  return Container(
+    margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+    child: Column(
+      children: [
+        Expanded(
+          flex: 4,
+          child: CachedNetworkImage(
+            height: 45,
+            width: 45,
+            imageUrl: url,
+            imageBuilder: (context, imageProvider) =>
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: status(stat)),
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: imageProvider,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+            placeholder: (context, url) =>
+                CircularProgressIndicator(
+                  valueColor: new AlwaysStoppedAnimation<Color>(Theme
+                      .of(context)
+                      .splashColor),
+                ),
+            errorWidget: (context, url, error) => nullUrl(),
+          ),
+        ),
+       Expanded(flex: 2, child: Text(username , style: infoLabel(c),))
+      ],
+    )
+  );
+}
+

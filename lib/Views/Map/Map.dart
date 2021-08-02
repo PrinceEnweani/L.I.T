@@ -14,6 +14,8 @@ import 'package:lit_beta/Extensions/common_maps_functions.dart';
 import 'package:lit_beta/Extensions/common_widgets.dart';
 import 'package:lit_beta/Extensions/search_filters.dart';
 import 'package:lit_beta/Models/Lituation.dart';
+import 'package:lit_beta/Models/User.dart';
+import 'package:lit_beta/Nav/routes.dart';
 import 'package:lit_beta/Providers/MapProvider/map_provider.dart';
 import 'package:lit_beta/Providers/SearchProvider/search_provider.dart';
 import 'package:lit_beta/Strings/constants.dart';
@@ -43,6 +45,7 @@ class _MapState extends State<MapPage> {
   List<PlacesSearchResult> placesSearchResults;
   List<String> addressResults;
   var lituationResults = [];
+  bool hideResults = false;
   Position userPosition;  
   var locationIcon;
 
@@ -170,7 +173,7 @@ Widget resultsWidget(){
             autofocus: false,
             style: infoValue(Theme.of(context).textSelectionColor),
             decoration: InputDecoration(
-                labelText: 'I\'m feeling litty...XD',
+                labelText: mapSearchController.text.isEmpty?'Search a city or place e.g "GA"':'I\'m feeling litty...XD',
                 hintStyle: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 12 , decoration: TextDecoration.none),
                 labelStyle: TextStyle(color: Theme.of(context).textSelectionColor , fontSize: 14 ,decoration: TextDecoration.none),
                 enabledBorder: UnderlineInputBorder(
@@ -196,14 +199,15 @@ Widget resultsWidget(){
                   return;
                 moveCamera(CameraPosition(
                   bearing: 0,
-                  zoom: 11,
+                  zoom: 9,
                   target:latLngFromGeoPoint(lituations[0].data()['locationLatLng']),
                 ));
                 for(var event in lituations){
                   if(!ids.contains(event.id)) {
                     ids.add(event.id);
-                    lituationResults.add(
-                        lituationResult(event.id));
+                   setState(() {
+                     lituationResults.add(lituationResult(event.id));
+                   });
                     resultMarkers.add(googleMapMarker(
                         event.data()['location'],
                         BitmapDescriptor.fromBytes(locationIcon),
@@ -214,9 +218,7 @@ Widget resultsWidget(){
               });
               drawMarkers(resultMarkers);
             }
-            setState(() {
-              
-            });
+
             return value;
           });
         }
@@ -237,24 +239,15 @@ Widget resultsWidget(){
     );
   }
 
-  Widget lituationResultCard2(DocumentSnapshot l){
-    return Card(
-      color: Colors.blue,
-      elevation: 3,
-      child: Container(
-        height: 250,
-        width: 175,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(child: Text(l.data()['title'])),
-            Expanded(child: Text(l.data()['entry'])),
-            Expanded(child: Text(l.data()['location'])),
-          ],
-        ),
-      ),
+  Marker googleMapMarker(String title , BitmapDescriptor icon , LatLng pos){
+    return Marker(
+      markerId: MarkerId(title),
+      position: pos,
+      icon: icon,
+      onTap:() {}
     );
   }
+
   Widget resultMarker(){
     return GestureDetector(
 
@@ -298,6 +291,13 @@ Widget resultsWidget(){
       _mapMarkers.addAll(newMarkers);
     });
   }
+  void _viewLituation(String lID , String lName){
+    LituationVisit lv = LituationVisit();
+    lv.userID = widget.userID;
+    lv.lituationID = lID;
+    lv.lituationName = lName;
+    Navigator.pushNamed(context, ViewLituationRoute , arguments: lv);
+  }
   Widget lituationResult(String lID){
     return FutureBuilder(
         future: sp.getLituationById(lID),
@@ -308,22 +308,28 @@ Widget resultsWidget(){
           Lituation l = builder.data;
 
           return GestureDetector(
-                onTap: (){
-                  //_viewLituation(lID , l.data['title']);
+                onTap: () async {
+                  //_viewLituation(lID , title);
+                  print(l.location);
+                  await moveCamera(CameraPosition(
+                    bearing: 0,
+                    zoom:14,
+                    target:l.locationLatLng,
+                  ));
                 },
                 child: Card(
                   color: Theme.of(context).backgroundColor,
                   elevation: 5,
                   child: Container(
                     padding: EdgeInsets.only(bottom: 10),
-                    height: 250,
+                    height: 275,
                     width: 275,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(flex: 5,child: lituationThumbnailWidget(l),),
-                        Expanded(flex: 3,child: lituationInfoRow(l),)
+                        Expanded(flex: 6,child: lituationThumbnailWidget(l),),
+                        Expanded(flex: 4,child: lituationInfoRow(l),)
                       ],
                     ),
                   ),
@@ -337,7 +343,7 @@ Widget resultsWidget(){
       margin: EdgeInsets.only(top: 10),
       child: Row(
         children: [
-          Expanded(flex: 2,child: lituationDateWidget(context , l),),
+          Expanded(flex: 2,child: lituationDateWidgetSmall(context , l),),
           Expanded(flex: 6,child: lituationInfoCardWidget(l),),
         ],
       ),

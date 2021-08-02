@@ -125,7 +125,7 @@ class _CreateLituationPageState extends State<CreateLituationPage>{
               editableLituationInfoCard(lituationCardLabel(newLituation.title==null?'Lituation Title: ' :'Lituation Title: ' + newLituation.title, textColor), lituationCardHint('Enter a creative title...', hintColor), titleTextField(widget.lv.lituationID), cardBg),
               editableLituationInfoCard(lituationCardLabel( newLituation.description==null?'Description: ':'Description:', textColor), lituationCardHint('What is your lituation about...', hintColor), descriptionTextField(widget.lv.lituationID), cardBg),
               themesInputTextField(),
-              userSearchTextField(),
+              //userSearchTextField(),
               locationPicker(),
               galleryWidget(),
               entryPicker(Icons.sensor_door_outlined, 'Entry:' , 'entry'),
@@ -567,7 +567,7 @@ Widget titleTextField(String u){
           )
       ),
       suggestionsCallback: (pattern) async {
-        print("test");
+       // print("test");
         return lp.searchUser(pattern).then((value){
         var results = [];
         for(var u in value){

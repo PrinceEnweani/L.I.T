@@ -25,7 +25,25 @@ class MapProvider {
     await db.getAllLituationsSnapShot().then((value){
       var lituations = List.from(value.docs);
       if(query != ''){
-        for(DocumentSnapshot l in lituations){
+        String title;
+        String date;
+        String lID;
+        String theme;
+        String address;
+        for(DocumentSnapshot l in lituations){ 
+          title = l.data()['title'].toString().toLowerCase();
+          date = l.data()['date'].toString().toLowerCase();
+          theme = l.data()['themes'].toString().toLowerCase();
+          address = l.data()['location'].toString().toLowerCase();
+          lID = l.data()['eventID'];
+          if(filter == "*"){
+            if(title.contains(query) || date.contains(query) || theme.contains(query) || address.contains(query)){
+              if (!resultIDs.contains(l.data()['eventID'])){
+                resultIDs.add(lID);
+                lituationResults.add(l);
+              }
+            }
+          }
           if(filter == BY_TITLE){
             if(l.data()['title'].toString().toLowerCase().contains(query.toLowerCase()) && !resultIDs.contains(l.data()['eventID'])){
               lituationResults.add(l);
@@ -52,7 +70,7 @@ class MapProvider {
             }
           }
           if(filter == BY_ADDRESS){
-            if(l.data()['location'].toString().toLowerCase().contains(query.toLowerCase()) && !resultIDs.contains(l.data()['eventID'])){
+            if((address.contains(query.toLowerCase()) || title.contains(query)) && !resultIDs.contains(l.data()['eventID'])){
               lituationResults.add(l);
               resultIDs.add(l.data()['eventID']);
             }
