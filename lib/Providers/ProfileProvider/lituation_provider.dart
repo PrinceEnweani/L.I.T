@@ -105,7 +105,13 @@ class LituationProvider {
     db.addLikeLituation(userID, lID);
   }
 
-  dislikeLituation() {
+  swapLike(){
+    db.swapLikeToDisLike(userID, lID);
+  }
+  swapDislike(){
+    db.swapDisLikeToLike(userID, lID);
+  }
+  dislikeLituation(){
     db.addDislikeLituation(userID, lID);
   }
 
@@ -121,7 +127,6 @@ class LituationProvider {
   sendRSVPToLituation() {
     db.rsvpToLituation(userID, lID);
   }
-
   Future<dynamic> searchUser(String username) async {
     List<String> results = [];
     var users = [];
@@ -154,7 +159,7 @@ class LituationProvider {
     return friends;
   }
 
-  Lituation initNewLituation() {
+  Lituation initNewLituation(){
     Lituation l = new Lituation();
     l.capacity = 'N/A';
     l.date = DateTime.now();
