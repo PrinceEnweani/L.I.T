@@ -647,30 +647,32 @@ Widget lituationDateWidget(BuildContext context, Lituation l) {
   String month = months[date.month - 1];
   String day = date.day.toString();
   return Container(
-    child: Column(
+    child: Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(
-            flex: 1,
-            child: Text(
-              day,
-              style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).textSelectionColor),
-              textScaleFactor: 1.6,
-            )),
-        Expanded(
-            flex: 1,
-            child: Container(
-              margin: EdgeInsets.only(top: 10),
+        Column(children: [
+          Expanded(
+              flex: 1,
               child: Text(
-                month,
+                day,
                 style: TextStyle(
-                    fontWeight: FontWeight.w200,
+                    fontWeight: FontWeight.w600,
                     color: Theme.of(context).textSelectionColor),
-                textScaleFactor: 1,
-              ),
-            )),
+                textScaleFactor: 1.6,
+              )),
+          Expanded(
+              flex: 1,
+              child: Container(
+                margin: EdgeInsets.only(top: 10),
+                child: Text(
+                  month,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w200,
+                      color: Theme.of(context).textSelectionColor),
+                  textScaleFactor: 1,
+                ),
+              )),
+        ],),
         Expanded(
             flex: 2,
             child: Container(
@@ -726,40 +728,6 @@ Widget lituationDateWidgetSmall(BuildContext context , Lituation l){
     )
   );
 }
-Widget lituationDateDocumentSnapshotWidget(BuildContext context , DocumentSnapshot l){
-  List months = ['Jan', 'Feb', 'Mar', 'Apr', 'May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  DateTime date = DateTime.fromMicrosecondsSinceEpoch(l.data()['date'].millisecondsSinceEpoch * 1000);
-  String month = months[date.month - 1];
-  String day = date.day.toString();
-  return Container(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-            child: Text(
-          day,
-          style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).textSelectionColor),
-          textScaleFactor: 1.6,
-        )),
-        Container(
-            child: Text(
-          month,
-          style: TextStyle(
-              fontWeight: FontWeight.w200,
-              color: Theme.of(context).textSelectionColor),
-          textScaleFactor: 1,
-        )),
-        Container(
-          margin: EdgeInsets.only(top: 10),
-          child: userProfileThumbnail(l.data()['hostID'], 'online'),
-        ),
-      ],
-    ),
-  );
-}
-
 Widget lituationThumbnailWidget(Lituation l) {
   return CachedNetworkImage(
     imageUrl: l.thumbnailURLs != null && l.thumbnailURLs.length > 0

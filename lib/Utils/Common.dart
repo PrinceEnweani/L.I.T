@@ -86,9 +86,9 @@ String lituationStatus(String status) {
   if (status == LIT_PENDING)
     return "pending";
   else if (status == LIT_ONGOING)
-    return "going now";
+    return "has already started.";
   else if (status == LIT_ALMOSTOVER)
-    return "almost over";
+    return "will end soon.";
   else if (status == LIT_OVER)
     return "over";
   else

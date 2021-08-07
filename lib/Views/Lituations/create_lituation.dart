@@ -204,9 +204,9 @@ class _CreateLituationPageState extends State<CreateLituationPage>{
                 )
             ),
             child: CupertinoDatePicker(
-              minimumDate: DateTime.now().add(new Duration(days: 1)),
+              minimumDate: DateTime.now().add(new Duration(days: 0)),
               mode: CupertinoDatePickerMode.date,
-              initialDateTime: DateTime.now().add(new Duration(days: 2)),
+              initialDateTime: DateTime.now().add(new Duration(days: 0)),//sets the start date limit
               onDateTimeChanged: (DateTime c) {
                 setState(() {
                   newLituation.date = c;
@@ -567,7 +567,6 @@ Widget titleTextField(String u){
           )
       ),
       suggestionsCallback: (pattern) async {
-        print("test");
         return lp.searchUser(pattern).then((value){
         var results = [];
         for(var u in value){

@@ -343,7 +343,7 @@ Widget resultsWidget(){
       margin: EdgeInsets.only(top: 10),
       child: Row(
         children: [
-          Expanded(flex: 2,child: lituationDateWidgetSmall(context , l),),
+          Expanded(flex: 2,child: lituationDateWidget(context , l),),
           Expanded(flex: 6,child: lituationInfoCardWidget(l),),
         ],
       ),
