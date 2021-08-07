@@ -691,7 +691,8 @@ class _ViewLituationState extends State<ViewLituation> {
     if (_lit.status != LIT_PENDING) {
       return Padding(
           padding: EdgeInsets.symmetric(horizontal: 10),
-          child: Center(
+          child: Container(
+            margin: EdgeInsets.only(bottom: 12),
               child: Row(
                   mainAxisAlignment: _lit.status == LIT_OVER
                       ? MainAxisAlignment.spaceBetween
@@ -700,16 +701,16 @@ class _ViewLituationState extends State<ViewLituation> {
                 Padding(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     child: Text(
-                        "The lituation is ${lituationStatus(_lit.status)}.",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22,
-                            color: Theme.of(context).secondaryHeaderColor))),
-                if (_lit.status == LIT_OVER)
-                  TextButton(
+                        "The lituation is ${lituationStatus(_lit.status)}!",
+                        style: infoLabel(Theme.of(context).textSelectionColor) ,textScaleFactor: 1.3,)),
+                if (_lit.status == LIT_OVER && !going)
+                  FlatButton(
+                      shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
+                    padding: EdgeInsets.only(left: 25 , right: 25),
+                    color: Theme.of(context).primaryColor,
                       onPressed: () {
-                        Navigator.pushNamed(context, LituationSurveyRoute,
-                            arguments: widget.lituationVisit);
+                          Navigator.pushNamed(context, LituationSurveyRoute,
+                              arguments: widget.lituationVisit);
                       },
                       child: Text("Rate now",
                           style: TextStyle(color: Colors.white)))

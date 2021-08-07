@@ -27,7 +27,6 @@ class _LituationSurveyPageState extends State<LituationSurveyPage> {
   LituationProvider lp;
   Color likeColor = Colors.amber;
   Color dislikeColor = Colors.red;
-
   @override
   void initState() {
     lp = LituationProvider(
@@ -62,12 +61,14 @@ class _LituationSurveyPageState extends State<LituationSurveyPage> {
                     if (rating == null)
                       Row(
                         children: [
-                        TextButton(
+                        FlatButton(
+                          height: 35,
+                          color: Theme.of(context).primaryColor,
+                          shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
+                          padding: EdgeInsets.only(left: 25 , right: 25),
                           child: Text(
                             "Rate",
-                            style: TextStyle(
-                                color: Theme.of(context).secondaryHeaderColor),
-                          ),
+                            style: infoValue(Theme.of(context).textSelectionColor),),
                           onPressed: () async {
                             double rate = await showDialog(
                               context: context,
@@ -129,7 +130,7 @@ class _LituationSurveyPageState extends State<LituationSurveyPage> {
 
         return Container( //lo
             height: 35,// in button
-            margin: EdgeInsets.fromLTRB(5, 5, 10, 0),
+            margin: EdgeInsets.fromLTRB(5, 0, 10, 0),
             child: RaisedButton(
                 color: btnColor,
                 textColor: Theme.of(context).textSelectionColor,
@@ -213,7 +214,7 @@ class _LituationSurveyPageState extends State<LituationSurveyPage> {
       await lp.db.updateClout(userID, (rate * 10).round());
     await lp.db.setUserRateofLituation(widget.lituationVisit.lituationID,
         userID, widget.lituationVisit.userID, rate.round());
-    _scaffoldKey.currentState.showSnackBar(sBar('Thanks for your rate!'));
+    _scaffoldKey.currentState.showSnackBar(sBar('Thank for your feedback!'));
   }
 
   Widget userItemWidget(String url, String userID, String username,
@@ -260,16 +261,20 @@ class _LituationSurveyPageState extends State<LituationSurveyPage> {
                 )),
             Expanded(
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 if (rating == null)
                   Row(
                     children: [
-                     TextButton(
+                     FlatButton(
+                       color: Theme.of(context).primaryColor,
+                       height: 35,
+                       shape: new RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
+                       padding: EdgeInsets.only(left: 25 , right: 25),
                       child: Text(
                         "Rate",
-                        style: TextStyle(
-                            color: Theme.of(context).secondaryHeaderColor),
+                        style: infoValue(Theme.of(context).textSelectionColor),
                       ),
                       onPressed: () async {
                         double rate = await showDialog(
@@ -305,31 +310,15 @@ class _LituationSurveyPageState extends State<LituationSurveyPage> {
       ],
     ));
   }
+  Widget backButton(){
+    return GestureDetector(
+      onTap: (){Navigator.of(context).pop();},
+      child: Icon(Icons.arrow_back , color: Theme.of(context).buttonColor,),
+    );
+  }
 
   Widget appbar(BuildContext ctx) {
-    return AppBar(
-      leading: Container(
-        padding: EdgeInsets.all(10),
-        child: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: Theme.of(context).textSelectionColor,
-            size: 25,
-          ),
-          onPressed: () {
-            Navigator.of(ctx).pop();
-          },
-        ),
-      ),
-      backgroundColor: Theme.of(context).primaryColor,
-      centerTitle: true,
-      title: Container(
-          padding: EdgeInsets.fromLTRB(25, 10, 25, 0),
-          child: Text(
-            "Rating users",
-            style: TextStyle(color: Theme.of(context).textSelectionColor),
-          )),
-    );
+    return topNav(backButton(),pageTitle("Rate your interactions!" , Theme.of(context).textSelectionColor), [Container()], Theme.of(context).scaffoldBackgroundColor);
   }
 }
 
@@ -337,6 +326,7 @@ class _LituationSurveyPageState extends State<LituationSurveyPage> {
 class RatingPopover extends StatelessWidget {
   RatingPopover({Key key}) : super(key: key);
   double rate = 3;
+  bool rated = false;
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -360,24 +350,34 @@ class RatingPopover extends StatelessWidget {
                 icon: Icon(Icons.close, color: Theme.of(context).secondaryHeaderColor,),))
             ),
             Container(
-              height: 50,
-              color: Colors.amber[200],
-              child: SmoothStarRating(
-                        rating: rate * 1.0,
-                        isReadOnly: false,
-                        size: 40,
-                        filledIconData: Icons.star,
-                        halfFilledIconData: Icons.star_half,
-                        defaultIconData: Icons.star_border,
-                        starCount: 5,
-                        allowHalfRating: false,
-                        spacing: 2.0,
-                        onRated: (value) {
-                          print("rating value -> $value");
-                          rate = value;
-                          // print("rating value dd -> ${value.truncate()}");
-                        },
-                      ),
+              padding: EdgeInsets.only(top: 15),
+              height: 150,
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Column(
+                children: [
+                  SmoothStarRating(
+                    rating: rate * 1.0,
+                    isReadOnly: false,
+                    size: 45,
+                    filledIconData: Icons.star,
+                    halfFilledIconData: Icons.star_half,
+                    defaultIconData: Icons.star_border,
+                    starCount: 5,
+                    allowHalfRating: false,
+                    spacing: 2.0,
+                    onRated: (value) {
+                      rated = true;
+                      print("rating value -> $value");
+                      rate = value;
+                      // print("rating value dd -> ${value.truncate()}");
+                    },
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(top: 25 , bottom: 25),
+                    child: Text(rated?"Thank you!":"We'd appreciate your feedback" , style: infoValue(Theme.of(context).textSelectionColor),),
+                  )
+                ],
+              ),
             ),       
             GestureDetector(
               onTap: () {
@@ -385,9 +385,9 @@ class RatingPopover extends StatelessWidget {
                   ..pop(rate);
               },
               child: Container(
-                height: 30,
-                color: Colors.amber[100],
-                child: const Center(child: Text('Submit')),
+                height: 45,
+                color: Theme.of(context).buttonColor,
+                child: Center(child: Text('Submit' , style: infoValue(Theme.of(context).textSelectionColor),)),
               ),
             ),     
           ],

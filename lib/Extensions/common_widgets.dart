@@ -647,43 +647,30 @@ Widget lituationDateWidget(BuildContext context, Lituation l) {
   String month = months[date.month - 1];
   String day = date.day.toString();
   return Container(
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    child:         Column(
       children: [
-        Column(children: [
-          Expanded(
-              flex: 1,
-              child: Text(
-                day,
-                style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).textSelectionColor),
-                textScaleFactor: 1.6,
-              )),
-          Expanded(
-              flex: 1,
-              child: Container(
-                margin: EdgeInsets.only(top: 10),
-                child: Text(
-                  month,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w200,
-                      color: Theme.of(context).textSelectionColor),
-                  textScaleFactor: 1,
-                ),
-              )),
-        ],),
-        Expanded(
-            flex: 2,
-            child: Container(
-              margin: EdgeInsets.only(top: 10),
-              child: userProfileThumbnail(
-                  l.host?.profileURL ??
-                      "https://images.unsplash.com/photo-1606664817180-00391bdfb9d0?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Njl8fGZyZWV8ZW58MHx8MHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=60",
-                  'online'),
-            )),
-      ],
-    ),
+      Expanded(
+          flex: 1,
+          child: Text(
+            day,
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).textSelectionColor),
+            textScaleFactor: 1.6,
+          )),
+      Expanded(
+          flex: 1,
+          child: Container(
+            child: Text(
+              month,
+              style: TextStyle(
+                  fontWeight: FontWeight.w200,
+                  color: Theme.of(context).textSelectionColor),
+              textScaleFactor: 1,
+            ),
+          )
+      ),
+    ],),
   );
 }
 

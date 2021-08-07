@@ -350,16 +350,22 @@ Widget resultsWidget(){
     );
   }
   Widget lituationInfoCardWidget(Lituation l){
-    return Container(
-      margin: EdgeInsets.only(top: 2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(child: Text(l.title , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 1.2,),),
-          //Expanded(child: Text(parseThemes(l) , textScaleFactor: 0.7 , style: TextStyle(color: Colors.blueAccent),),),
-          //Expanded(child: lituationTimeWidget(l),),
-          Expanded(child: Text(l.location , style: TextStyle(color: Theme.of(context).textSelectionColor),textScaleFactor: 0.7,),),
-        ],
+    return GestureDetector(
+      onTap: () {
+        _viewLituation(l.eventID, l.title);
+      },
+      child:  Container(
+        margin: EdgeInsets.only(top: 2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: Text(l.title , style: infoValue(Theme.of(context).textSelectionColor),textScaleFactor: 1.3,),),
+            //Expanded(child: Text(parseThemes(l) , textScaleFactor: 0.7 , style: TextStyle(color: Colors.blueAccent),),),
+            //Expanded(child: lituationTimeWidget(l),),
+            Expanded(child: Text(l.location , style: infoValue(Theme.of(context).textSelectionColor),textScaleFactor: 0.9,),),
+            Expanded(child: Text(parseThemes(l) , style: infoValue(Colors.blue), textScaleFactor: 0.7,))
+          ],
+        ),
       ),
     );
   }
